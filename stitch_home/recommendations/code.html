@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+
+<html lang="th"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Soil Analysis - Fertilizer Recommendation</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&amp;family=Noto+Sans+Thai:wght@400;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        body {
+            font-family: 'Inter', 'Noto Sans Thai', sans-serif;
+            -webkit-font-smoothing: antialiased;
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "tertiary-fixed-dim": "#95d4b3",
+                        "surface-container-low": "#f2f4f3",
+                        "secondary-fixed": "#92f7c3",
+                        "on-tertiary-fixed": "#002114",
+                        "inverse-primary": "#b5c8e5",
+                        "on-secondary-container": "#00734d",
+                        "on-error": "#ffffff",
+                        "primary": "#000917",
+                        "outline": "#74777d",
+                        "surface-container": "#eceeed",
+                        "on-error-container": "#93000a",
+                        "on-primary-fixed-variant": "#364860",
+                        "tertiary": "#000b05",
+                        "on-primary-container": "#7689a4",
+                        "surface": "#f8faf9",
+                        "surface-container-highest": "#e1e3e2",
+                        "background": "#f8faf9",
+                        "on-primary-fixed": "#081c32",
+                        "surface-bright": "#f8faf9",
+                        "on-primary": "#ffffff",
+                        "on-surface-variant": "#44474d",
+                        "on-tertiary-fixed-variant": "#0e5138",
+                        "error": "#ba1a1a",
+                        "on-secondary": "#ffffff",
+                        "tertiary-container": "#002617",
+                        "surface-dim": "#d8dada",
+                        "on-secondary-fixed-variant": "#005235",
+                        "outline-variant": "#c4c6cd",
+                        "tertiary-fixed": "#b1f0ce",
+                        "on-background": "#191c1c",
+                        "on-tertiary": "#ffffff",
+                        "secondary-fixed-dim": "#75daa8",
+                        "surface-container-high": "#e6e9e8",
+                        "inverse-surface": "#2e3131",
+                        "on-secondary-fixed": "#002113",
+                        "secondary": "#006c48",
+                        "surface-variant": "#e1e3e2",
+                        "surface-tint": "#4d6079",
+                        "on-surface": "#191c1c",
+                        "primary-fixed": "#d2e4ff",
+                        "on-tertiary-container": "#579476",
+                        "error-container": "#ffdad6",
+                        "secondary-container": "#92f7c3",
+                        "surface-container-lowest": "#ffffff",
+                        "primary-container": "#0d2137",
+                        "inverse-on-surface": "#eff1f0",
+                        "primary-fixed-dim": "#b5c8e5"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "md": "16px",
+                        "gutter": "16px",
+                        "sm": "8px",
+                        "lg": "24px",
+                        "base": "4px",
+                        "xs": "4px",
+                        "xl": "32px",
+                        "container-margin": "16px"
+                    },
+                    "fontFamily": {
+                        "body-md": ["Inter", "Noto Sans Thai"],
+                        "display-sm": ["Noto Sans Thai"],
+                        "display-lg-mobile": ["Noto Sans Thai"],
+                        "body-lg": ["Inter", "Noto Sans Thai"],
+                        "data-lg": ["Inter"],
+                        "title-lg": ["Noto Sans Thai"],
+                        "headline-md": ["Noto Sans Thai"],
+                        "label-md": ["Inter", "Noto Sans Thai"],
+                        "display-lg": ["Noto Sans Thai"]
+                    },
+                    "fontSize": {
+                        "body-md": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                        "display-sm": ["24px", {"lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "700"}],
+                        "display-lg-mobile": ["26px", {"lineHeight": "32px", "fontWeight": "700"}],
+                        "body-lg": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                        "data-lg": ["28px", {"lineHeight": "32px", "letterSpacing": "-0.03em", "fontWeight": "700"}],
+                        "title-lg": ["18px", {"lineHeight": "24px", "fontWeight": "600"}],
+                        "headline-md": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+                        "label-md": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                        "display-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "700"}]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-surface min-h-screen pb-24">
+<!-- TopAppBar -->
+<header class="bg-surface dark:bg-inverse-surface shadow-sm docked full-width top-0 sticky z-50 flex justify-between items-center w-full px-container-margin h-16">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-secondary dark:text-secondary-fixed">agriculture</span>
+<h1 class="font-display-sm text-display-sm text-primary dark:text-primary-fixed">DOA Soil Analysis</h1>
+</div>
+<div class="flex items-center gap-4">
+<button class="material-symbols-outlined text-on-surface-variant p-2 hover:bg-surface-container-high rounded-full transition-colors active:scale-95 duration-100">notifications</button>
+</div>
+</header>
+<main class="max-w-4xl mx-auto px-container-margin pt-lg space-y-md">
+<!-- Hero: Soil Health Overview -->
+<section class="relative overflow-hidden bg-primary-container rounded-xl p-lg text-white shadow-lg">
+<div class="relative z-10 grid md:grid-cols-2 gap-md items-center">
+<div>
+<h2 class="font-headline-md text-headline-md-mobile mb-xs">สรุปสุขภาพดิน</h2>
+<p class="font-body-md text-body-md opacity-80 mb-md">แปลงที่: A1-24 (ข้าวหอมมะลิ)</p>
+<div class="flex items-center gap-sm">
+<span class="bg-secondary text-on-secondary px-3 py-1 rounded-full font-label-md text-label-md">สมบูรณ์ปานกลาง</span>
+<span class="text-on-primary-container font-label-md text-label-md">อัปเดตล่าสุด: 24 ต.ค. 2566</span>
+</div>
+</div>
+<div class="flex justify-around items-end h-32 gap-base">
+<!-- Simple Data Visualization (Bento Style) -->
+<div class="flex flex-col items-center gap-xs">
+<div class="w-8 bg-secondary-fixed-dim h-20 rounded-t-sm"></div>
+<span class="font-label-md text-label-md">N</span>
+</div>
+<div class="flex flex-col items-center gap-xs">
+<div class="w-8 bg-error-container h-12 rounded-t-sm"></div>
+<span class="font-label-md text-label-md">P</span>
+</div>
+<div class="flex flex-col items-center gap-xs">
+<div class="w-8 bg-secondary-fixed-dim h-24 rounded-t-sm"></div>
+<span class="font-label-md text-label-md">K</span>
+</div>
+<div class="flex flex-col items-center gap-xs">
+<div class="w-8 bg-tertiary-fixed h-16 rounded-t-sm"></div>
+<span class="font-label-md text-label-md">pH</span>
+</div>
+</div>
+</div>
+<!-- Atmospheric background decoration -->
+<div class="absolute top-0 right-0 w-64 h-64 bg-secondary opacity-10 rounded-full -translate-y-1/2 translate-x-1/2"></div>
+</section>
+<!-- Recommended Formula Card -->
+<section class="bg-surface-container-lowest border border-outline-variant rounded-xl p-lg shadow-sm">
+<div class="flex items-center gap-sm mb-md">
+<span class="material-symbols-outlined text-secondary">biotech</span>
+<h3 class="font-title-lg text-title-lg text-primary">สูตรปุ๋ยที่แนะนำ</h3>
+</div>
+<div class="grid md:grid-cols-3 gap-md">
+<div class="bg-surface-container p-md rounded-lg text-center border-l-4 border-secondary">
+<p class="font-label-md text-label-md text-on-surface-variant uppercase mb-xs">สูตรหลัก</p>
+<p class="font-data-lg text-data-lg text-primary">16-16-8</p>
+</div>
+<div class="bg-surface-container p-md rounded-lg text-center border-l-4 border-tertiary-fixed-dim">
+<p class="font-label-md text-label-md text-on-surface-variant uppercase mb-xs">ปริมาณที่ควรใช้</p>
+<p class="font-data-lg text-data-lg text-primary">25 กก./ไร่</p>
+</div>
+<div class="bg-surface-container p-md rounded-lg text-center border-l-4 border-primary-fixed-dim">
+<p class="font-label-md text-label-md text-on-surface-variant uppercase mb-xs">ช่วงเวลา</p>
+<p class="font-data-lg text-data-lg text-primary">แตกกอ</p>
+</div>
+</div>
+<div class="mt-lg p-md bg-secondary-container/20 rounded-lg border border-secondary-container flex items-start gap-md">
+<span class="material-symbols-outlined text-on-secondary-container" style="font-variation-settings: 'FILL' 1;">info</span>
+<p class="font-body-md text-body-md text-on-secondary-container">
+<strong>ข้อแนะนำเพิ่มเติม:</strong> ดินมีสภาวะเป็นกรดเล็กน้อย แนะนำให้ใส่ปูนโดโลไมต์ 50 กก./ไร่ ก่อนการไถเตรียมดินเพื่อปรับสภาพ pH ให้เหมาะสม
+                </p>
+</div>
+</section>
+<!-- Application Instructions (Bento Grid) -->
+<h3 class="font-title-lg text-title-lg text-primary px-xs">ขั้นตอนการใส่ปุ๋ย</h3>
+<div class="grid md:grid-cols-2 gap-md">
+<!-- Step 1 -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-md flex flex-col gap-sm">
+<div class="flex items-center justify-between">
+<span class="w-8 h-8 rounded-full bg-primary text-on-primary flex items-center justify-center font-bold">1</span>
+<span class="material-symbols-outlined text-outline">calendar_today</span>
+</div>
+<h4 class="font-title-lg text-title-lg">เตรียมพื้นที่</h4>
+<p class="font-body-md text-body-md text-on-surface-variant">กำจัดวัชพืชและระบายน้ำออกให้เหลือระดับความลึกประมาณ 5-10 ซม. เพื่อความสม่ำเสมอในการกระจายตัวของปุ๋ย</p>
+</div>
+<!-- Step 2 -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-md flex flex-col gap-sm">
+<div class="flex items-center justify-between">
+<span class="w-8 h-8 rounded-full bg-primary text-on-primary flex items-center justify-center font-bold">2</span>
+<span class="material-symbols-outlined text-outline">scatter_plot</span>
+</div>
+<h4 class="font-title-lg text-title-lg">การหว่านปุ๋ย</h4>
+<p class="font-body-md text-body-md text-on-surface-variant">หว่านปุ๋ยสูตร 16-16-8 ในช่วงเช้าหรือเย็นที่ลมสงบ เพื่อป้องกันการสูญเสียไนโตรเจนจากการระเหย</p>
+</div>
+<!-- Step 3 -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-md flex flex-col gap-sm">
+<div class="flex items-center justify-between">
+<span class="w-8 h-8 rounded-full bg-primary text-on-primary flex items-center justify-center font-bold">3</span>
+<span class="material-symbols-outlined text-outline">water_drop</span>
+</div>
+<h4 class="font-title-lg text-title-lg">การจัดการน้ำ</h4>
+<p class="font-body-md text-body-md text-on-surface-variant">หลังจากหว่านปุ๋ย 2-3 วัน ให้รักษาระดับน้ำให้คงที่ เพื่อให้ธาตุอาหารละลายและซึมสู่รากพืชได้ดีที่สุด</p>
+</div>
+<!-- Step 4 -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-md flex flex-col gap-sm">
+<div class="flex items-center justify-between">
+<span class="w-8 h-8 rounded-full bg-primary text-on-primary flex items-center justify-center font-bold">4</span>
+<span class="material-symbols-outlined text-outline">history_edu</span>
+</div>
+<h4 class="font-title-lg text-title-lg">บันทึกข้อมูล</h4>
+<p class="font-body-md text-body-md text-on-surface-variant">บันทึกวันที่และปริมาณที่ใช้จริงลงในระบบ เพื่อเปรียบเทียบผลผลิตในฤดูกาลถัดไป</p>
+</div>
+</div>
+<!-- Download Section -->
+<div class="flex flex-col gap-md pt-lg">
+<button class="w-full bg-primary text-on-primary h-14 rounded-full font-title-lg flex items-center justify-center gap-sm active:scale-95 transition-transform">
+<span class="material-symbols-outlined">download</span>
+                ดาวน์โหลดรายงาน (PDF)
+            </button>
+<p class="text-center font-label-md text-label-md text-outline">เอกสารได้รับการรับรองโดย กรมวิชาการเกษตร</p>
+</div>
+</main>
+<!-- BottomNavBar -->
+<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 py-2 pb-safe bg-surface-container-lowest dark:bg-surface-container-lowest border-t border-outline-variant rounded-t-xl">
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-outline-variant px-4 py-1 hover:bg-surface-container-high transition-colors active:scale-90 transition-transform duration-150" href="#">
+<span class="material-symbols-outlined">home</span>
+<span class="font-label-md text-label-md">Home</span>
+</a>
+<a class="flex flex-col items-center justify-center bg-secondary-container dark:bg-secondary-fixed-variant text-on-secondary-container dark:text-secondary-fixed rounded-full px-4 py-1 active:scale-90 transition-transform duration-150" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">biotech</span>
+<span class="font-label-md text-label-md">Soil Test</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-outline-variant px-4 py-1 hover:bg-surface-container-high transition-colors active:scale-90 transition-transform duration-150" href="#">
+<span class="material-symbols-outlined">history</span>
+<span class="font-label-md text-label-md">History</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-outline-variant px-4 py-1 hover:bg-surface-container-high transition-colors active:scale-90 transition-transform duration-150" href="#">
+<span class="material-symbols-outlined">person</span>
+<span class="font-label-md text-label-md">Profile</span>
+</a>
+</nav>
+<script>
+        // Micro-interactions
+        document.querySelectorAll('button, a').forEach(el => {
+            el.addEventListener('click', (e) => {
+                const ripple = document.createElement('div');
+                ripple.className = 'absolute bg-white/20 rounded-full scale-0 transition-transform duration-500 pointer-events-none';
+                // Note: simple visual click feedback implementation omitted for brevity
+            });
+        });
+    </script>
+</body></html>

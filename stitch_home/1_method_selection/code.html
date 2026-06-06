@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+
+<html class="light" lang="th"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&amp;family=Noto+Sans+Thai:wght@400;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        :root {
+            --notoSans: 'Noto Sans Thai', sans-serif;
+            --inter: 'Inter', sans-serif;
+        }
+        body {
+            font-family: var(--notoSans);
+            -webkit-font-smoothing: antialiased;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-tertiary": "#ffffff",
+                        "on-tertiary-fixed": "#002114",
+                        "on-background": "#191c1c",
+                        "surface-container-low": "#f2f4f3",
+                        "secondary": "#006c48",
+                        "surface-container": "#eceeed",
+                        "inverse-on-surface": "#eff1f0",
+                        "surface": "#f8faf9",
+                        "surface-bright": "#f8faf9",
+                        "on-tertiary-fixed-variant": "#0e5138",
+                        "inverse-primary": "#b5c8e5",
+                        "primary-container": "#0d2137",
+                        "tertiary-fixed": "#b1f0ce",
+                        "on-primary-fixed": "#081c32",
+                        "tertiary-fixed-dim": "#95d4b3",
+                        "on-secondary": "#ffffff",
+                        "on-surface-variant": "#44474d",
+                        "primary": "#000917",
+                        "surface-container-high": "#e6e9e8",
+                        "secondary-fixed": "#92f7c3",
+                        "primary-fixed": "#d2e4ff",
+                        "on-secondary-container": "#00734d",
+                        "surface-container-lowest": "#ffffff",
+                        "on-surface": "#191c1c",
+                        "primary-fixed-dim": "#b5c8e5",
+                        "surface-dim": "#d8dada",
+                        "background": "#f8faf9",
+                        "on-primary-container": "#7689a4",
+                        "secondary-container": "#92f7c3",
+                        "error-container": "#ffdad6",
+                        "error": "#ba1a1a",
+                        "on-error": "#ffffff",
+                        "on-primary": "#ffffff",
+                        "on-primary-fixed-variant": "#364860",
+                        "on-secondary-fixed-variant": "#005235",
+                        "on-error-container": "#93000a",
+                        "surface-tint": "#4d6079",
+                        "tertiary-container": "#002617",
+                        "surface-variant": "#e1e3e2",
+                        "on-secondary-fixed": "#002113",
+                        "tertiary": "#000b05",
+                        "outline": "#74777d",
+                        "inverse-surface": "#2e3131",
+                        "surface-container-highest": "#e1e3e2",
+                        "secondary-fixed-dim": "#75daa8",
+                        "outline-variant": "#c4c6cd",
+                        "on-tertiary-container": "#579476"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "base": "4px",
+                        "md": "16px",
+                        "sm": "8px",
+                        "lg": "24px",
+                        "gutter": "16px",
+                        "container-margin": "16px",
+                        "xs": "4px",
+                        "xl": "32px"
+                    },
+                    "fontFamily": {
+                        "body-lg": ["var(--inter)"],
+                        "headline-md": ["var(--notoSans)"],
+                        "data-lg": ["var(--inter)"],
+                        "display-sm": ["var(--notoSans)"],
+                        "display-lg": ["var(--notoSans)"],
+                        "label-md": ["var(--inter)"],
+                        "body-md": ["var(--inter)"],
+                        "title-lg": ["var(--notoSans)"],
+                        "display-lg-mobile": ["var(--notoSans)"]
+                    },
+                    "fontSize": {
+                        "body-lg": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                        "headline-md": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+                        "data-lg": ["28px", {"lineHeight": "32px", "letterSpacing": "-0.03em", "fontWeight": "700"}],
+                        "display-sm": ["24px", {"lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "700"}],
+                        "display-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                        "label-md": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                        "body-md": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                        "title-lg": ["18px", {"lineHeight": "24px", "fontWeight": "600"}],
+                        "display-lg-mobile": ["26px", {"lineHeight": "32px", "fontWeight": "700"}]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-surface min-h-screen flex flex-col">
+<!-- TopAppBar -->
+<header class="bg-surface dark:bg-inverse-surface shadow-sm docked full-width top-0 sticky z-50 flex justify-between items-center w-full px-container-margin h-16">
+<div class="flex items-center gap-4">
+<button class="text-secondary dark:text-secondary-fixed hover:bg-surface-container-high dark:hover:bg-surface-container-low transition-colors p-2 rounded-full active:scale-95 duration-100">
+<span class="material-symbols-outlined">arrow_back</span>
+</button>
+<h1 class="font-headline-md text-headline-md-mobile text-secondary dark:text-secondary-fixed">วิเคราะห์ดิน</h1>
+</div>
+<div class="flex items-center">
+<button class="text-secondary dark:text-secondary-fixed hover:bg-surface-container-high dark:hover:bg-surface-container-low transition-colors p-2 rounded-full active:scale-95 duration-100">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+</div>
+</header>
+<main class="flex-1 px-container-margin py-lg space-y-lg max-w-2xl mx-auto w-full">
+<!-- Step Indicator -->
+<section class="flex items-center justify-between w-full px-sm py-md">
+<!-- Step 1 (Active) -->
+<div class="flex flex-col items-center gap-xs">
+<div class="w-10 h-10 rounded-full bg-secondary text-on-secondary flex items-center justify-center font-bold shadow-md">1</div>
+<span class="font-label-md text-label-md text-secondary">Step 1</span>
+</div>
+<div class="flex-1 h-[2px] bg-outline-variant mx-2 translate-y-[-10px]"></div>
+<!-- Step 2 -->
+<div class="flex flex-col items-center gap-xs">
+<div class="w-10 h-10 rounded-full bg-surface-container-high text-on-surface-variant flex items-center justify-center font-bold">2</div>
+<span class="font-label-md text-label-md text-on-surface-variant">Step 2</span>
+</div>
+<div class="flex-1 h-[2px] bg-outline-variant mx-2 translate-y-[-10px]"></div>
+<!-- Step 3 -->
+<div class="flex flex-col items-center gap-xs">
+<div class="w-10 h-10 rounded-full bg-surface-container-high text-on-surface-variant flex items-center justify-center font-bold">3</div>
+<span class="font-label-md text-label-md text-on-surface-variant">Step 3</span>
+</div>
+</section>
+<!-- Instruction Section -->
+<header class="text-center space-y-sm">
+<h2 class="font-display-sm text-display-sm text-primary">เลือกวิธีการบันทึกข้อมูล</h2>
+<p class="font-body-md text-body-md text-on-surface-variant">กรุณาเลือกวิธีที่คุณต้องการเพื่อเริ่มต้นการวิเคราะห์ดิน</p>
+</header>
+<!-- Bento Selection Cards -->
+<div class="grid grid-cols-1 gap-md">
+<!-- Option Card 1: Upload -->
+<button class="group relative overflow-hidden bg-surface-container-lowest border border-outline-variant rounded-xl p-lg flex flex-col items-center text-center transition-all duration-300 hover:shadow-lg hover:-translate-y-1 active:scale-[0.98]">
+<!-- Decorative element -->
+<div class="absolute top-0 right-0 w-24 h-24 bg-secondary/5 rounded-bl-full group-hover:bg-secondary/10 transition-colors"></div>
+<div class="w-20 h-20 rounded-full bg-secondary-container flex items-center justify-center mb-md group-hover:scale-110 transition-transform duration-300">
+<span class="material-symbols-outlined text-[40px] text-on-secondary-container">photo_camera</span>
+</div>
+<h3 class="font-title-lg text-title-lg text-primary mb-sm">อัพโหลดรูปภาพ</h3>
+<p class="font-body-md text-body-md text-on-surface-variant max-w-[240px]">ถ่ายรูปผลทดสอบจากชุด DOA Soil Test Kit เพื่อวิเคราะห์อัตโนมัติ</p>
+<div class="mt-lg flex items-center gap-2 text-secondary font-semibold">
+<span>เริ่มต้นใช้งาน</span>
+<span class="material-symbols-outlined text-[18px]">chevron_right</span>
+</div>
+</button>
+<!-- Option Card 2: Manual -->
+<button class="group relative overflow-hidden bg-surface-container-lowest border border-outline-variant rounded-xl p-lg flex flex-col items-center text-center transition-all duration-300 hover:shadow-lg hover:-translate-y-1 active:scale-[0.98]">
+<!-- Decorative element -->
+<div class="absolute top-0 left-0 w-24 h-24 bg-primary-fixed/5 rounded-br-full group-hover:bg-primary-fixed/10 transition-colors"></div>
+<div class="w-20 h-20 rounded-full bg-primary-fixed flex items-center justify-center mb-md group-hover:scale-110 transition-transform duration-300">
+<span class="material-symbols-outlined text-[40px] text-on-primary-fixed-variant">keyboard</span>
+</div>
+<h3 class="font-title-lg text-title-lg text-primary mb-sm">กรอกด้วยตนเอง</h3>
+<p class="font-body-md text-body-md text-on-surface-variant max-w-[240px]">พิมพ์ค่าผลวิเคราะห์ดินและแร่ธาตุต่างๆ ลงในระบบด้วยตัวเอง</p>
+<div class="mt-lg flex items-center gap-2 text-primary font-semibold">
+<span>ระบุข้อมูล</span>
+<span class="material-symbols-outlined text-[18px]">chevron_right</span>
+</div>
+</button>
+</div>
+<!-- Help Card -->
+<div class="bg-secondary-container/30 rounded-xl p-md flex gap-md items-start">
+<span class="material-symbols-outlined text-secondary" style="font-variation-settings: 'FILL' 1;">info</span>
+<div class="space-y-xs">
+<p class="font-label-md text-label-md text-on-secondary-container uppercase">แนะนำ</p>
+<p class="font-body-md text-body-md text-on-surface">การวิเคราะห์ด้วยรูปภาพมีความแม่นยำสูงเมื่อถ่ายในที่ที่มีแสงสว่างเพียงพอ</p>
+</div>
+</div>
+</main>
+<!-- BottomNavBar -->
+<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 py-2 pb-safe bg-surface-container-lowest dark:bg-surface-container-lowest border-t border-outline-variant h-20">
+<!-- Home -->
+<button class="flex flex-col items-center justify-center text-on-surface-variant dark:text-outline-variant px-4 py-1 hover:bg-surface-container-high dark:hover:bg-surface-container-low transition-colors active:scale-90 transition-transform duration-150">
+<span class="material-symbols-outlined">home</span>
+<span class="font-label-md text-label-md">Home</span>
+</button>
+<!-- Soil Test (Active) -->
+<button class="flex flex-col items-center justify-center bg-secondary-container dark:bg-secondary-fixed-variant text-on-secondary-container dark:text-secondary-fixed rounded-full px-4 py-1 active:scale-90 transition-transform duration-150">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">biotech</span>
+<span class="font-label-md text-label-md">Soil Test</span>
+</button>
+<!-- History -->
+<button class="flex flex-col items-center justify-center text-on-surface-variant dark:text-outline-variant px-4 py-1 hover:bg-surface-container-high dark:hover:bg-surface-container-low transition-colors active:scale-90 transition-transform duration-150">
+<span class="material-symbols-outlined">history</span>
+<span class="font-label-md text-label-md">History</span>
+</button>
+<!-- Profile -->
+<button class="flex flex-col items-center justify-center text-on-surface-variant dark:text-outline-variant px-4 py-1 hover:bg-surface-container-high dark:hover:bg-surface-container-low transition-colors active:scale-90 transition-transform duration-150">
+<span class="material-symbols-outlined">person</span>
+<span class="font-label-md text-label-md">Profile</span>
+</button>
+</nav>
+<!-- Spacer for bottom nav -->
+<div class="h-24"></div>
+<script>
+        // Simple micro-interaction for cards
+        document.querySelectorAll('button').forEach(btn => {
+            btn.addEventListener('touchstart', () => {
+                btn.style.opacity = '0.7';
+            });
+            btn.addEventListener('touchend', () => {
+                btn.style.opacity = '1';
+            });
+        });
+    </script>
+</body></html>

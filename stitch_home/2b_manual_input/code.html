@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+
+<html class="light" lang="th"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&amp;family=Noto+Sans+Thai:wght@400;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "on-tertiary": "#ffffff",
+                    "on-tertiary-fixed": "#002114",
+                    "on-background": "#191c1c",
+                    "surface-container-low": "#f2f4f3",
+                    "secondary": "#006c48",
+                    "surface-container": "#eceeed",
+                    "inverse-on-surface": "#eff1f0",
+                    "surface": "#f8faf9",
+                    "surface-bright": "#f8faf9",
+                    "on-tertiary-fixed-variant": "#0e5138",
+                    "inverse-primary": "#b5c8e5",
+                    "primary-container": "#0d2137",
+                    "tertiary-fixed": "#b1f0ce",
+                    "on-primary-fixed": "#081c32",
+                    "tertiary-fixed-dim": "#95d4b3",
+                    "on-secondary": "#ffffff",
+                    "on-surface-variant": "#44474d",
+                    "primary": "#000917",
+                    "surface-container-high": "#e6e9e8",
+                    "secondary-fixed": "#92f7c3",
+                    "primary-fixed": "#d2e4ff",
+                    "on-secondary-container": "#00734d",
+                    "surface-container-lowest": "#ffffff",
+                    "on-surface": "#191c1c",
+                    "primary-fixed-dim": "#b5c8e5",
+                    "surface-dim": "#d8dada",
+                    "background": "#f8faf9",
+                    "on-primary-container": "#7689a4",
+                    "secondary-container": "#92f7c3",
+                    "error-container": "#ffdad6",
+                    "error": "#ba1a1a",
+                    "on-error": "#ffffff",
+                    "on-primary": "#ffffff",
+                    "on-primary-fixed-variant": "#364860",
+                    "on-secondary-fixed-variant": "#005235",
+                    "on-error-container": "#93000a",
+                    "surface-tint": "#4d6079",
+                    "tertiary-container": "#002617",
+                    "surface-variant": "#e1e3e2",
+                    "on-secondary-fixed": "#002113",
+                    "tertiary": "#000b05",
+                    "outline": "#74777d",
+                    "inverse-surface": "#2e3131",
+                    "surface-container-highest": "#e1e3e2",
+                    "secondary-fixed-dim": "#75daa8",
+                    "outline-variant": "#c4c6cd",
+                    "on-tertiary-container": "#579476"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "base": "4px",
+                    "md": "16px",
+                    "sm": "8px",
+                    "lg": "24px",
+                    "gutter": "16px",
+                    "container-margin": "16px",
+                    "xs": "4px",
+                    "xl": "32px"
+            },
+            "fontFamily": {
+                    "body-lg": ["Inter", "Noto Sans Thai"],
+                    "headline-md": ["Inter", "Noto Sans Thai"],
+                    "data-lg": ["Inter", "Noto Sans Thai"],
+                    "display-sm": ["Inter", "Noto Sans Thai"],
+                    "display-lg": ["Inter", "Noto Sans Thai"],
+                    "label-md": ["Inter", "Noto Sans Thai"],
+                    "body-md": ["Inter", "Noto Sans Thai"],
+                    "title-lg": ["Inter", "Noto Sans Thai"],
+                    "display-lg-mobile": ["Inter", "Noto Sans Thai"]
+            },
+          },
+        },
+      }
+    </script>
+<style>
+        body { font-family: 'Inter', 'Noto Sans Thai', sans-serif; }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            display: inline-block;
+            line-height: 1;
+            text-transform: none;
+            letter-spacing: normal;
+            word-wrap: normal;
+            white-space: nowrap;
+            direction: ltr;
+        }
+        .step-active { position: relative; }
+        .step-active::after {
+            content: '';
+            position: absolute;
+            bottom: -12px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background-color: #006c48;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-background min-h-screen pb-24">
+<!-- TopAppBar -->
+<header class="bg-surface dark:bg-inverse-surface shadow-sm docked full-width top-0 sticky z-50 flex justify-between items-center w-full px-container-margin h-16">
+<div class="flex items-center gap-sm">
+<span class="material-symbols-outlined text-secondary dark:text-secondary-fixed text-[24px]" data-icon="agriculture">agriculture</span>
+<h1 class="font-display-sm text-[20px] md:text-[24px] text-primary dark:text-primary-fixed">DOA Soil Analysis</h1>
+</div>
+<button class="hover:bg-surface-container-high dark:hover:bg-surface-container-low transition-colors p-2 rounded-full active:scale-95 duration-100">
+<span class="material-symbols-outlined text-secondary dark:text-secondary-fixed" data-icon="notifications">notifications</span>
+</button>
+</header>
+<main class="max-w-3xl mx-auto px-container-margin py-lg">
+<!-- Step Indicator -->
+<nav class="flex justify-between items-center mb-xl relative px-4">
+<div class="absolute top-1/2 left-0 w-full h-px bg-outline-variant -z-10"></div>
+<div class="flex flex-col items-center gap-xs bg-background px-2">
+<div class="w-10 h-10 rounded-full border-2 border-secondary bg-on-tertiary flex items-center justify-center text-secondary font-bold">1</div>
+<span class="font-label-md text-[12px] text-on-surface-variant">ข้อมูลพื้นฐาน</span>
+</div>
+<div class="flex flex-col items-center gap-xs bg-background px-2">
+<div class="w-10 h-10 rounded-full bg-secondary flex items-center justify-center text-on-secondary font-bold ring-4 ring-secondary-container">2</div>
+<span class="font-label-md text-[12px] text-secondary font-bold">ค่าวิเคราะห์ดิน</span>
+</div>
+<div class="flex flex-col items-center gap-xs bg-background px-2">
+<div class="w-10 h-10 rounded-full border-2 border-outline-variant bg-surface-container flex items-center justify-center text-outline-variant font-bold">3</div>
+<span class="font-label-md text-[12px] text-on-surface-variant">สรุปผล</span>
+</div>
+</nav>
+<!-- Form Card -->
+<section class="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-sm overflow-hidden mb-lg">
+<div class="p-md border-b border-outline-variant bg-surface-container-low">
+<h2 class="font-title-lg text-[18px] text-primary">กรอกผลการวิเคราะห์ทางเคมี</h2>
+<p class="font-body-md text-[14px] text-on-surface-variant">ระบุค่าที่ได้จากห้องปฏิบัติการเพื่อประมวลผลคำแนะนำ</p>
+</div>
+<div class="p-md space-y-md">
+<!-- Crop Selection -->
+<div class="space-y-sm">
+<label class="font-label-md text-on-surface-variant block">ชนิดพืช</label>
+<div class="relative">
+<select class="w-full h-12 px-md rounded-lg border border-outline bg-surface focus:ring-2 focus:ring-secondary/50 appearance-none font-body-lg text-on-surface">
+<option value="">เลือกชนิดพืช</option>
+<option value="rice">ข้าว</option>
+<option value="corn">ข้าวโพด</option>
+<option value="sugar">อ้อย</option>
+<option value="cassava">มันสำปะหลัง</option>
+<option value="veg">ผัก</option>
+</select>
+<span class="material-symbols-outlined absolute right-4 top-3 pointer-events-none text-outline" data-icon="expand_more">expand_more</span>
+</div>
+</div>
+<div class="grid grid-cols-1 gap-md">
+<!-- Nitrogen -->
+<div class="flex items-center gap-sm">
+<div class="flex-1 space-y-sm">
+<label class="font-label-md text-on-surface-variant block">ไนโตรเจน (N) ppm</label>
+<input class="w-full h-12 px-md rounded-lg border border-outline bg-surface focus:ring-2 focus:ring-secondary/50 font-data-lg text-[18px]" placeholder="0.00" type="number"/>
+</div>
+<div class="pt-6">
+<span class="px-3 py-1 rounded-full bg-error-container text-on-error-container font-label-md text-[12px]">ต่ำ</span>
+</div>
+</div>
+<!-- Phosphorus -->
+<div class="flex items-center gap-sm">
+<div class="flex-1 space-y-sm">
+<label class="font-label-md text-on-surface-variant block">ฟอสฟอรัส (P) ppm</label>
+<input class="w-full h-12 px-md rounded-lg border border-outline bg-surface focus:ring-2 focus:ring-secondary/50 font-data-lg text-[18px]" placeholder="0.00" type="number"/>
+</div>
+<div class="pt-6">
+<span class="px-3 py-1 rounded-full bg-secondary-container text-on-secondary-container font-label-md text-[12px]">สูง</span>
+</div>
+</div>
+<!-- Potassium -->
+<div class="flex items-center gap-sm">
+<div class="flex-1 space-y-sm">
+<label class="font-label-md text-on-surface-variant block">โพแทสเซียม (K) ppm</label>
+<input class="w-full h-12 px-md rounded-lg border border-outline bg-surface focus:ring-2 focus:ring-secondary/50 font-data-lg text-[18px]" placeholder="0.00" type="number"/>
+</div>
+<div class="pt-6">
+<span class="px-3 py-1 bg-amber-100 text-amber-800 font-label-md text-[12px] rounded-full">ปานกลาง</span>
+</div>
+</div>
+<div class="grid grid-cols-2 gap-md">
+<!-- pH -->
+<div class="flex items-center gap-sm">
+<div class="flex-1 space-y-sm">
+<label class="font-label-md text-on-surface-variant block">ความเป็นกรด-ด่าง (pH)</label>
+<input class="w-full h-12 px-md rounded-lg border border-outline bg-surface focus:ring-2 focus:ring-secondary/50 font-data-lg text-[18px]" placeholder="7.0" step="0.1" type="number"/>
+</div>
+</div>
+<!-- OM -->
+<div class="flex items-center gap-sm">
+<div class="flex-1 space-y-sm">
+<label class="font-label-md text-on-surface-variant block">อินทรียวัตถุ (OM) %</label>
+<input class="w-full h-12 px-md rounded-lg border border-outline bg-surface focus:ring-2 focus:ring-secondary/50 font-data-lg text-[18px]" placeholder="0.0" step="0.1" type="number"/>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Action Buttons -->
+<div class="flex items-center justify-between gap-md mt-lg">
+<button class="flex-1 h-12 rounded-lg border border-primary text-primary font-title-lg text-[16px] hover:bg-surface-container-high transition-colors active:scale-95 duration-100">
+                ย้อนกลับ
+            </button>
+<button class="flex-[2] h-12 rounded-lg bg-secondary text-on-secondary font-title-lg text-[16px] shadow-sm hover:brightness-110 transition-all active:scale-95 duration-100">
+                วิเคราะห์ผล
+            </button>
+</div>
+<!-- Decorative Info Card (Bento Style) -->
+<div class="mt-xl grid grid-cols-1 md:grid-cols-2 gap-md">
+<div class="p-md rounded-xl bg-primary-container text-on-primary-container flex items-start gap-md">
+<span class="material-symbols-outlined text-tertiary-fixed text-[32px]" data-icon="lightbulb">lightbulb</span>
+<div>
+<h3 class="font-title-lg text-[16px] mb-xs text-on-primary">เคล็ดลับการตรวจดิน</h3>
+<p class="font-body-md text-[14px]">ควรอ่านค่าจากกึ่งกลางถุงตัวอย่างเพื่อให้ได้ค่าเฉลี่ยที่แม่นยำที่สุด</p>
+</div>
+</div>
+<div class="relative rounded-xl overflow-hidden aspect-[16/6] md:aspect-auto">
+<img class="absolute inset-0 w-full h-full object-cover brightness-75" data-alt="Close up high-resolution photography of rich dark agricultural soil held in a hand, representing precision farming and soil health analysis. The lighting is natural and bright, highlighting the texture and moisture of the earth against a soft blurred background of a green field. The color palette emphasizes deep earth tones and vibrant greens, creating an atmosphere of professional agricultural science and growth." src="https://lh3.googleusercontent.com/aida-public/AB6AXuA4phrzYVKzI6bDVgVs6gyaS2yuBuLvRCInAqjjlaokoN7coqPeuqKvNLPVac40HaY2_omoF9XoQuMeJi_fghmM5rNSZqr5UQ0EIlKOpTq4AC0dKqvJ31DwTmiJqazd2LYFwbTMPHXg06B5-J48O90eWP6WjLut7VLtZwoJ26-VCeMjFspNq0AQxdsgHRu6Ub4TAWjD1L4OY-eBFUv4KdJPeOG_Ze1UPCE_NbFF5w3YnBH7GY_WNYho41ZM67VdCIprpDgMtMGny3U"/>
+<div class="absolute inset-0 p-md flex flex-col justify-end">
+<span class="text-on-secondary font-label-md text-[10px] uppercase tracking-widest bg-secondary/80 w-fit px-2 py-0.5 rounded">Soil Tech</span>
+</div>
+</div>
+</div>
+</main>
+<!-- BottomNavBar -->
+<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 py-2 pb-safe bg-surface-container-lowest dark:bg-surface-container-lowest border-t border-outline-variant">
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-outline-variant px-4 py-1 hover:bg-surface-container-high transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="home">home</span>
+<span class="font-label-md text-[12px]">Home</span>
+</a>
+<a class="flex flex-col items-center justify-center bg-secondary-container dark:bg-secondary-fixed-variant text-on-secondary-container dark:text-secondary-fixed rounded-full px-4 py-1 active:scale-90 transition-transform duration-150" href="#">
+<span class="material-symbols-outlined" data-icon="biotech" style="font-variation-settings: 'FILL' 1;">biotech</span>
+<span class="font-label-md text-[12px]">Soil Test</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-outline-variant px-4 py-1 hover:bg-surface-container-high transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="history">history</span>
+<span class="font-label-md text-[12px]">History</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-outline-variant px-4 py-1 hover:bg-surface-container-high transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="person">person</span>
+<span class="font-label-md text-[12px]">Profile</span>
+</a>
+</nav>
+<script>
+        // Micro-interactions for input fields
+        const inputs = document.querySelectorAll('input');
+        inputs.forEach(input => {
+            input.addEventListener('focus', () => {
+                input.parentElement.classList.add('scale-[1.01]');
+                input.parentElement.style.transition = 'transform 0.2s ease';
+            });
+            input.addEventListener('blur', () => {
+                input.parentElement.classList.remove('scale-[1.01]');
+            });
+        });
+    </script>
+</body></html>

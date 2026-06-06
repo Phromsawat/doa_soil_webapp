@@ -1,26 +1,98 @@
 @import "tailwindcss";
 
+@theme {
+  --color-surface: #F5F5F0;
+  --color-primary: #1B5E3B;
+  --color-accent: #4CAF7D;
+  --color-active: #52C48A;
+  --color-card: #FFFFFF;
+  --color-dark-card: #1A2F2A;
+  --color-text-primary: #1A1A1A;
+  --color-text-secondary: #666666;
+  --color-background: #F5F5F0;
+
+  --radius-lg: 0.5rem;
+  --radius-xl: 0.75rem;
+  --radius-card: 12px;
+  --radius-button: 8px;
+
+  --spacing-lg: 24px;
+  --spacing-container-margin: 16px;
+  --spacing-sm: 8px;
+  --spacing-base: 4px;
+  --spacing-xs: 4px;
+  --spacing-gutter: 16px;
+  --spacing-xl: 32px;
+  --spacing-md: 16px;
+  --spacing-safe: env(safe-area-inset-bottom);
+
+  --font-data-lg: "Inter", sans-serif;
+  --font-headline-md: var(--font-app-thai);
+  --font-display-sm: var(--font-app-thai);
+  --font-display-lg-mobile: var(--font-app-thai);
+  --font-display-lg: var(--font-app-thai);
+  --font-label-md: "Inter", sans-serif;
+  --font-body-md: "Inter", sans-serif;
+  --font-body-lg: "Inter", sans-serif;
+  --font-title-lg: var(--font-app-thai);
+  --font-thai: var(--font-app-thai);
+  --font-sans: "Inter", sans-serif;
+}
+
+@utility text-data-lg { font-size: 28px; line-height: 32px; letter-spacing: -0.03em; font-weight: 700; }
+@utility text-headline-md { font-size: 20px; line-height: 28px; font-weight: 600; }
+@utility text-display-sm { font-size: 24px; line-height: 32px; letter-spacing: -0.01em; font-weight: 700; }
+@utility text-display-lg-mobile { font-size: 26px; line-height: 32px; font-weight: 700; }
+@utility text-display-lg { font-size: 32px; line-height: 40px; letter-spacing: -0.02em; font-weight: 700; }
+@utility text-label-md { font-size: 12px; line-height: 16px; letter-spacing: 0.05em; font-weight: 600; }
+@utility text-body-md { font-size: 14px; line-height: 20px; font-weight: 400; }
+@utility text-body-lg { font-size: 16px; line-height: 24px; font-weight: 400; }
+@utility text-title-lg { font-size: 18px; line-height: 24px; font-weight: 600; }
+
+@utility animate-float { animation: float 6s ease-in-out infinite; }
+@utility progress-shimmer {
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+@keyframes float {
+  0% { transform: translateY(0px); }
+  50% { transform: translateY(-20px); }
+  100% { transform: translateY(0px); }
+}
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #f8faf9;
+  --foreground: #000917;
+  --font-app-thai: "Noto Sans Thai", sans-serif;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+:root.lang-en {
+  --font-app-thai: "Inter", sans-serif;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background-color: var(--color-background);
+  color: var(--color-primary);
+  font-family: var(--font-thai);
+}
+
+/* Custom premium scrollbar styling */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #c4c6cd;
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #74777d;
 }
