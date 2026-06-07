@@ -4,11 +4,19 @@ import { useRouter } from "next/navigation"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
-import { Check, ChevronDown, Lightbulb } from "lucide-react"
+import { Check, ChevronDown, Lightbulb, Tractor, Apple, Wheat, Trees, TreePine, Carrot } from "lucide-react"
 import { Button } from "@/components/ui/Button"
 import { Input } from "@/components/ui/Input"
-import { crops } from "@/lib/mockData"
 import { addAnalysis } from "@/lib/storage"
+
+const plantTypes = [
+  { id: 'พืชไร่', title: 'พืชไร่', desc: 'ไม้ประเภทไม้ล้มลุกและไม้ทนแล้ง', icon: Tractor, color: 'text-orange-500' },
+  { id: 'ไม้ผล', title: 'ไม้ผล', desc: 'ต้นไม้ที่ออกลูกออกผลให้เรารับประทาน', icon: Apple, color: 'text-red-500' },
+  { id: 'ข้าว', title: 'ข้าว', desc: 'rice', icon: Wheat, color: 'text-yellow-500' },
+  { id: 'ปาล์มน้ำมัน', title: 'ปาล์มน้ำมัน', desc: 'oil palm', icon: Trees, color: 'text-green-600' },
+  { id: 'ยางพารา', title: 'ยางพารา', desc: 'rubber', icon: TreePine, color: 'text-emerald-500' },
+  { id: 'พืชผัก', title: 'พืชผัก', desc: '19/09/2024 14:21', icon: Carrot, color: 'text-orange-600' },
+]
 
 const formSchema = z.object({
   crop: z.string().min(1, "โปรดเลือกพืชเป้าหมาย"),
@@ -96,19 +104,43 @@ export default function AnalyzeForm() {
         <h2 className="text-lg font-bold text-text-primary text-center mb-6">กรอกผลการวิเคราะห์ทางเคมี</h2>
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-          {/* Crop Dropdown */}
-          <div className="space-y-1 relative">
+          {/* Crop Type Selection */}
+          <div className="space-y-3">
             <label className="text-sm font-bold text-text-primary">เลือกชนิดพืช</label>
-            <div className="relative">
-              <select
-                {...register("crop")}
-                className="appearance-none flex h-12 w-full rounded-xl border border-gray-200 bg-white px-4 py-2 text-sm text-text-primary focus-visible:outline-none focus-visible:border-primary transition-all cursor-pointer font-thai"
-              >
-                {crops.map((c) => (
-                  <option key={c} value={c}>{c}</option>
-                ))}
-              </select>
-              <ChevronDown className="absolute right-4 top-3.5 w-5 h-5 text-gray-400 pointer-events-none" />
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {plantTypes.map((plant) => {
+                const isSelected = watch("crop") === plant.id;
+                const Icon = plant.icon;
+                return (
+                  <label
+                    key={plant.id}
+                    className={`relative flex items-center p-3 border rounded-xl cursor-pointer transition-all border-[#0070F3] ${
+                      isSelected ? 'bg-blue-50 ring-1 ring-[#0070F3]' : 'bg-white hover:bg-gray-50'
+                    }`}
+                  >
+                    <input
+                      type="radio"
+                      value={plant.id}
+                      className="sr-only"
+                      {...register("crop")}
+                    />
+                    <div className={`w-4 h-4 rounded-full border flex items-center justify-center mr-3 shrink-0 ${
+                      isSelected ? 'border-[#0070F3]' : 'border-gray-400'
+                    }`}>
+                      {isSelected && <div className="w-2 h-2 rounded-full bg-[#0070F3]" />}
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <div className={`p-2 rounded-full bg-gray-100 ${plant.color}`}>
+                        <Icon className="w-5 h-5" />
+                      </div>
+                      <div className="flex flex-col">
+                        <span className="font-bold text-[#0070F3] text-[15px] leading-tight">{plant.title}</span>
+                        <span className="text-[11px] text-text-primary font-bold mt-0.5">{plant.desc}</span>
+                      </div>
+                    </div>
+                  </label>
+                );
+              })}
             </div>
           </div>
 

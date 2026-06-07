@@ -1,79 +1,69 @@
 import Link from "next/link"
-import { Camera, Keyboard, ChevronRight, Info } from "lucide-react"
+import { Camera, Keyboard, ArrowRight, PenLine, Map, MapPin } from "lucide-react"
+import { Button } from "@/components/ui/Button"
 
 export default function MethodSelectionPage() {
   return (
-    <div className="space-y-8 font-thai pb-20">
-      {/* Step Indicator */}
-      <div className="flex items-center justify-center gap-2 pt-4">
-        <div className="flex flex-col items-center gap-1">
-          <div className="w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center font-bold text-sm">
-            1
-          </div>
-        </div>
-        <div className="w-12 h-1 bg-gray-200 rounded-full" />
-        <div className="flex flex-col items-center gap-1">
-          <div className="w-8 h-8 rounded-full bg-gray-200 text-gray-400 flex items-center justify-center font-bold text-sm">
-            2
-          </div>
-        </div>
-        <div className="w-12 h-1 bg-gray-200 rounded-full" />
-        <div className="flex flex-col items-center gap-1">
-          <div className="w-8 h-8 rounded-full bg-gray-200 text-gray-400 flex items-center justify-center font-bold text-sm">
-            3
-          </div>
-        </div>
+    <div className="max-w-5xl mx-auto px-4 py-8 font-thai pb-24">
+      {/* Header */}
+      <div className="text-center mb-10 space-y-2">
+        <h1 className="text-2xl md:text-3xl font-bold text-[#1A1A1A]">เลือกวิธีบันทึกข้อมูล</h1>
+        <p className="text-gray-500 text-sm md:text-base mt-1">บันทึกข้อมูลเพื่อทำการวิเคราะห์คุณภาพดินของท่าน</p>
       </div>
 
-      <div className="text-center">
-        <h1 className="text-xl font-bold text-text-primary">เลือกวิธีการบันทึกข้อมูล</h1>
-      </div>
-
-      <div className="space-y-4">
-        {/* Method 1: Upload Photo */}
-        <Link href="/analyze/upload" className="block">
-          <div className="bg-card rounded-2xl shadow-sm border border-gray-100 p-4 hover:shadow-md transition-shadow">
-            <div className="flex items-center gap-4">
-              <div className="w-14 h-14 rounded-full bg-[#E6F4EA] text-primary flex items-center justify-center shrink-0">
-                <Camera className="w-7 h-7" />
-              </div>
-              <div className="flex-1">
-                <h3 className="font-bold text-base text-text-primary">อัพโหลดรูปภาพ</h3>
-                <p className="text-sm text-text-secondary mt-0.5">วิเคราะห์สีด้วย AI</p>
-              </div>
-              <div className="flex items-center text-primary text-sm font-bold">
-                เริ่มต้นใช้งาน <ChevronRight className="w-4 h-4 ml-1" />
+      {/* Grid */}
+      <div className="grid grid-cols-2 gap-3 md:gap-6 mb-6">
+        
+        {/* Card 1: Upload */}
+        <div className="bg-white rounded-3xl shadow-sm border border-gray-200 overflow-hidden flex flex-col hover:shadow-md transition-shadow">
+          <div className="h-56 bg-[#F8F9FA] relative flex items-center justify-center" style={{ backgroundImage: 'radial-gradient(#e5e7eb 1px, transparent 1px)', backgroundSize: '20px 20px' }}>
+          </div>
+          <div className="p-4 md:p-8 flex flex-col flex-1">
+            <div className="flex flex-col items-center justify-center text-center gap-2 mb-4">
+              <Camera strokeWidth={1.5} className="w-7 h-7 md:w-8 md:h-8 text-[#1A1A1A] shrink-0 mb-1" />
+              <div>
+                <h3 className="font-bold text-[14px] md:text-lg text-[#1A1A1A]">ประมวลผลอัตโนมัติ</h3>
+                <p className="text-[12px] md:text-sm text-gray-500 font-medium">เทียบเคียงสีจากภาพถ่าย</p>
               </div>
             </div>
+            <p className="text-[13px] md:text-[15px] text-gray-600 mb-6 flex-1 leading-relaxed hidden sm:block text-center">
+              ถ่ายรูปแผ่นทดสอบดินของท่าน เพื่อให้ระบบประมวลผลและเทียบเคียงสีกับค่ามาตรฐานโดยอัตโนมัติ
+            </p>
+            <Link href="/analyze/upload" className="w-full mt-auto">
+              <Button className="w-full bg-[#1A4D2E] hover:bg-[#143a22] text-white rounded-full font-medium text-[15px] h-10 flex items-center justify-center gap-1 md:gap-2 shadow-sm hover:shadow-md transition-all">
+                อัปโหลดรูปภาพ
+              </Button>
+            </Link>
           </div>
-        </Link>
+        </div>
 
-        {/* Method 2: Manual Input */}
-        <Link href="/analyze/form" className="block">
-          <div className="bg-card rounded-2xl shadow-sm border border-gray-100 p-4 hover:shadow-md transition-shadow">
-            <div className="flex items-center gap-4">
-              <div className="w-14 h-14 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
-                <Keyboard className="w-7 h-7" />
-              </div>
-              <div className="flex-1">
-                <h3 className="font-bold text-base text-text-primary">กรอกด้วยตนเอง</h3>
-                <p className="text-sm text-text-secondary mt-0.5">ระบุค่าสีเทียบชาร์ต</p>
-              </div>
-              <div className="flex items-center text-blue-600 text-sm font-bold">
-                ระบุข้อมูล <ChevronRight className="w-4 h-4 ml-1" />
+        {/* Card 2: Manual */}
+        <div className="bg-white rounded-3xl shadow-sm border border-gray-200 overflow-hidden flex flex-col hover:shadow-md transition-shadow">
+          <div className="h-56 bg-[#F5F5F0] relative flex items-center justify-center" style={{ backgroundImage: 'radial-gradient(#e5e5e5 1px, transparent 1px)', backgroundSize: '20px 20px' }}>
+          </div>
+          <div className="p-4 md:p-8 flex flex-col flex-1">
+            <div className="flex flex-col items-center justify-center text-center gap-2 mb-4">
+              <PenLine strokeWidth={1.5} className="w-7 h-7 md:w-8 md:h-8 text-[#1A1A1A] shrink-0 mb-1" />
+              <div>
+                <h3 className="font-bold text-[14px] md:text-lg text-[#1A1A1A] leading-tight">กรอกข้อมูลด้วยตนเอง</h3>
+                <p className="text-[12px] md:text-sm text-gray-500 font-medium">ระบุค่าเทียบชาร์ต</p>
               </div>
             </div>
+            <p className="text-[13px] md:text-[15px] text-gray-600 mb-6 flex-1 leading-relaxed hidden sm:block text-center">
+              หากท่านมีผลวิเคราะห์จากห้องปฏิบัติการหรือต้องการระบุค่าสีดินเทียบกับชาร์ตสีมาตรฐานด้วยตนเอง เลือกวิธีนี้เพื่อความแม่นยำทางสถิติ
+            </p>
+            <Link href="/analyze/form" className="w-full mt-auto">
+              <Button className="w-full bg-[#1A4D2E] hover:bg-[#143a22] text-white rounded-full font-medium text-[15px] h-10 flex items-center justify-center gap-1 md:gap-2 shadow-sm hover:shadow-md transition-all">
+                ระบุข้อมูล
+              </Button>
+            </Link>
           </div>
-        </Link>
+        </div>
+
       </div>
 
-      {/* Info Box */}
-      <div className="bg-[#E6F4EA] rounded-xl p-4 flex gap-3 items-start border border-[#A5D6B6]/50">
-        <Info className="w-5 h-5 text-primary shrink-0 mt-0.5" />
-        <p className="text-sm text-text-primary leading-relaxed">
-          <span className="font-bold">แนะนำ:</span> การวิเคราะห์ด้วยรูปภาพจะให้ผลที่แม่นยำกว่า เพราะใช้ AI ช่วยเทียบสีมาตรฐาน
-        </p>
-      </div>
+
+      
     </div>
   )
 }

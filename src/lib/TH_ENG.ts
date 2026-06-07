@@ -4,8 +4,9 @@ export const translations = {
     title: "วิเคราะห์ดิน",
     subtitle1: "ระบบวิเคราะห์ดินและคำแนะนำการใช้ปุ๋ย",
     subtitle2: "สำหรับเกษตรกรไทย",
-    startAnalysis: "เริ่มต้นวิเคราะห์ดินทันที",
+    startAnalysis: "เริ่มต้นใช้งาน",
     login: "เข้าสู่ระบบ",
+    profile: "โปรไฟล์ของฉัน",
 
     // Login
     loginSubtitle1: "ระบบวิเคราะห์ดิน",
@@ -26,6 +27,9 @@ export const translations = {
     checkInbox: "โปรดตรวจสอบกล่องข้อความของคุณ",
 
     // Menus
+    homeMenu: "หน้าหลัก",
+    aboutMenu: "เกี่ยวกับโครงการ",
+    contactMenu: "ติดต่อเรา",
     soilSampling: "วิธีการเก็บตัวอย่างดิน",
     doaKits: "การวิเคราะห์ดินด้วย DOA-SOil Test Kits",
     userGuide: "คู่มือการใช้เว็บแอปฯ",
@@ -61,8 +65,9 @@ export const translations = {
     title: "Soil Analysis",
     subtitle1: "Soil analysis system and fertilizer recommendation",
     subtitle2: "for Thai farmers",
-    startAnalysis: "Start Soil Analysis",
-    login: "Log In",
+    startAnalysis: "Start Analysis",
+    login: "Login",
+    profile: "My Profile",
 
     // Login
     loginSubtitle1: "Soil analysis system",
@@ -83,6 +88,9 @@ export const translations = {
     checkInbox: "Please check your message box",
 
     // Menus
+    homeMenu: "Home",
+    aboutMenu: "About Project",
+    contactMenu: "Contact Us",
     soilSampling: "Soil Sampling Methods",
     doaKits: "Soil Analysis with DOA-Soil Test Kits",
     userGuide: "Web App User Guide",

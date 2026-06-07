@@ -46,25 +46,27 @@ export default function AnalyzeUpload() {
       </div>
 
       <div className="bg-card rounded-2xl shadow-sm border border-gray-100 p-6 space-y-6">
-        <h2 className="text-lg font-bold text-text-primary text-center">การวิเคราะห์หน้าดินด้วย AI</h2>
+        <h2 className="text-lg font-bold text-text-primary text-center">การอัปโหลดรูปแผ่นทดสอบ</h2>
 
         {/* Upload Zone */}
-        <div className="border-2 border-dashed border-gray-200 rounded-2xl p-8 flex flex-col items-center text-center space-y-4 relative group hover:border-primary/50 transition-colors bg-[#F9FAFB]">
+        <div 
+          className="border-2 border-dashed border-gray-300 bg-gray-50 rounded-2xl p-8 flex flex-col items-center text-center space-y-4 relative group hover:border-primary/50 hover:bg-primary/5 transition-all overflow-hidden"
+        >
           <input
             type="file"
-            accept="image/jpeg, image/png"
-            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+            accept="image/*"
+            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-20"
             onChange={handleFileChange}
           />
-          <div className="w-16 h-16 bg-[#E6F4EA] text-primary rounded-full flex items-center justify-center">
-            <UploadCloud className="w-8 h-8" />
+          <div className="relative z-10 w-16 h-16 bg-white text-primary border border-gray-200 rounded-full flex items-center justify-center shadow-sm group-hover:scale-110 transition-transform">
+            <Upload className="w-8 h-8" />
           </div>
-          <div className="space-y-1">
-            <h3 className="font-bold text-text-primary text-base">เลือกรูปภาพหรือลากมาวางที่นี่</h3>
-            <p className="text-xs text-text-secondary">รองรับไฟล์ JPG, PNG ขนาดไม่เกิน 10MB</p>
+          <div className="relative z-10 space-y-2">
+            <p className="text-gray-800 font-bold text-lg">แตะเพื่ออัปโหลดรูปภาพ</p>
+            <p className="text-gray-500 text-sm">หรือถ่ายรูปแผ่นทดสอบของคุณ</p>
           </div>
-          <Button className="pointer-events-none rounded-full bg-primary hover:bg-primary/90 text-white px-6 font-bold text-sm shadow-sm">
-            เลือกไฟล์
+          <Button className="relative z-10 pointer-events-none rounded-full bg-white border border-gray-200 text-gray-700 px-6 font-bold text-sm shadow-sm group-hover:border-primary group-hover:text-primary transition-colors">
+            เลือกรูปภาพ
           </Button>
         </div>
       </div>

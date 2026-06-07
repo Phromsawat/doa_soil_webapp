@@ -26,17 +26,17 @@
   --spacing-md: 16px;
   --spacing-safe: env(safe-area-inset-bottom);
 
-  --font-data-lg: "Inter", sans-serif;
+  --font-data-lg: var(--font-app-thai);
   --font-headline-md: var(--font-app-thai);
   --font-display-sm: var(--font-app-thai);
   --font-display-lg-mobile: var(--font-app-thai);
   --font-display-lg: var(--font-app-thai);
-  --font-label-md: "Inter", sans-serif;
-  --font-body-md: "Inter", sans-serif;
-  --font-body-lg: "Inter", sans-serif;
+  --font-label-md: var(--font-app-thai);
+  --font-body-md: var(--font-app-thai);
+  --font-body-lg: var(--font-app-thai);
   --font-title-lg: var(--font-app-thai);
   --font-thai: var(--font-app-thai);
-  --font-sans: "Inter", sans-serif;
+  --font-sans: var(--font-app-thai);
 }
 
 @utility text-data-lg { font-size: 28px; line-height: 32px; letter-spacing: -0.03em; font-weight: 700; }
@@ -65,10 +65,14 @@
   100% { background-position: 200% 0; }
 }
 
+html {
+  scroll-behavior: smooth;
+}
+
 :root {
   --background: #f8faf9;
   --foreground: #000917;
-  --font-app-thai: "Noto Sans Thai", sans-serif;
+  --font-app-thai: "Inter", "Noto Sans Thai", sans-serif;
 }
 
 :root.lang-en {

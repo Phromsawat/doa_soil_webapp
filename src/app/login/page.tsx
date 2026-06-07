@@ -28,11 +28,11 @@ export default function LoginPage() {
   return (
     <div className="flex-1 w-full flex flex-col items-center px-4 pt-24 pb-12 font-thai relative overflow-y-auto bg-background">
       
-      {/* Back Button */}
-      <Link href="/" className="absolute top-6 left-6 w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-md shadow-black/5 text-gray-500 hover:text-[#1A2F2A] transition-colors border border-gray-100">
-        <ArrowLeft className="w-5 h-5" />
-      </Link>
-      <div className="w-full max-w-[340px] bg-white rounded-3xl shadow-xl shadow-black/5 border border-gray-100 p-8 space-y-8">
+      <div className="w-full max-w-[340px] bg-white rounded-3xl shadow-xl shadow-black/5 border border-gray-100 p-8 space-y-8 relative">
+        {/* Back Button */}
+        <Link href="/" className="absolute top-6 left-6 text-gray-400 hover:text-gray-700 transition-colors">
+          <ArrowLeft className="w-6 h-6" />
+        </Link>
         
         {/* Header */}
         <div className="text-center space-y-3">
@@ -80,6 +80,14 @@ export default function LoginPage() {
               <span className="text-[15px] font-bold text-[#1A2F2A]">{t('continueWithGoogle')}</span>
             )}
           </button>
+
+          <Link href="/my-page" className="block w-full">
+            <button 
+              className="w-full h-[52px] rounded-full border border-gray-300 flex items-center justify-center relative bg-[#1A4D2E]/10 hover:bg-[#1A4D2E]/20 transition-colors"
+            >
+              <span className="text-[15px] font-bold text-[#1A4D2E]">ทดสอบข้ามการล็อกอิน (Test Login)</span>
+            </button>
+          </Link>
 
 
         </div>

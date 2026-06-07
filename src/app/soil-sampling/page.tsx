@@ -9,8 +9,8 @@ export default function SoilSamplingPage() {
   return (
     <div className="min-h-screen bg-gray-50 pb-20 font-thai">
       {/* Header */}
-      <header className="bg-white px-4 h-14 flex items-center shadow-sm sticky top-0 z-10 gap-1">
-        <Link href="/" className="w-10 h-10 flex items-center justify-center -ml-2 text-gray-600 shrink-0">
+      <header className="bg-white px-4 h-14 flex items-center shadow-sm sticky top-0 z-10 justify-between">
+        <Link href="/" className="w-10 h-10 flex items-center justify-center -ml-2 text-gray-600 shrink-0 invisible lg:visible">
           <ArrowLeft className="w-6 h-6" />
         </Link>
         
@@ -30,7 +30,7 @@ export default function SoilSamplingPage() {
                 className="fixed inset-0 z-40"
                 onClick={() => setIsMenuOpen(false)}
               ></div>
-              <div className="absolute top-full left-0 mt-4 w-[280px] bg-white rounded-2xl shadow-xl border border-gray-100 py-2 z-50">
+              <div className="absolute top-full left-1/2 -translate-x-1/2 mt-4 w-[280px] bg-white rounded-2xl shadow-xl border border-gray-100 py-2 z-50">
                 <Link href="/soil-sampling" className="block px-5 py-3 text-[15px] hover:bg-gray-50 text-[#1A4D2E] font-bold">
                   วิธีการเก็บตัวอย่างดิน
                 </Link>
