@@ -52,7 +52,7 @@ export default function BottomNav() {
           return (
             <Link
               key={item.href}
-              href={item.href}
+              href={item.href!}
               className="flex flex-col items-center justify-center flex-1 h-full font-thai"
             >
               <div className={cn(

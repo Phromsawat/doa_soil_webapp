@@ -29,27 +29,7 @@ function ResultContent() {
   // In a real app we'd map actual values to these bars and recommendations.
   
   return (
-    <div className="font-thai pb-24 relative">
-      {/* Step Indicator */}
-      <div className="flex items-center justify-center gap-2 pt-4 mb-6">
-        <div className="flex flex-col items-center gap-1">
-          <div className="w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center font-bold text-sm">
-            <Check className="w-4 h-4" />
-          </div>
-        </div>
-        <div className="w-12 h-1 bg-primary rounded-full" />
-        <div className="flex flex-col items-center gap-1">
-          <div className="w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center font-bold text-sm">
-            <Check className="w-4 h-4" />
-          </div>
-        </div>
-        <div className="w-12 h-1 bg-primary rounded-full" />
-        <div className="flex flex-col items-center gap-1">
-          <div className="w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center font-bold text-sm">
-            3
-          </div>
-        </div>
-      </div>
+    <div className="font-thai pb-24 relative pt-6">
 
       <div className="space-y-4">
         {/* NPK progress bars card */}

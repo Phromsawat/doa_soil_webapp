@@ -1,6 +1,6 @@
 "use client"
 
-import { ArrowLeft, Home, Sprout, History, User, Info, Phone as PhoneIcon, Menu, X } from "lucide-react"
+import { ArrowLeft, Home, Sprout, History, User, Info, Phone as PhoneIcon, Menu, X, ChevronDown } from "lucide-react"
 import { usePathname, useRouter } from "next/navigation"
 import Link from "next/link"
 import { useLanguage } from "@/components/providers/LanguageProvider"
@@ -56,11 +56,18 @@ export default function Bar() {
 
   if (isAnalyzeMain) {
     title = "วิเคราะห์ดิน"
-    showBack = false
+    showBack = true
     centerTitle = true
   } else if (isAnalyzeSub) {
-    title = "วิเคราะห์ดิน"
+    if (pathname === "/analyze/upload") {
+      title = "อัปโหลดรูปภาพ"
+    } else if (pathname === "/analyze/form") {
+      title = "กรอกผลวิเคราะห์ดิน"
+    } else {
+      title = "วิเคราะห์ดิน"
+    }
     showBack = true
+    centerTitle = true
   } else if (isHistory) {
     title = "ประวัติการวิเคราะห์"
     showBack = true
@@ -80,28 +87,44 @@ export default function Bar() {
         centerTitle ? (
           <>
             <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-              <h2 className="font-bold font-thai text-lg text-text-primary">
-                {title}
-              </h2>
+              {(pathname === '/analyze/upload' || pathname === '/analyze/form') ? (
+                <div className="relative pointer-events-auto group cursor-pointer">
+                  <div className="flex items-center gap-1 font-semibold font-thai text-lg text-text-primary">
+                    {title} <ChevronDown className="w-5 h-5" />
+                  </div>
+                  <div className="absolute top-full mt-1 left-1/2 -translate-x-1/2 bg-white rounded-xl shadow-lg border border-gray-100 py-2 w-48 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all">
+                    <Link href="/analyze/upload" className={`block px-4 py-2 hover:bg-gray-50 text-[15px] font-thai ${pathname === '/analyze/upload' ? 'text-primary font-semibold' : 'text-gray-700'}`}>อัปโหลดรูปภาพ</Link>
+                    <Link href="/analyze/form" className={`block px-4 py-2 hover:bg-gray-50 text-[15px] font-thai ${pathname === '/analyze/form' ? 'text-primary font-semibold' : 'text-gray-700'}`}>กรอกผลวิเคราะห์ดิน</Link>
+                  </div>
+                </div>
+              ) : (
+                <h2 className="font-semibold font-thai text-lg text-text-primary">
+                  {title}
+                </h2>
+              )}
             </div>
             <div className="flex items-center gap-3 relative z-10">
-              <button onClick={() => router.back()} className="hidden md:flex p-1 -ml-1 text-text-primary hover:bg-gray-100 rounded-full transition-colors">
-                <ArrowLeft className="w-6 h-6" />
-              </button>
+              {showBack && (
+                <button onClick={() => router.push('/')} className="hidden lg:flex items-center gap-1 p-1 -ml-1 pr-2 text-text-primary hover:bg-gray-100 rounded-full transition-colors">
+                  <ArrowLeft className="w-6 h-6" />
+                  <span className="font-thai font-medium text-[15px]">หน้าหลัก</span>
+                </button>
+              )}
             </div>
           </>
         ) : (
           <div className="flex items-center gap-3 relative z-10">
             {showBack ? (
-              <button onClick={() => router.back()} className="p-1 -ml-1 text-text-primary hover:bg-gray-100 rounded-full transition-colors">
+              <button onClick={() => router.push('/')} className="hidden lg:flex items-center gap-1 p-1 -ml-1 pr-2 text-text-primary hover:bg-gray-100 rounded-full transition-colors">
                 <ArrowLeft className="w-6 h-6" />
+                <span className="font-thai font-medium text-[15px]">หน้าหลัก</span>
               </button>
             ) : (
               <div className="w-8 h-8 rounded-full flex items-center justify-center shrink-0">
                 <img src="/doa-logo.svg" alt="DOA Logo" className="w-full h-full object-contain" />
               </div>
             )}
-            <h2 className={`font-bold font-thai ${showBack ? 'text-lg text-text-primary' : 'text-base text-[#1A1A1A]'}`}>
+            <h2 className={`font-semibold font-thai ${showBack ? 'text-lg text-text-primary' : 'text-base text-[#1A1A1A]'}`}>
               {title}
             </h2>
           </div>
@@ -119,7 +142,7 @@ export default function Bar() {
                   key={link.href} 
                   href={link.href} 
                   onClick={() => setActiveHash(hash)}
-                  className={`font-medium hover:text-[#1A4D2E] transition-colors flex items-center text-[15px] ${isActive ? 'text-[#1A4D2E]' : 'text-[#1A1A1A]'}`}
+                  className={`font-normal hover:text-[#1A4D2E] transition-colors flex items-center text-[15px] ${isActive ? 'text-[#1A4D2E]' : 'text-[#1A1A1A]'}`}
                 >
                   {link.label}
                 </Link>
@@ -162,7 +185,6 @@ export default function Bar() {
     </header>
 
     {/* Mobile Drawer Menu */}
-      {!isAnalyze && (
         <>
           {/* Overlay */}
           <div 
@@ -219,7 +241,6 @@ export default function Bar() {
                       }
                     }}
                   >
-                    <Icon className="w-5 h-5 opacity-70" />
                     <span>{link.label}</span>
                   </Link>
                 )
@@ -247,7 +268,6 @@ export default function Bar() {
             </div>
           </div>
         </>
-      )}
 
       {/* Profile Drawer */}
       <div 
