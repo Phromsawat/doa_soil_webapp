@@ -13,6 +13,7 @@ export default function Bar() {
   const [activeHash, setActiveHash] = useState("")
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const [isProfileOpen, setIsProfileOpen] = useState(false)
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false)
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -93,15 +94,23 @@ export default function Bar() {
           <>
             <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
               {(pathname === '/analyze/upload' || pathname === '/analyze/form' || pathname === '/analyze/fertilizer') ? (
-                <div className="relative pointer-events-auto group cursor-pointer">
-                  <div className="flex items-center gap-1 font-semibold font-thai text-lg text-text-primary">
-                    {title} <ChevronDown className="w-5 h-5" />
-                  </div>
-                  <div className="absolute top-full mt-1 left-1/2 -translate-x-1/2 bg-white rounded-xl shadow-lg border border-gray-100 py-2 w-48 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all">
-                    <Link href="/analyze/upload" className={`block px-4 py-2 hover:bg-gray-50 text-[15px] font-thai ${pathname === '/analyze/upload' ? 'text-primary font-semibold' : 'text-gray-700'}`}>อัปโหลดรูปภาพ</Link>
-                    <Link href="/analyze/form" className={`block px-4 py-2 hover:bg-gray-50 text-[15px] font-thai ${pathname === '/analyze/form' ? 'text-primary font-semibold' : 'text-gray-700'}`}>กรอกผลวิเคราะห์ดิน</Link>
-                    <Link href="/analyze/fertilizer" className={`block px-4 py-2 hover:bg-gray-50 text-[15px] font-thai ${pathname === '/analyze/fertilizer' ? 'text-primary font-semibold' : 'text-gray-700'}`}>คำนวณสูตรปุ๋ย</Link>
-                  </div>
+                <div className="relative pointer-events-auto">
+                  <button
+                    onClick={() => setIsDropdownOpen(o => !o)}
+                    className="flex items-center gap-1 font-semibold font-thai text-lg text-text-primary"
+                  >
+                    {title} <ChevronDown className={`w-5 h-5 transition-transform ${isDropdownOpen ? 'rotate-180' : ''}`} />
+                  </button>
+                  {isDropdownOpen && (
+                    <>
+                      <div className="fixed inset-0 z-10" onClick={() => setIsDropdownOpen(false)} />
+                      <div className="absolute top-full mt-2 left-1/2 -translate-x-1/2 bg-white rounded-xl shadow-lg border border-gray-100 py-2 w-52 z-20">
+                        <Link href="/analyze/upload" onClick={() => setIsDropdownOpen(false)} className={`block px-4 py-2.5 hover:bg-gray-50 text-[15px] font-thai ${pathname === '/analyze/upload' ? 'text-primary font-semibold' : 'text-gray-700'}`}>อัปโหลดรูปภาพ</Link>
+                        <Link href="/analyze/form" onClick={() => setIsDropdownOpen(false)} className={`block px-4 py-2.5 hover:bg-gray-50 text-[15px] font-thai ${pathname === '/analyze/form' ? 'text-primary font-semibold' : 'text-gray-700'}`}>กรอกผลวิเคราะห์ดิน</Link>
+                        <Link href="/analyze/fertilizer" onClick={() => setIsDropdownOpen(false)} className={`block px-4 py-2.5 hover:bg-gray-50 text-[15px] font-thai ${pathname === '/analyze/fertilizer' ? 'text-primary font-semibold' : 'text-gray-700'}`}>คำนวณสูตรปุ๋ย</Link>
+                      </div>
+                    </>
+                  )}
                 </div>
               ) : (
                 <h2 className="font-semibold font-thai text-lg text-text-primary">
