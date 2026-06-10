@@ -17,7 +17,7 @@ export default function MethodSelectionPage() {
         {[
           { img: "/img/ponnappa-ganesh-zATywM6DH_8-unsplash.jpg", alt: "Upload", title: "ประมวลผลอัตโนมัติ", sub: "เทียบเคียงสีจากภาพถ่าย", btn: "อัปโหลดรูปภาพ", href: "/analyze/upload", span: "" },
           { img: "/img/daniel-dan--FMxvHTCRmw-unsplash.jpg",       alt: "Manual", title: "กรอกข้อมูลด้วยตนเอง", sub: "ระบุค่าเทียบชาร์ต",    btn: "กรอกผลวิเคราะห์ดิน", href: "/analyze/form", span: "" },
-          { img: "/img/pexels-leiliane-dutra-1841922-25974981.jpg", alt: "Fertilizer", title: "คำนวณสูตรปุ๋ย", sub: "แนะนำปุ๋ยตามผลวิเคราะห์ดิน", btn: "คำนวณสูตรปุ๋ย", href: "/analyze/fertilizer", span: "col-span-2 md:col-span-1" },
+          { img: "/img/pexels-leiliane-dutra-1841922-25974981.jpg", alt: "Fertilizer", title: "คำนวณสูตรปุ๋ย", sub: "แนะนำปุ๋ยตามผลวิเคราะห์ดิน", btn: "คำนวณสูตรปุ๋ย", href: "/analyze/fertilizer", span: "" },
         ].map((card) => (
           <div key={card.href} className={`bg-white rounded-2xl md:rounded-3xl shadow-sm border border-gray-200 overflow-hidden flex flex-col hover:shadow-md transition-shadow ${card.span}`}>
             <div className="aspect-[5/4] overflow-hidden">

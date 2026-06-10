@@ -135,16 +135,16 @@ export default function PhoneLoginPage() {
   }
 
   return (
-    <div className="fixed top-0 w-full max-w-[375px] h-[100dvh] flex flex-col items-center px-4 pt-24 pb-12 font-thai overflow-hidden bg-background z-40">
-      
-      {/* Back Button */}
-      <button onClick={goBack} className="absolute top-6 left-6 w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-md shadow-black/5 text-gray-500 hover:text-[#1A2F2A] transition-colors border border-gray-100">
-        <ArrowLeft className="w-5 h-5" />
-      </button>
+    <div className="fixed top-0 w-full h-[100dvh] flex flex-col items-center justify-center px-4 pb-12 font-thai overflow-hidden bg-background z-40">
       
       {step === 'phone' ? (
-        <div className="w-full max-w-[340px] bg-white rounded-3xl shadow-xl shadow-black/5 border border-gray-100 p-8 space-y-8">
-          
+        <div className="w-full max-w-[340px] bg-white rounded-3xl shadow-xl shadow-black/5 border border-gray-100 p-8 space-y-8 relative">
+
+          {/* Back Button */}
+          <button onClick={goBack} className="absolute top-6 left-6 text-gray-400 hover:text-gray-700 transition-colors">
+            <ArrowLeft className="w-6 h-6" />
+          </button>
+
           {/* Header */}
           <div className="text-center space-y-3">
             <h1 className="text-2xl font-black text-[#1A1A1A]">

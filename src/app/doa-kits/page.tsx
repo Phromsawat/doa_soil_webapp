@@ -48,8 +48,8 @@ export default function DoaKitsPage() {
         <div className="w-10"></div>
       </header>
       
-      <div className="p-4 space-y-4">
-        <div className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100 overflow-hidden">
+      <div className="p-4 space-y-4 flex flex-col items-center max-w-4xl mx-auto">
+        <div className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100 overflow-hidden w-full">
           <div className="aspect-video w-full rounded-xl overflow-hidden bg-gray-100">
             <iframe 
               width="100%" 
@@ -70,7 +70,7 @@ export default function DoaKitsPage() {
         </div>
 
         {/* Note section */}
-        <div className="bg-[#FFF8E6] rounded-2xl p-5 shadow-sm border border-[#FBE192]">
+        <div className="bg-[#FFF8E6] rounded-2xl p-5 shadow-sm border border-[#FBE192] w-full">
           <h3 className="font-bold text-[#8A6D3B] text-[15px] mb-2">หมายเหตุ</h3>
           <ul className="text-[#8A6D3B] text-[13.5px] space-y-2 list-disc pl-4 leading-relaxed">
             <li>
@@ -84,7 +84,7 @@ export default function DoaKitsPage() {
         </div>
 
         {/* Contact section */}
-        <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100">
+        <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 w-full">
           <h3 className="font-bold text-[#1A4D2E] text-[15px] mb-3">สอบถามข้อมูลเพิ่มเติม</h3>
           <div className="text-gray-600 text-[14px] space-y-2 leading-relaxed">
             <p className="font-medium text-gray-800">กลุ่มวิจัยเกษตรเคมี กองวิจัยพัฒนาปัจจัยการผลิตทางการเกษตร กรมวิชาการเกษตร</p>

@@ -99,6 +99,15 @@ export default function MapPicker({ onConfirm, onCancel }: Props) {
       {/* Map */}
       <div ref={containerRef} className="flex-1 w-full" />
 
+      {/* North indicator */}
+      <div className="absolute left-3 top-3 z-[1000] w-10 h-10 bg-white/90 shadow-md border border-gray-100 rounded-full flex flex-col items-center justify-center pointer-events-none gap-0">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+          <polygon points="10,2 12.5,10 10,8.5 7.5,10" fill="#E53E3E"/>
+          <polygon points="10,18 12.5,10 10,11.5 7.5,10" fill="#CBD5E0"/>
+        </svg>
+        <span style={{ fontSize: 9, fontWeight: 700, color: "#E53E3E", lineHeight: 1, marginTop: -2 }}>N</span>
+      </div>
+
       {/* Right-center map controls */}
       <div className="absolute right-3 top-1/2 -translate-y-1/2 z-[1000] flex flex-col gap-3 items-center">
         {/* Zoom pill */}
@@ -130,49 +139,38 @@ export default function MapPicker({ onConfirm, onCancel }: Props) {
           <Navigation className={`w-5 h-5 ${locating ? "animate-pulse text-[#1A4D2E]" : ""}`} />
         </button>
 
-        {/* Compass */}
-        <button
-          onClick={resetNorth}
-          aria-label="ทิศเหนือ"
-          className="w-10 h-10 bg-white shadow-md border border-gray-100 rounded-full flex items-center justify-center hover:bg-gray-50 active:bg-gray-100 transition-colors"
-        >
-          <span
-            style={{ transform: `rotate(${-bearing}deg)`, transition: "transform 0.3s ease" }}
-            className="flex items-center justify-center"
-          >
-            <Compass className="w-5 h-5 text-red-500" />
-          </span>
-        </button>
       </div>
 
       {/* Info bar */}
-      <div className="bg-white border-t border-gray-100 px-4 py-3 space-y-3 shadow-lg z-[1000]">
-        {pinned ? (
-          <div className="flex items-center gap-2 text-sm text-gray-700">
-            <MapPin className="w-4 h-4 text-[#1A4D2E] shrink-0" />
-            <span className="font-medium">
-              {pinned.lat.toFixed(6)}, {pinned.lng.toFixed(6)}
-            </span>
-          </div>
-        ) : (
-          <p className="text-sm text-gray-400 text-center">แตะบนแผนที่เพื่อปักหมุดพิกัด</p>
-        )}
+      <div className="bg-white border-t border-gray-100 px-4 py-3 shadow-lg z-[1000] flex items-center justify-between gap-3">
+        <div className="flex-1 min-w-0">
+          {pinned ? (
+            <div className="flex items-center gap-2 text-sm text-gray-700">
+              <MapPin className="w-4 h-4 text-[#1A4D2E] shrink-0" />
+              <span className="font-medium truncate">
+                {pinned.lat.toFixed(6)}, {pinned.lng.toFixed(6)}
+              </span>
+            </div>
+          ) : (
+            <p className="text-sm text-gray-400">แตะบนแผนที่เพื่อปักหมุดพิกัด</p>
+          )}
+        </div>
 
-        <div className="flex gap-3">
+        <div className="flex gap-2 shrink-0">
           <button
             onClick={onCancel}
-            className="flex items-center justify-center gap-2 h-10 px-4 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-full text-sm font-medium transition-colors"
+            className="flex items-center justify-center gap-1.5 h-9 px-4 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-full text-sm font-medium transition-colors"
           >
-            <X className="w-4 h-4" />
+            <X className="w-3.5 h-3.5" />
             ยกเลิก
           </button>
 
           <button
             onClick={() => pinned && onConfirm(pinned.lat, pinned.lng)}
             disabled={!pinned}
-            className="flex-1 flex items-center justify-center gap-2 h-10 bg-[#1A4D2E] hover:bg-[#143a22] text-white rounded-full text-sm font-medium transition-colors disabled:opacity-40 disabled:cursor-not-allowed shadow-sm"
+            className="flex items-center justify-center gap-1.5 h-9 px-4 bg-[#1A4D2E] hover:bg-[#143a22] text-white rounded-full text-sm font-medium transition-colors disabled:opacity-40 disabled:cursor-not-allowed shadow-sm"
           >
-            <Check className="w-4 h-4" />
+            <Check className="w-3.5 h-3.5" />
             ยืนยันพิกัด
           </button>
         </div>

@@ -48,13 +48,13 @@ export default function UserGuidePage() {
         <div className="w-10"></div>
       </header>
       
-      <div className="w-full bg-white border-b border-gray-200">
-        <h2 className="text-[17px] font-bold text-[#1A1A1A] text-center px-4 pt-6 pb-6 leading-relaxed">
+      <div className="w-full bg-white border-b border-gray-200 flex flex-col items-center">
+        <h2 className="text-[17px] font-bold text-[#1A1A1A] text-center px-4 pt-6 pb-6 leading-relaxed max-w-4xl">
           คู่มือการใช้เว็บแอปพลิเคชันเพื่อทำนายผลวิเคราะห์ดินและคำนวณการใช้ปุ๋ย<span className="whitespace-nowrap">ตามค่าวิเคราะห์ดิน</span>
         </h2>
       </div>
 
-      <div className="max-w-3xl mx-auto px-4 py-10 text-gray-800 space-y-12">
+      <div className="max-w-4xl mx-auto px-4 py-10 text-gray-800 space-y-12">
         
         {/* Section 1 */}
         <section className="bg-white rounded-2xl p-6 md:p-8 shadow-sm border border-gray-100">

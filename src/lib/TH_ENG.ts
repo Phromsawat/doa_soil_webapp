@@ -29,6 +29,7 @@ export const translations = {
     // Menus
     homeMenu: "หน้าหลัก",
     aboutMenu: "เกี่ยวกับโครงการ",
+    termsMenu: "เงื่อนไขและนโยบาย",
     contactMenu: "ติดต่อเรา",
     soilSampling: "วิธีการเก็บตัวอย่างดิน",
     doaKits: "การวิเคราะห์ดินด้วย DOA-SOil Test Kits",
@@ -90,6 +91,7 @@ export const translations = {
     // Menus
     homeMenu: "Home",
     aboutMenu: "About Project",
+    termsMenu: "Terms & Privacy",
     contactMenu: "Contact Us",
     soilSampling: "Soil Sampling Methods",
     doaKits: "Soil Analysis with DOA-Soil Test Kits",

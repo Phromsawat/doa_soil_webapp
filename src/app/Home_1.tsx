@@ -1,12 +1,28 @@
 "use client"
 
+import React, { useState, useEffect } from "react"
 import Link from "next/link"
 import { ShieldCheck, Home, Clock, Phone, Mail } from "lucide-react"
 import { Button } from "@/components/ui/Button"
 import { useLanguage } from "@/components/providers/LanguageProvider"
+import { TermsModal } from "@/components/TermsModal"
 
 export default function Home_1() {
   const { t } = useLanguage()
+  const [isTermsModalOpen, setIsTermsModalOpen] = useState(false)
+
+  useEffect(() => {
+    const handleOpenTermsModal = () => {
+      setIsTermsModalOpen(true)
+    }
+
+    window.addEventListener('openTermsModal', handleOpenTermsModal)
+
+    return () => {
+      window.removeEventListener('openTermsModal', handleOpenTermsModal)
+    }
+  }, [])
+
   return (
     <div className="flex flex-col min-h-screen bg-background font-thai">
       {/* Dark Hero Section with Quick Guide */}
@@ -20,12 +36,12 @@ export default function Home_1() {
         <div className="relative z-10 flex flex-col items-center text-center space-y-6">
 
           {/* Title */}
-          <h1 className="text-3xl md:text-5xl lg:text-6xl font-medium text-white tracking-tight">
+          <h1 className="text-5xl md:text-5xl lg:text-6xl font-medium text-white tracking-tight">
             {t('title')}
           </h1>
           
           {/* Subtitle */}
-          <p className="text-[14px] md:text-[18px] lg:text-[20px] text-gray-300 max-w-[340px] md:max-w-[600px] lg:max-w-[800px] leading-relaxed">
+          <p className="text-[18px] md:text-[18px] lg:text-[20px] text-gray-300 max-w-[340px] md:max-w-[600px] lg:max-w-[800px] leading-relaxed">
             {t('subtitle1')}<br/>{t('subtitle2')}
           </p>
           
@@ -60,11 +76,11 @@ export default function Home_1() {
             <div className="absolute left-6 flex items-center justify-center">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5 shrink-0">
                 <path d="M14 2v6a2 2 0 0 0 .245.96l5.51 10.08A2 2 0 0 1 18 22H6a2 2 0 0 1-1.755-2.96l5.51-10.08A2 2 0 0 0 10 8V2"/>
-              <path d="M6.453 15h11.094"/>
-              <path d="M8.5 2h7"/>
+                <path d="M6.453 15h11.094"/>
+                <path d="M8.5 2h7"/>
               </svg>
             </div>
-            <span className="text-[14px] md:text-[15px] font-medium text-center">{t('doaKits')}</span>
+            <span className="text-[14px] md:text-[15px] font-medium text-center whitespace-nowrap">{t('doaKits')}</span>
           </div>
         </Link>
 
@@ -203,6 +219,9 @@ export default function Home_1() {
           </div>
         </div>
       </section>
+      {/* Terms & Privacy Modal */}
+      <TermsModal isOpen={isTermsModalOpen} onClose={() => setIsTermsModalOpen(false)} />
+
       {/* Footer */}
       <footer className="bg-[#1A1A1A] pt-8 pb-24 lg:pb-8 px-4 w-full flex flex-col items-center justify-center space-y-4">
         <div className="flex flex-col items-center justify-center gap-3">
