@@ -87,7 +87,7 @@ export default function Bar() {
 
   return (
     <>
-      <header className={`h-16 flex items-center px-4 sticky top-0 z-40 w-full relative ${pathname === '/my-page' ? 'bg-transparent justify-end pointer-events-none' : 'bg-white/60 backdrop-blur-lg border-b border-white/20 shadow-sm justify-between'}`}>
+      <header className={`h-16 flex items-center px-4 fixed top-0 left-0 right-0 z-40 ${pathname === '/my-page' ? 'bg-transparent justify-end pointer-events-none' : 'bg-white/60 backdrop-blur-lg border-b border-white/20 shadow-sm justify-between'}`}>
       
       {pathname !== '/my-page' && (
         centerTitle ? (
