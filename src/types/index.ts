@@ -10,6 +10,9 @@ export interface SoilAnalysis {
   organicMatter: number // percentage
   status: "completed" | "pending"
   recommendation: string
+  nImage?: string // base64 or URL for N color chart crop
+  pImage?: string // base64 or URL for P color chart crop
+  kImage?: string // base64 or URL for K color chart crop
 }
 
 export type NPKLevel = "low" | "medium" | "high"

@@ -157,7 +157,12 @@ export default function AnalyzeUpload() {
           <div className="flex items-center gap-3 pt-1">
             <span className="text-sm text-gray-400">หรือ</span>
             <button
-              onClick={() => router.push("/analyze/map?returnTo=/analyze/upload")}
+              onClick={() => {
+                const params = new URLSearchParams({ returnTo: "/analyze/upload" })
+                if (lat) params.set("lat", lat)
+                if (lng) params.set("lng", lng)
+                router.push(`/analyze/map?${params.toString()}`)
+              }}
               className="flex items-center gap-2 h-9 px-4 bg-[#E6EFEA] hover:bg-[#D8E6DD] text-gray-700 rounded-full text-sm font-medium transition-colors"
             >
               <Map className="w-4 h-4" />
@@ -168,8 +173,29 @@ export default function AnalyzeUpload() {
 
         {/* Predict Button */}
         <div className="flex justify-center pt-8 pb-4">
-          <button 
-            onClick={() => router.push('/analyze/result')}
+          <button
+            onClick={async () => {
+              sessionStorage.setItem('predict_time', new Date().toISOString())
+              if (lat) sessionStorage.setItem('predict_lat', lat)
+              else sessionStorage.removeItem('predict_lat')
+              if (lng) sessionStorage.setItem('predict_lng', lng)
+              else sessionStorage.removeItem('predict_lng')
+              const keys = ['อินทรียวัตถุ', 'ฟอสฟอรัส', 'โพแทสเซียม']
+              const storageKeys = ['predict_img_om', 'predict_img_p', 'predict_img_k']
+              await Promise.all(keys.map((key, i) => {
+                const file = files[key]
+                if (!file) return Promise.resolve()
+                return new Promise<void>((resolve) => {
+                  const reader = new FileReader()
+                  reader.onload = (e) => {
+                    if (e.target?.result) sessionStorage.setItem(storageKeys[i], e.target.result as string)
+                    resolve()
+                  }
+                  reader.readAsDataURL(file)
+                })
+              }))
+              router.push('/analyze/result')
+            }}
             className="flex items-center justify-center px-12 h-10 bg-[#1A4D2E] hover:bg-[#143a22] text-white rounded-full font-medium text-[15px] shadow-sm hover:shadow-md transition-all"
           >
             ทำนายผล

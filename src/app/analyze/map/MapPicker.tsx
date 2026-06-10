@@ -15,22 +15,30 @@ L.Icon.Default.mergeOptions({
 interface Props {
   onConfirm: (lat: number, lng: number) => void
   onCancel: () => void
+  initialLat?: number
+  initialLng?: number
 }
 
-export default function MapPicker({ onConfirm, onCancel }: Props) {
+export default function MapPicker({ onConfirm, onCancel, initialLat, initialLng }: Props) {
   const mapRef = useRef<L.Map | null>(null)
   const markerRef = useRef<L.Marker | null>(null)
   const containerRef = useRef<HTMLDivElement>(null)
-  const [pinned, setPinned] = useState<{ lat: number; lng: number } | null>(null)
+  const hasInitial = initialLat != null && initialLng != null && !isNaN(initialLat) && !isNaN(initialLng)
+  const [pinned, setPinned] = useState<{ lat: number; lng: number } | null>(
+    hasInitial ? { lat: initialLat!, lng: initialLng! } : null
+  )
   const [locating, setLocating] = useState(false)
   const [bearing, setBearing] = useState(0)
 
   useEffect(() => {
     if (!containerRef.current || mapRef.current) return
 
+    const center: [number, number] = hasInitial ? [initialLat!, initialLng!] : [13.736717, 100.523186]
+    const zoom = hasInitial ? 15 : 6
+
     const map = L.map(containerRef.current, {
-      center: [13.736717, 100.523186],
-      zoom: 6,
+      center,
+      zoom,
       zoomControl: false,
     })
 
@@ -39,6 +47,10 @@ export default function MapPicker({ onConfirm, onCancel }: Props) {
       maxZoom: 19,
       subdomains: "abcd",
     }).addTo(map)
+
+    if (hasInitial) {
+      markerRef.current = L.marker([initialLat!, initialLng!]).addTo(map)
+    }
 
     map.on("click", (e: L.LeafletMouseEvent) => {
       const { lat, lng } = e.latlng
@@ -51,6 +63,24 @@ export default function MapPicker({ onConfirm, onCancel }: Props) {
     })
 
     mapRef.current = map
+
+    if (!hasInitial && navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          if (!mapRef.current) return
+          const { latitude, longitude } = pos.coords
+          mapRef.current.setView([latitude, longitude], 15)
+          setPinned({ lat: latitude, lng: longitude })
+          if (!markerRef.current) {
+            markerRef.current = L.marker([latitude, longitude]).addTo(mapRef.current)
+          } else {
+            markerRef.current.setLatLng([latitude, longitude])
+          }
+        },
+        () => {},
+        { enableHighAccuracy: true }
+      )
+    }
 
     return () => {
       map.remove()

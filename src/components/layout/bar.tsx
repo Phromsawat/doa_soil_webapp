@@ -68,6 +68,8 @@ export default function Bar() {
       title = "คำนวณสูตรปุ๋ย"
     } else if (pathname === "/analyze/map") {
       title = "เลือกพิกัดบนแผนที่"
+    } else if (pathname === "/analyze/result") {
+      title = "ผลการทำนาย"
     } else {
       title = "วิเคราะห์ดิน"
     }

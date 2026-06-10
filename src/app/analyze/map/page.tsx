@@ -10,6 +10,8 @@ function MapPageInner() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const returnTo = searchParams.get("returnTo") || "/analyze/upload"
+  const initialLat = searchParams.get("lat") ? parseFloat(searchParams.get("lat")!) : undefined
+  const initialLng = searchParams.get("lng") ? parseFloat(searchParams.get("lng")!) : undefined
 
   function handleConfirm(lat: number, lng: number) {
     sessionStorage.setItem("picked_lat", String(lat))
@@ -21,7 +23,7 @@ function MapPageInner() {
     router.push(returnTo)
   }
 
-  return <MapPicker onConfirm={handleConfirm} onCancel={handleCancel} />
+  return <MapPicker onConfirm={handleConfirm} onCancel={handleCancel} initialLat={initialLat} initialLng={initialLng} />
 }
 
 export default function MapPage() {
