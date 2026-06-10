@@ -1,14 +1,27 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
-import { FlaskConical, Hash, Phone as PhoneIcon, MapPin, Folder, Ban, BarChart2, Paperclip } from "lucide-react"
+import { FlaskConical, Hash, Phone as PhoneIcon, MapPin, Folder, Ban, BarChart2, Paperclip, Map } from "lucide-react"
 import { TermsModal } from "@/components/TermsModal"
 
 export default function AnalyzeUpload() {
   const router = useRouter()
   const [files, setFiles] = useState<Record<string, File | null>>({})
   const [isTermsOpen, setIsTermsOpen] = useState(false)
+  const [lat, setLat] = useState("")
+  const [lng, setLng] = useState("")
+
+  useEffect(() => {
+    const pickedLat = sessionStorage.getItem("picked_lat")
+    const pickedLng = sessionStorage.getItem("picked_lng")
+    if (pickedLat && pickedLng) {
+      setLat(pickedLat)
+      setLng(pickedLng)
+      sessionStorage.removeItem("picked_lat")
+      sessionStorage.removeItem("picked_lng")
+    }
+  }, [])
 
   return (
     <div className="font-thai pb-32">
@@ -92,28 +105,64 @@ export default function AnalyzeUpload() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="space-y-2">
               <label className="text-sm font-semibold text-gray-700">ตำบล</label>
-              <input 
-                type="text" 
-                placeholder="ระบุตำบล" 
+              <input
+                type="text"
+                placeholder="ระบุตำบล"
                 className="w-full bg-gray-50 border border-gray-100 rounded-full px-4 h-10 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#1A4D2E]/20 focus:border-[#1A4D2E] transition-all"
               />
             </div>
             <div className="space-y-2">
               <label className="text-sm font-semibold text-gray-700">อำเภอ</label>
-              <input 
-                type="text" 
-                placeholder="ระบุอำเภอ" 
+              <input
+                type="text"
+                placeholder="ระบุอำเภอ"
                 className="w-full bg-gray-50 border border-gray-100 rounded-full px-4 h-10 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#1A4D2E]/20 focus:border-[#1A4D2E] transition-all"
               />
             </div>
             <div className="space-y-2">
               <label className="text-sm font-semibold text-gray-700">จังหวัด</label>
-              <input 
-                type="text" 
-                placeholder="ระบุจังหวัด" 
+              <input
+                type="text"
+                placeholder="ระบุจังหวัด"
                 className="w-full bg-gray-50 border border-gray-100 rounded-full px-4 h-10 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#1A4D2E]/20 focus:border-[#1A4D2E] transition-all"
               />
             </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
+            <div className="space-y-2">
+              <label className="text-sm font-semibold text-gray-700">ละติจูด (Latitude)</label>
+              <input
+                type="number"
+                step="any"
+                placeholder="เช่น 13.756331"
+                value={lat}
+                onChange={(e) => setLat(e.target.value)}
+                className="w-full bg-gray-50 border border-gray-100 rounded-full px-4 h-10 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#1A4D2E]/20 focus:border-[#1A4D2E] transition-all"
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm font-semibold text-gray-700">ลองจิจูด (Longitude)</label>
+              <input
+                type="number"
+                step="any"
+                placeholder="เช่น 100.501765"
+                value={lng}
+                onChange={(e) => setLng(e.target.value)}
+                className="w-full bg-gray-50 border border-gray-100 rounded-full px-4 h-10 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#1A4D2E]/20 focus:border-[#1A4D2E] transition-all"
+              />
+            </div>
+          </div>
+
+          <div className="flex items-center gap-3 pt-1">
+            <span className="text-sm text-gray-400">หรือ</span>
+            <button
+              onClick={() => router.push("/analyze/map?returnTo=/analyze/upload")}
+              className="flex items-center gap-2 h-9 px-4 bg-[#E6EFEA] hover:bg-[#D8E6DD] text-gray-700 rounded-full text-sm font-medium transition-colors"
+            >
+              <Map className="w-4 h-4" />
+              เลือกพิกัดจากแผนที่
+            </button>
           </div>
         </div>
 
@@ -129,19 +178,6 @@ export default function AnalyzeUpload() {
 
       </div>
 
-      {/* Terms & Conditions Frame */}
-      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 mt-4 mx-4 text-center">
-        <button onClick={() => setIsTermsOpen(true)} className="block w-full hover:opacity-80 transition-opacity">
-          <div className="text-[#007AFF] font-normal text-sm md:text-base mb-1">
-            Terms & Conditions and Privacy Policies
-          </div>
-          <div className="text-[#007AFF] font-normal text-xs md:text-sm">
-            ข้อกำหนดใช้งานเว็บไซต์และนโยบายความเป็นส่วนตัว
-          </div>
-        </button>
-      </div>
-
-      <TermsModal isOpen={isTermsOpen} onClose={() => setIsTermsOpen(false)} />
 
     </div>
   )

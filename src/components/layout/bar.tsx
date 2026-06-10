@@ -63,6 +63,10 @@ export default function Bar() {
       title = "อัปโหลดรูปภาพ"
     } else if (pathname === "/analyze/form") {
       title = "กรอกผลวิเคราะห์ดิน"
+    } else if (pathname === "/analyze/fertilizer") {
+      title = "คำนวณสูตรปุ๋ย"
+    } else if (pathname === "/analyze/map") {
+      title = "เลือกพิกัดบนแผนที่"
     } else {
       title = "วิเคราะห์ดิน"
     }
@@ -76,6 +80,7 @@ export default function Bar() {
   const navLinks = [
     { href: "/", label: t('homeMenu'), icon: Home },
     { href: "/#about", label: t('aboutMenu'), icon: Info },
+    { href: "/#terms", label: t('termsMenu'), icon: Info },
     { href: "/#contact", label: t('contactMenu'), icon: PhoneIcon },
   ]
 
@@ -87,7 +92,7 @@ export default function Bar() {
         centerTitle ? (
           <>
             <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-              {(pathname === '/analyze/upload' || pathname === '/analyze/form') ? (
+              {(pathname === '/analyze/upload' || pathname === '/analyze/form' || pathname === '/analyze/fertilizer') ? (
                 <div className="relative pointer-events-auto group cursor-pointer">
                   <div className="flex items-center gap-1 font-semibold font-thai text-lg text-text-primary">
                     {title} <ChevronDown className="w-5 h-5" />
@@ -95,6 +100,7 @@ export default function Bar() {
                   <div className="absolute top-full mt-1 left-1/2 -translate-x-1/2 bg-white rounded-xl shadow-lg border border-gray-100 py-2 w-48 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all">
                     <Link href="/analyze/upload" className={`block px-4 py-2 hover:bg-gray-50 text-[15px] font-thai ${pathname === '/analyze/upload' ? 'text-primary font-semibold' : 'text-gray-700'}`}>อัปโหลดรูปภาพ</Link>
                     <Link href="/analyze/form" className={`block px-4 py-2 hover:bg-gray-50 text-[15px] font-thai ${pathname === '/analyze/form' ? 'text-primary font-semibold' : 'text-gray-700'}`}>กรอกผลวิเคราะห์ดิน</Link>
+                    <Link href="/analyze/fertilizer" className={`block px-4 py-2 hover:bg-gray-50 text-[15px] font-thai ${pathname === '/analyze/fertilizer' ? 'text-primary font-semibold' : 'text-gray-700'}`}>คำนวณสูตรปุ๋ย</Link>
                   </div>
                 </div>
               ) : (
@@ -104,7 +110,7 @@ export default function Bar() {
               )}
             </div>
             <div className="flex items-center gap-3 relative z-10">
-              {showBack && (
+              {showBack && pathname !== '/analyze/map' && (
                 <button onClick={() => router.push('/')} className="hidden lg:flex items-center gap-1 p-1 -ml-1 pr-2 text-text-primary hover:bg-gray-100 rounded-full transition-colors">
                   <ArrowLeft className="w-6 h-6" />
                   <span className="font-thai font-medium text-[15px]">หน้าหลัก</span>
@@ -120,9 +126,9 @@ export default function Bar() {
                 <span className="font-thai font-medium text-[15px]">หน้าหลัก</span>
               </button>
             ) : (
-              <div className="w-8 h-8 rounded-full flex items-center justify-center shrink-0">
-                <img src="/doa-logo.svg" alt="DOA Logo" className="w-full h-full object-contain" />
-              </div>
+              <button onClick={() => router.push('/')} className="w-8 h-8 rounded-full flex items-center justify-center shrink-0 hover:bg-gray-100 transition-colors">
+                <img src="/doa-logo.svg" alt="DOA Logo" className="w-full h-full object-contain cursor-pointer" />
+              </button>
             )}
             <h2 className={`font-semibold font-thai ${showBack ? 'text-lg text-text-primary' : 'text-base text-[#1A1A1A]'}`}>
               {title}
@@ -137,10 +143,27 @@ export default function Bar() {
             {pathname === '/' && navLinks.map((link) => {
               const hash = link.href.split('/')[1] || '';
               const isActive = activeHash === hash || (activeHash === '' && link.href === '/');
+
+              if (link.href === "/#terms") {
+                return (
+                  <button
+                    key={link.href}
+                    onClick={() => {
+                      if (typeof window !== "undefined") {
+                        window.dispatchEvent(new CustomEvent('openTermsModal'));
+                      }
+                    }}
+                    className={`font-normal hover:text-[#1A4D2E] transition-colors flex items-center text-[15px] cursor-pointer ${isActive ? 'text-[#1A4D2E]' : 'text-[#1A1A1A]'}`}
+                  >
+                    {link.label}
+                  </button>
+                );
+              }
+
               return (
-                <Link 
-                  key={link.href} 
-                  href={link.href} 
+                <Link
+                  key={link.href}
+                  href={link.href}
                   onClick={() => setActiveHash(hash)}
                   className={`font-normal hover:text-[#1A4D2E] transition-colors flex items-center text-[15px] ${isActive ? 'text-[#1A4D2E]' : 'text-[#1A1A1A]'}`}
                 >
@@ -151,33 +174,25 @@ export default function Bar() {
 
             <div className="flex items-center gap-3 ml-2">
               {pathname === '/' && (
-                <button 
+                <button
                   onClick={() => setLanguage(language === 'th' ? 'en' : 'th')}
                   className="relative flex items-center w-[84px] h-[34px] bg-[#F5F5F5] hover:bg-[#EBEBEB] rounded-full transition-colors"
                 >
                   <span className={`absolute text-sm font-medium text-[#1A1A1A] transition-all duration-300 ease-in-out ${language === 'th' ? 'right-3' : 'left-3'}`}>
                     {language === 'th' ? 'ไทย' : 'EN'}
                   </span>
-                  <img 
-                    src={language === 'th' ? "https://flagcdn.com/w40/th.png" : "https://flagcdn.com/w40/gb.png"} 
-                    alt={language === 'th' ? "Thai Flag" : "UK Flag"} 
-                    className={`absolute w-5 h-5 rounded-full object-cover border border-white/50 shadow-sm bg-white transition-all duration-300 ease-in-out ${language === 'th' ? 'left-2' : 'left-[56px]'}`} 
+                  <img
+                    src={language === 'th' ? "https://flagcdn.com/w40/th.png" : "https://flagcdn.com/w40/gb.png"}
+                    alt={language === 'th' ? "Thai Flag" : "UK Flag"}
+                    className={`absolute w-5 h-5 rounded-full object-cover border border-white/50 shadow-sm bg-white transition-all duration-300 ease-in-out ${language === 'th' ? 'left-2' : 'left-[56px]'}`}
                   />
                 </button>
               )}
-
               {pathname === '/' ? (
                 <Link href="/login" className="flex items-center justify-center py-1.5 px-4 w-[120px] bg-[#1A4D2E] hover:bg-[#143a22] text-white rounded-full font-medium transition-all shadow-sm text-sm">
                   {t('login')}
                 </Link>
-              ) : (
-                <button 
-                  onClick={() => setIsProfileOpen(true)}
-                  className="flex items-center justify-center bg-[#1A4D2E] hover:bg-[#143a22] text-white w-[36px] h-[36px] rounded-full transition-all shadow-sm hover:shadow-md"
-                >
-                  <User className="w-5 h-5" />
-                </button>
-              )}
+              ) : null}
             </div>
           </div>
         </div>
@@ -217,9 +232,25 @@ export default function Bar() {
                   isActive = pathname.startsWith(link.href)
                 }
 
+                // Special handling for Terms link in mobile drawer
+                if (link.href === "/#terms") {
+                  return (
+                    <button
+                      key={link.href}
+                      className="flex items-center gap-3 text-[16px] font-thai text-[#1A1A1A] font-normal hover:text-primary transition-colors text-left"
+                      onClick={() => {
+                        setIsMobileMenuOpen(false);
+                        window.dispatchEvent(new CustomEvent('openTermsModal'));
+                      }}
+                    >
+                      <span>{link.label}</span>
+                    </button>
+                  );
+                }
+
                 return (
-                  <Link 
-                    key={link.href} 
+                  <Link
+                    key={link.href}
                     href={link.href === "/analyze" ? "/analyze/upload" : link.href}
                     className={`flex items-center gap-3 text-[16px] font-thai transition-colors ${isActive ? 'text-primary font-medium' : 'text-[#1A1A1A] font-normal hover:text-primary'}`}
                     onClick={(e) => {
