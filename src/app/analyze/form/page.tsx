@@ -13,9 +13,9 @@ import { ensureSession } from "@/lib/supabase/auth"
 
 const formSchema = z.object({
   crop_id: z.string().uuid("กรุณาเลือกพืช"),
-  organicMatter: z.coerce.number().min(0).max(100),
-  phosphorus: z.coerce.number().min(0).max(10000),
-  potassium: z.coerce.number().min(0).max(10000),
+  organicMatter: z.number().min(0).max(100),
+  phosphorus: z.number().min(0).max(10000),
+  potassium: z.number().min(0).max(10000),
 })
 
 type FormValues = z.infer<typeof formSchema>
