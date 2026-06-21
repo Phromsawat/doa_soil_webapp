@@ -2,154 +2,296 @@
 
 import { Suspense, useEffect, useState } from "react"
 import { useSearchParams, useRouter } from "next/navigation"
-import { Check, Share2, Loader2, MapPin, Droplets, Calendar } from "lucide-react"
+import { Share2, Loader2, MapPin, Droplets, Sprout } from "lucide-react"
 import { Button } from "@/components/ui/Button"
-import { getAnalysisById } from "@/lib/storage"
-import { SoilAnalysis } from "@/types"
+import { getAnalysis } from "@/lib/supabase/analyses"
+import { listCrops, calculateAndSave, type CropOption, type FertilizerResult } from "@/lib/supabase/fertilizer"
+
+type AnalysisRecord = Awaited<ReturnType<typeof getAnalysis>>
 
 function ResultContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const id = searchParams.get("id")
-  
-  const [record, setRecord] = useState<SoilAnalysis | null>(null)
+
+  const [record, setRecord] = useState<AnalysisRecord | null>(null)
+  const [crops, setCrops] = useState<CropOption[]>([])
+  const [selectedCropId, setSelectedCropId] = useState<string>("")
+  const [calculation, setCalculation] = useState<FertilizerResult | null>(null)
+  const [calculating, setCalculating] = useState(false)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    if (id) {
-      const rec = getAnalysisById(id)
-      if (rec) setRecord(rec)
+    if (!id) {
+      setLoading(false)
+      setError("ไม่พบรหัสการวิเคราะห์")
+      return
     }
+    Promise.all([getAnalysis(id), listCrops()])
+      .then(([data, cropList]) => {
+        setRecord(data)
+        setCrops(cropList)
+        if (data?.crop_id) setSelectedCropId(data.crop_id)
+        // If a result already exists, hydrate the calculation state
+        const existing = data?.analysis_results?.[0]
+        if (existing) {
+          setCalculation({
+            target_n: existing.recommended_n,
+            target_p2o5: existing.recommended_p2o5,
+            target_k2o: existing.recommended_k2o,
+            unit: existing.unit ?? "g/tree/year",
+            matched: {
+              om: existing.recommended_n !== null,
+              p:  existing.recommended_p2o5 !== null,
+              k:  existing.recommended_k2o !== null,
+            },
+            notes: [],
+          })
+        }
+      })
+      .catch((e) => setError(e instanceof Error ? e.message : String(e)))
+      .finally(() => setLoading(false))
   }, [id])
 
-  const province = record?.province || "ไม่ระบุ"
-  const ph = record?.ph || 6.0
-  const om = record?.organicMatter || 1.5
+  async function runCalculation() {
+    if (!record || !selectedCropId) return
+    setCalculating(true)
+    setError(null)
+    try {
+      const result = await calculateAndSave({
+        analysis_id: record.id,
+        crop_id: selectedCropId,
+        om_value: record.om_value,
+        p_value:  record.p_value,
+        k_value:  record.k_value,
+      })
+      setCalculation(result)
+    } catch (e) {
+      setError(e instanceof Error ? e.message : String(e))
+    } finally {
+      setCalculating(false)
+    }
+  }
 
-  // Dummy logic to match the design EXACTLY, regardless of real values for the purpose of the UI test
-  // In a real app we'd map actual values to these bars and recommendations.
-  
+  if (loading) {
+    return (
+      <div className="font-thai flex items-center justify-center pt-32">
+        <Loader2 className="w-8 h-8 animate-spin text-[#1A4D2E]" />
+      </div>
+    )
+  }
+
+  if (error || !record) {
+    return (
+      <div className="font-thai max-w-md mx-auto mt-12 px-4">
+        <div className="bg-red-50 text-red-700 p-6 rounded-2xl text-center space-y-3">
+          <p className="font-semibold">โหลดผลไม่สำเร็จ</p>
+          <p className="text-sm">{error || "ไม่พบข้อมูล"}</p>
+          <Button onClick={() => router.push("/analyze")} className="rounded-full bg-[#1A4D2E] hover:bg-[#143a22] text-white font-bold">
+            กลับไปวิเคราะห์ใหม่
+          </Button>
+        </div>
+      </div>
+    )
+  }
+
+  const om = record.om_value ?? 0
+  const p = record.p_value ?? 0
+  const k = record.k_value ?? 0
+  const ph = record.ph_value ?? 6.0
+  const province = record.province ?? "ไม่ระบุ"
+
+  const classify = (val: number, low: number, high: number) => {
+    if (val < low)  return { label: "ต่ำ",       color: "text-orange-500", bg: "bg-orange-400", pct: 30 }
+    if (val > high) return { label: "สูง",       color: "text-primary",    bg: "bg-primary",    pct: 90 }
+    return            { label: "ปานกลาง",   color: "text-blue-600",   bg: "bg-blue-500",   pct: 60 }
+  }
+  const omLevel = classify(om, 1, 3)
+  const pLevel  = classify(p, 15, 45)
+  const kLevel  = classify(k, 50, 100)
+
+  // Group crops by type for the dropdown
+  const cropsByType = crops.reduce<Record<string, CropOption[]>>((acc, c) => {
+    (acc[c.crop_type_name] = acc[c.crop_type_name] ?? []).push(c)
+    return acc
+  }, {})
+
   return (
-    <div className="font-thai pb-24 relative pt-6">
+    <div className="font-thai pb-24 relative pt-6 px-4 max-w-2xl mx-auto">
 
       <div className="space-y-4">
-        {/* NPK progress bars card */}
-        <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 relative z-10">
+        {/* NPK card */}
+        <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100">
           <div className="flex items-center justify-between mb-5">
             <h2 className="text-base font-bold text-text-primary">ระดับธาตุอาหารหลัก</h2>
             <div className="px-3 py-1 bg-green-100 text-primary text-xs font-bold rounded-full">
-              ดินดี
+              {record.input_mode === "image_upload" ? "อัปโหลดรูป" : "กรอกค่าเอง"}
             </div>
           </div>
 
           <div className="space-y-4">
-            {/* Nitrogen */}
             <div>
               <div className="flex justify-between text-xs mb-1.5 font-bold">
-                <span className="text-text-secondary">ไนโตรเจน (N)</span>
-                <span className="text-blue-600">75% - ปานกลาง</span>
+                <span className="text-text-secondary">อินทรียวัตถุ (OM)</span>
+                <span className={omLevel.color}>{om}% — {omLevel.label}</span>
               </div>
               <div className="h-2 w-full bg-gray-100 rounded-full overflow-hidden">
-                <div className="h-full bg-blue-500 rounded-full" style={{ width: '75%' }}></div>
+                <div className={`h-full ${omLevel.bg} rounded-full transition-all`} style={{ width: `${omLevel.pct}%` }}></div>
               </div>
             </div>
-
-            {/* Phosphorus */}
             <div>
               <div className="flex justify-between text-xs mb-1.5 font-bold">
                 <span className="text-text-secondary">ฟอสฟอรัส (P)</span>
-                <span className="text-orange-500">42% - ต่ำ</span>
+                <span className={pLevel.color}>{p} mg/kg — {pLevel.label}</span>
               </div>
               <div className="h-2 w-full bg-gray-100 rounded-full overflow-hidden">
-                <div className="h-full bg-orange-400 rounded-full" style={{ width: '42%' }}></div>
+                <div className={`h-full ${pLevel.bg} rounded-full transition-all`} style={{ width: `${pLevel.pct}%` }}></div>
               </div>
             </div>
-
-            {/* Potassium */}
             <div>
               <div className="flex justify-between text-xs mb-1.5 font-bold">
                 <span className="text-text-secondary">โพแทสเซียม (K)</span>
-                <span className="text-primary">90% - สูง</span>
+                <span className={kLevel.color}>{k} mg/kg — {kLevel.label}</span>
               </div>
               <div className="h-2 w-full bg-gray-100 rounded-full overflow-hidden">
-                <div className="h-full bg-primary rounded-full" style={{ width: '90%' }}></div>
+                <div className={`h-full ${kLevel.bg} rounded-full transition-all`} style={{ width: `${kLevel.pct}%` }}></div>
               </div>
             </div>
           </div>
 
           <div className="mt-5 pt-4 border-t border-gray-100 flex justify-center gap-4 text-xs text-text-secondary font-bold">
-            <span>pH: {ph} (เหมาะสม)</span>
-            <span>|</span>
-            <span>OM: {om}% (ปานกลาง)</span>
+            <span>pH: {ph}</span>
+            {record.notes && <><span>|</span><span className="text-gray-500 font-normal">{record.notes}</span></>}
           </div>
         </div>
 
-        {/* Farm image card */}
-        <div className="relative rounded-2xl overflow-hidden h-28 shadow-sm">
-          <img 
-            src="https://images.unsplash.com/photo-1592982537447-6f29633e7235?q=80&w=375&auto=format&fit=crop" 
-            alt="Farm"
-            className="absolute inset-0 w-full h-full object-cover"
-          />
-          <div className="absolute inset-0 bg-black/40"></div>
-          <div className="absolute inset-0 flex items-center p-5">
-            <div className="text-white">
-              <div className="flex items-center gap-1.5 mb-1">
-                <MapPin className="w-4 h-4 text-green-400" />
-                <span className="text-xs font-bold text-gray-200">พื้นที่เพาะปลูก</span>
-              </div>
-              <h3 className="text-lg font-bold">พื้นที่ปลูก: {province}</h3>
+        {/* Uploaded images */}
+        {record.analysis_images && record.analysis_images.length > 0 && (
+          <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100">
+            <h3 className="text-sm font-bold mb-3 text-gray-800">รูปแผ่นทดสอบที่อัปโหลด</h3>
+            <div className="grid grid-cols-3 gap-2">
+              {record.analysis_images.map((img: { id: string; nutrient_code: string; public_url: string | null }) => (
+                <div key={img.id} className="aspect-square rounded-xl overflow-hidden bg-gray-100 relative">
+                  {img.public_url && (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={img.public_url} alt={img.nutrient_code} className="w-full h-full object-cover" />
+                  )}
+                  <div className="absolute bottom-1 left-1 px-2 py-0.5 bg-black/60 text-white text-[10px] rounded-full font-bold">
+                    {img.nutrient_code}
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
+        )}
+
+        {/* Location */}
+        {(province !== "ไม่ระบุ" || record.latitude) && (
+          <div className="relative rounded-2xl overflow-hidden h-28 shadow-sm bg-gradient-to-r from-green-700 to-green-900">
+            <div className="absolute inset-0 flex items-center p-5">
+              <div className="text-white">
+                <div className="flex items-center gap-1.5 mb-1">
+                  <MapPin className="w-4 h-4 text-green-300" />
+                  <span className="text-xs font-bold text-gray-200">พื้นที่เพาะปลูก</span>
+                </div>
+                <h3 className="text-lg font-bold">{province}</h3>
+                {record.latitude && record.longitude && (
+                  <p className="text-xs text-gray-300 mt-0.5">{Number(record.latitude).toFixed(4)}, {Number(record.longitude).toFixed(4)}</p>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Crop selection + calculate */}
+        <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 space-y-4">
+          <div className="flex items-center gap-2">
+            <Sprout className="w-5 h-5 text-[#1A4D2E]" />
+            <h3 className="font-bold text-gray-800">เลือกพืชที่จะปลูก</h3>
+          </div>
+
+          <select
+            value={selectedCropId}
+            onChange={(e) => setSelectedCropId(e.target.value)}
+            className="w-full bg-gray-50 border border-gray-100 rounded-full px-4 h-11 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#1A4D2E]/20 focus:border-[#1A4D2E]"
+          >
+            <option value="">-- เลือกพืช --</option>
+            {Object.entries(cropsByType).map(([type, list]) => (
+              <optgroup key={type} label={type}>
+                {list.map(c => (
+                  <option key={c.id} value={c.id}>{c.name}</option>
+                ))}
+              </optgroup>
+            ))}
+          </select>
+
+          <button
+            onClick={runCalculation}
+            disabled={!selectedCropId || calculating}
+            className="w-full h-11 rounded-full bg-[#1A4D2E] hover:bg-[#143a22] text-white font-bold text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+          >
+            {calculating ? <><Loader2 className="w-4 h-4 animate-spin" />กำลังคำนวณ...</> : "คำนวณคำแนะนำปุ๋ย"}
+          </button>
         </div>
 
-        {/* Fertilizer recommendation card */}
+        {/* Fertilizer recommendation */}
         <div className="bg-[#1A2F2A] rounded-2xl p-5 text-white shadow-sm relative overflow-hidden">
-          {/* Decorative subtle circles */}
           <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full blur-2xl -mr-10 -mt-10"></div>
-          
+
           <h2 className="text-base font-bold mb-4 flex items-center gap-2">
             <Droplets className="w-5 h-5 text-accent" />
             คำแนะนำการจัดการปุ๋ย
           </h2>
-          
-          <div className="bg-white/10 rounded-xl p-4 space-y-3">
-            <div className="flex justify-between items-center border-b border-white/10 pb-2">
-              <span className="text-sm text-white/70">สูตรปุ๋ยแนะนำ</span>
-              <span className="text-base font-bold text-accent">16-20-0</span>
+
+          {!calculation ? (
+            <div className="bg-white/10 rounded-xl p-4 text-center text-sm text-white/70 italic">
+              เลือกพืชด้านบนแล้วกด &quot;คำนวณคำแนะนำปุ๋ย&quot;
             </div>
-            <div className="flex justify-between items-center border-b border-white/10 pb-2">
-              <span className="text-sm text-white/70">ปริมาณการใช้</span>
-              <span className="text-sm font-bold text-white">25-30 กก./ไร่</span>
+          ) : (
+            <div className="bg-white/10 rounded-xl p-4 space-y-3">
+              <div className="grid grid-cols-3 gap-3">
+                <div className="text-center">
+                  <p className="text-xs text-white/60 mb-1">N (ไนโตรเจน)</p>
+                  <p className="text-2xl font-bold text-accent">{calculation.target_n ?? "—"}</p>
+                </div>
+                <div className="text-center">
+                  <p className="text-xs text-white/60 mb-1">P₂O₅ (ฟอสฟอรัส)</p>
+                  <p className="text-2xl font-bold text-accent">{calculation.target_p2o5 ?? "—"}</p>
+                </div>
+                <div className="text-center">
+                  <p className="text-xs text-white/60 mb-1">K₂O (โพแทสเซียม)</p>
+                  <p className="text-2xl font-bold text-accent">{calculation.target_k2o ?? "—"}</p>
+                </div>
+              </div>
+              <div className="text-center text-xs text-white/70 pt-2 border-t border-white/10">
+                หน่วย: <span className="font-bold text-white">{calculation.unit}</span>
+              </div>
+              {calculation.notes.length > 0 && (
+                <div className="pt-2 border-t border-white/10">
+                  {calculation.notes.map((n, i) => (
+                    <p key={i} className="text-xs text-orange-200 italic">⚠ {n}</p>
+                  ))}
+                </div>
+              )}
+              <p className="text-[10px] text-white/50 italic pt-2 border-t border-white/10">
+                * ปริมาณข้างต้นคือธาตุอาหารบริสุทธิ์ ใช้เป็นเกณฑ์เลือกสูตรปุ๋ยที่เหมาะสม
+              </p>
             </div>
-            <div className="flex justify-between items-center pt-1">
-              <span className="text-sm text-white/70 flex items-center gap-1.5">
-                <Calendar className="w-4 h-4" /> ช่วงเวลาที่ใส่
-              </span>
-              <span className="text-sm font-bold text-white">ระยะแตกกอ</span>
-            </div>
-          </div>
+          )}
         </div>
       </div>
 
       {/* Action Buttons */}
       <div className="mt-8 flex items-center gap-3">
-        <button 
-          onClick={() => router.push('/analyze')}
-          className="text-sm font-bold text-text-secondary px-2 hover:text-primary transition-colors whitespace-nowrap"
-        >
+        <button onClick={() => router.push("/analyze")} className="text-sm font-bold text-text-secondary px-2 hover:text-primary transition-colors whitespace-nowrap">
           วิเคราะห์ใหม่
         </button>
-        <Button 
-          variant="outline" 
-          className="flex-1 rounded-full border-gray-200 font-bold h-12 text-text-primary bg-white hover:bg-gray-50 flex items-center gap-2"
-        >
+        <Button variant="outline" className="flex-1 rounded-full border-gray-200 font-bold h-12 text-text-primary bg-white hover:bg-gray-50 flex items-center gap-2">
           <Share2 className="w-4 h-4" /> แชร์ผล
         </Button>
-        <Button 
-          onClick={() => router.push('/dashboard')}
-          className="flex-1 rounded-full bg-primary hover:bg-primary/90 text-white font-bold h-12"
-        >
-          บันทึกผล
+        <Button onClick={() => router.push("/history")} className="flex-1 rounded-full bg-primary hover:bg-primary/90 text-white font-bold h-12">
+          ดูประวัติ
         </Button>
       </div>
     </div>
@@ -158,17 +300,12 @@ function ResultContent() {
 
 export default function AnalyzeResult() {
   return (
-    <div className="px-4">
-      <Suspense
-        fallback={
-          <div className="p-12 text-center font-thai flex flex-col items-center justify-center space-y-4">
-            <Loader2 className="w-12 h-12 animate-spin text-primary" />
-            <span className="text-sm text-text-secondary font-bold">กำลังประมวลผล...</span>
-          </div>
-        }
-      >
-        <ResultContent />
-      </Suspense>
-    </div>
+    <Suspense fallback={
+      <div className="flex items-center justify-center pt-32">
+        <Loader2 className="w-8 h-8 animate-spin text-[#1A4D2E]" />
+      </div>
+    }>
+      <ResultContent />
+    </Suspense>
   )
 }
