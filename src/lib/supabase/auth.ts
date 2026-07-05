@@ -96,6 +96,26 @@ export async function sendPasswordReset(email: string) {
 }
 
 /**
+ * Update the current user's password.
+ * Must be signed in. Does not require old password (Supabase trust the session).
+ */
+export async function updatePassword(newPassword: string) {
+  const supabase = createClient()
+  const { error } = await supabase.auth.updateUser({ password: newPassword })
+  if (error) throw error
+}
+
+/**
+ * Update the current user's email.
+ * Sends a confirmation email to the new address before the change applies.
+ */
+export async function updateEmail(newEmail: string) {
+  const supabase = createClient()
+  const { error } = await supabase.auth.updateUser({ email: newEmail })
+  if (error) throw error
+}
+
+/**
  * Sign out the current user.
  */
 export async function signOut() {

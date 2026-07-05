@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
-import { Loader2, Sprout } from "lucide-react"
+import { Loader2, Sprout, RefreshCw } from "lucide-react"
 import { Button } from "@/components/ui/Button"
 import { saveManualAnalysis } from "@/lib/supabase/analyses"
 import { calculateAndSave, listCrops, type CropOption } from "@/lib/supabase/fertilizer"
@@ -27,12 +27,7 @@ export default function AnalyzeForm() {
   const [submitting, setSubmitting] = useState(false)
   const [submitError, setSubmitError] = useState<string | null>(null)
 
-  const {
-    register,
-    handleSubmit,
-    watch,
-    formState: { errors },
-  } = useForm<FormValues>({
+  const { register, handleSubmit, watch, formState: { errors } } = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       crop_id: "",
@@ -42,7 +37,6 @@ export default function AnalyzeForm() {
     },
   })
 
-  // Load crops list
   useEffect(() => {
     listCrops()
       .then(setCrops)
@@ -67,7 +61,6 @@ export default function AnalyzeForm() {
       await ensureSession()
       const crop = crops.find((c) => c.id === data.crop_id)
 
-      // 1. Save analysis row
       const analysisId = await saveManualAnalysis({
         crop_id: data.crop_id,
         om_value: data.organicMatter,
@@ -80,7 +73,6 @@ export default function AnalyzeForm() {
         notes: crop ? `พืช: ${crop.name}` : null,
       })
 
-      // 2. Compute & save the fertilizer recommendation (best-effort — skip on failure)
       try {
         await calculateAndSave({
           analysis_id: analysisId,
@@ -93,7 +85,6 @@ export default function AnalyzeForm() {
         console.warn("calculateAndSave failed:", calcErr)
       }
 
-      // 3. Go to result page
       router.push(`/analyze/result?id=${analysisId}`)
     } catch (e) {
       setSubmitError(e instanceof Error ? e.message : String(e))
@@ -102,22 +93,19 @@ export default function AnalyzeForm() {
     }
   }
 
-  // Group crops for the dropdown
   const cropsByType = crops.reduce<Record<string, CropOption[]>>((acc, c) => {
     (acc[c.crop_type_name] = acc[c.crop_type_name] ?? []).push(c)
     return acc
   }, {})
 
   const omBadge = getBadge(omValue, 1, 3)
-  const pBadge  = getBadge(pValue, 15, 45)
-  const kBadge  = getBadge(kValue, 50, 100)
+  const pBadge  = getBadge(pValue,  15, 45)
+  const kBadge  = getBadge(kValue,  50, 100)
 
   return (
     <div className="font-thai pb-24">
       <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 mt-4 mx-4 max-w-3xl lg:mx-auto">
-        <h2 className="text-lg font-semibold text-gray-800 text-center mb-6">
-          กรอกผลการวิเคราะห์ทางเคมี
-        </h2>
+        <h2 className="text-lg font-semibold text-gray-800 text-center mb-6">กรอกผลการวิเคราะห์ทางเคมี</h2>
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
 
@@ -206,9 +194,9 @@ export default function AnalyzeForm() {
             <Button
               type="button"
               onClick={() => window.location.reload()}
-              className="flex-1 h-11 bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 rounded-full font-medium text-[15px] shadow-sm"
+              className="flex-1 h-11 bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 rounded-full font-medium text-[15px] shadow-sm flex items-center justify-center gap-2"
             >
-              รีเฟรช
+              <RefreshCw className="w-4 h-4" /> รีเฟรช
             </Button>
             <Button
               type="submit"

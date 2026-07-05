@@ -1,5 +1,4 @@
 import Link from "next/link"
-import { Camera, Keyboard, ArrowRight, PenLine, Map, MapPin } from "lucide-react"
 import { Button } from "@/components/ui/Button"
 
 export default function MethodSelectionPage() {

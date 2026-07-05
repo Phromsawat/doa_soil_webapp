@@ -61,3 +61,75 @@ export function useUser() {
     initial,
   }
 }
+
+/**
+ * Lightweight admin-role hook.
+ *
+ * Persists last-known value in localStorage so it survives navigation between
+ * routes without flicker. The cached value is purely a UX hint — the real
+ * authorization still happens server-side (RLS + admin layout guard).
+ */
+const ADMIN_CACHE_KEY = "doa.isAdmin"
+
+export function useIsAdmin() {
+  const [isAdmin, setIsAdmin] = useState<boolean>(() => {
+    if (typeof window === "undefined") return false
+    return window.localStorage.getItem(ADMIN_CACHE_KEY) === "true"
+  })
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    const supabase = createClient()
+    let mounted = true
+
+    const applyResult = (next: boolean) => {
+      if (!mounted) return
+      setIsAdmin(next)
+      setLoading(false)
+      try { window.localStorage.setItem(ADMIN_CACHE_KEY, String(next)) } catch {}
+    }
+
+    const check = async () => {
+      try {
+        const { data: { user } } = await supabase.auth.getUser()
+        if (!user) {
+          applyResult(false)
+          try { window.localStorage.removeItem(ADMIN_CACHE_KEY) } catch {}
+          return
+        }
+        const { data, error } = await supabase
+          .from("profiles")
+          .select("role")
+          .eq("id", user.id)
+          .single()
+        if (error) {
+          // Don't downgrade the cached value if the query failed (could be a
+          // transient network/RLS hiccup during navigation).
+          console.warn("[useIsAdmin] role query failed:", error.message)
+          if (mounted) setLoading(false)
+          return
+        }
+        applyResult(data?.role === "admin")
+      } catch (err) {
+        console.warn("[useIsAdmin] check failed:", err)
+        if (mounted) setLoading(false)
+      }
+    }
+
+    check()
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((event) => {
+      if (event === "SIGNED_OUT") {
+        applyResult(false)
+        try { window.localStorage.removeItem(ADMIN_CACHE_KEY) } catch {}
+      } else {
+        check()
+      }
+    })
+
+    return () => { mounted = false; subscription.unsubscribe() }
+  }, [])
+
+  return { isAdmin, loading }
+}

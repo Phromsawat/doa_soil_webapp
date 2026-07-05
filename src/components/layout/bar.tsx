@@ -5,7 +5,7 @@ import { usePathname, useRouter } from "next/navigation"
 import Link from "next/link"
 import { useLanguage } from "@/components/providers/LanguageProvider"
 import { useState, useEffect } from "react"
-import { useUser } from "@/lib/supabase/useUser"
+import { useUser, useIsAdmin } from "@/lib/supabase/useUser"
 import { signOut } from "@/lib/supabase/auth"
 
 export default function Bar() {
@@ -13,6 +13,7 @@ export default function Bar() {
   const router = useRouter()
   const { language, setLanguage, t } = useLanguage()
   const { user, isAnonymous, displayName, initial } = useUser()
+  const { isAdmin } = useIsAdmin()
   const [activeHash, setActiveHash] = useState("")
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const [isProfileOpen, setIsProfileOpen] = useState(false)
@@ -382,6 +383,17 @@ export default function Bar() {
           <Link href="/history" onClick={() => setIsProfileOpen(false)} className="bg-white rounded-[1rem] py-3.5 px-5 font-bold text-[#0f321d] text-[16px] shadow-sm hover:bg-gray-50 transition-colors">
             {t('analysisHistory')}
           </Link>
+
+          {isAdmin && (
+            <Link
+              href="/admin"
+              onClick={() => setIsProfileOpen(false)}
+              className="bg-[#1A2F2A] hover:bg-[#0f1d1a] rounded-[1rem] py-3.5 px-5 font-bold text-white text-[16px] shadow-sm transition-colors flex items-center justify-between"
+            >
+              <span>Admin Panel</span>
+              <span className="text-accent">›</span>
+            </Link>
+          )}
 
           {isAnonymous ? (
             <Link
