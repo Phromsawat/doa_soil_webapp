@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Senior Thesis Project – DOA Soil</title>
+  <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700;800&family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: #111;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      font-family: 'Sarabun', 'Inter', sans-serif;
+    }
+
+    .slide {
+      width: 100%;
+      max-width: 1280px;
+      aspect-ratio: 16 / 9;
+      background: #000;
+      color: #fff;
+      position: relative;
+      overflow: hidden;
+      padding: 32px 56px 28px 56px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Top logos */
+    .top-logos {
+      position: absolute;
+      top: 18px;
+      right: 36px;
+      display: flex;
+      gap: 10px;
+    }
+    .logo-circle {
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      border: 2px solid #555;
+      background: #1a1a1a;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 8.5px;
+      color: #ccc;
+      text-align: center;
+      line-height: 1.3;
+      padding: 4px;
+    }
+
+    /* Main title */
+    .main-title {
+      font-family: 'Inter', sans-serif;
+      font-size: clamp(36px, 5.2vw, 70px);
+      font-weight: 900;
+      color: #fff;
+      line-height: 1;
+      margin-bottom: 5px;
+    }
+
+    .subtitle {
+      font-size: clamp(12px, 1.5vw, 19px);
+      font-weight: 700;
+      color: #f0c040;
+      margin-bottom: 2px;
+    }
+    .date {
+      font-size: clamp(11px, 1.3vw, 17px);
+      font-weight: 700;
+      color: #f0c040;
+      margin-bottom: 12px;
+    }
+
+    /* Body */
+    .body {
+      display: grid;
+      grid-template-columns: 1fr 200px;
+      gap: 20px;
+      flex: 1;
+      min-height: 0;
+    }
+
+    .left {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .section-title {
+      font-size: clamp(15px, 2vw, 26px);
+      font-weight: 800;
+      color: #f0c040;
+      margin-bottom: 2px;
+    }
+
+    .body-text {
+      font-size: clamp(10px, 1.1vw, 14px);
+      line-height: 1.7;
+      color: #fff;
+    }
+    .hl  { color: #f0c040; font-weight: 700; }
+    .hli { color: #f0c040; font-weight: 700; font-style: italic; }
+
+    .divider {
+      border: none;
+      border-top: 1px solid #2a2a2a;
+      margin: 2px 0;
+    }
+
+    .tools-row { font-size: clamp(10px, 1.05vw, 13.5px); line-height: 1.75; }
+    .tk { font-weight: 700; color: #fff; }
+    .tv { font-weight: 700; color: #f0c040; }
+
+    /* Right */
+    .right {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 10px;
+      padding-bottom: 30px;
+    }
+
+    .qr-box {
+      width: 130px;
+      height: 130px;
+      background: #fff;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .qr-link {
+      font-size: 11px;
+      color: #f0c040;
+      text-decoration: underline;
+      text-align: center;
+      word-break: break-all;
+    }
+
+    .page-num {
+      position: absolute;
+      bottom: 12px;
+      right: 36px;
+      font-size: 14px;
+      font-weight: 700;
+      color: #fff;
+    }
+  </style>
+</head>
+<body>
+<div class="slide">
+
+  <div class="top-logos">
+    <div class="logo-circle">กรมวิชาการ<br>เกษตร</div>
+    <div class="logo-circle">มหา<br>วิทยาลัย</div>
+  </div>
+
+  <div class="main-title">SENIOR THESIS PROJECT</div>
+  <div class="subtitle">DOA Soil Analysis — AI-Powered Soil Quality Mobile Web Application</div>
+  <div class="date">JAN 2026 – MAY 2026</div>
+
+  <div class="body">
+    <div class="left">
+
+      <div>
+        <div class="section-title">Introduction</div>
+        <p class="body-text">
+          DOA Soil Analysis คือ <span class="hl">Progressive Web App (PWA)</span> สำหรับวิเคราะห์คุณภาพดินด้วยชุดทดสอบดิน
+          ของกรมวิชาการเกษตร ระบบช่วยให้เกษตรกรสามารถ <span class="hl">อัพโหลดภาพถ่ายสีดิน</span> แล้วเทียบสีด้วย
+          <span class="hl">AI Color Matching</span> หรือกรอกผลด้วยตนเอง จากนั้นระบบแนะนำ
+          <span class="hl">สูตรปุ๋ย (Fertilizer Recommendation)</span> ที่เหมาะสมกับพืชแต่ละชนิด รองรับการใช้งาน
+          <span class="hli">(ไทย/อังกฤษ)</span> พร้อม UI ที่ใช้งานง่ายบนมือถือทุกรุ่น
+          และบันทึกประวัติการวิเคราะห์ของผู้ใช้แต่ละคนได้อย่างปลอดภัย
+        </p>
+      </div>
+
+      <hr class="divider" />
+
+      <div>
+        <div class="section-title">My Role</div>
+        <p class="body-text">
+          รับผิดชอบกระบวนการพัฒนาแบบ <span class="hl">Full-Stack</span> ทั้งหมดของโปรเจกต์
+          ตั้งแต่การออกแบบสถาปัตยกรรมระบบ <span class="hl">(Architecture)</span>
+          การพัฒนา <span class="hl">Front-End</span> ด้วย Next.js 15 ไปจนถึงการเขียน <span class="hl">Back-End API</span>
+          จัดการฐานข้อมูล <span class="hl">(Supabase / PostgreSQL)</span>
+          การใช้ <span class="hl">AI Vision API</span> วิเคราะห์สีดิน
+          และการ deploy บน <span class="hl">Vercel</span> พร้อมทดสอบกับผู้ใช้จริง
+        </p>
+      </div>
+
+      <hr class="divider" />
+
+      <div>
+        <div class="section-title">Tools</div>
+        <div class="tools-row">
+          <div><span class="tk">Design:</span> <span class="tv">Figma, Google Stitch</span></div>
+          <div>
+            <span class="tk">Development:</span>
+            <span class="tv">Antigravity IDE, *Next.js 15 (React 19)**, FastAPI, PostgreSQL (Supabase),</span>
+          </div>
+          <div style="padding-left:88px">
+            <span class="tv">Tailwind CSS, shadcn/ui, Google Vision API, Vercel</span>
+          </div>
+          <div><span class="tk">Version Control:</span> <span class="tv">Git</span></div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Right: QR code -->
+    <div class="right">
+      <div class="qr-box">
+        <svg viewBox="0 0 37 37" xmlns="http://www.w3.org/2000/svg" width="120" height="120" style="image-rendering:pixelated;">
+          <rect width="37" height="37" fill="#fff"/>
+          <!-- Finder TL -->
+          <rect x="1" y="1" width="7" height="7" fill="#000"/>
+          <rect x="2" y="2" width="5" height="5" fill="#fff"/>
+          <rect x="3" y="3" width="3" height="3" fill="#000"/>
+          <!-- Finder TR -->
+          <rect x="29" y="1" width="7" height="7" fill="#000"/>
+          <rect x="30" y="2" width="5" height="5" fill="#fff"/>
+          <rect x="31" y="3" width="3" height="3" fill="#000"/>
+          <!-- Finder BL -->
+          <rect x="1" y="29" width="7" height="7" fill="#000"/>
+          <rect x="2" y="30" width="5" height="5" fill="#fff"/>
+          <rect x="3" y="31" width="3" height="3" fill="#000"/>
+          <!-- Timing -->
+          <rect x="8" y="6" width="1" height="1" fill="#000"/>
+          <rect x="10" y="6" width="1" height="1" fill="#000"/>
+          <rect x="12" y="6" width="1" height="1" fill="#000"/>
+          <rect x="14" y="6" width="1" height="1" fill="#000"/>
+          <rect x="6" y="8" width="1" height="1" fill="#000"/>
+          <rect x="6" y="10" width="1" height="1" fill="#000"/>
+          <rect x="6" y="12" width="1" height="1" fill="#000"/>
+          <!-- Data cells -->
+          <rect x="9"  y="9"  width="2" height="2" fill="#000"/>
+          <rect x="12" y="9"  width="3" height="1" fill="#000"/>
+          <rect x="17" y="9"  width="2" height="2" fill="#000"/>
+          <rect x="21" y="9"  width="1" height="3" fill="#000"/>
+          <rect x="24" y="9"  width="2" height="1" fill="#000"/>
+          <rect x="27" y="9"  width="2" height="2" fill="#000"/>
+          <rect x="9"  y="12" width="4" height="2" fill="#000"/>
+          <rect x="15" y="12" width="2" height="2" fill="#000"/>
+          <rect x="19" y="13" width="3" height="1" fill="#000"/>
+          <rect x="25" y="12" width="3" height="2" fill="#000"/>
+          <rect x="9"  y="16" width="2" height="4" fill="#000"/>
+          <rect x="13" y="17" width="3" height="2" fill="#000"/>
+          <rect x="18" y="16" width="2" height="2" fill="#000"/>
+          <rect x="22" y="17" width="4" height="2" fill="#000"/>
+          <rect x="27" y="16" width="2" height="3" fill="#000"/>
+          <rect x="9"  y="22" width="5" height="2" fill="#000"/>
+          <rect x="16" y="21" width="3" height="3" fill="#000"/>
+          <rect x="21" y="22" width="2" height="2" fill="#000"/>
+          <rect x="25" y="22" width="4" height="2" fill="#000"/>
+          <rect x="9"  y="26" width="3" height="2" fill="#000"/>
+          <rect x="14" y="26" width="2" height="2" fill="#000"/>
+          <rect x="19" y="26" width="4" height="2" fill="#000"/>
+          <rect x="25" y="25" width="2" height="3" fill="#000"/>
+          <!-- Alignment pattern -->
+          <rect x="22" y="22" width="5" height="5" fill="#000"/>
+          <rect x="23" y="23" width="3" height="3" fill="#fff"/>
+          <rect x="24" y="24" width="1" height="1" fill="#000"/>
+          <!-- Label -->
+          <text x="18.5" y="35.5" text-anchor="middle" font-size="3" font-family="sans-serif" fill="#1a6b3a" font-weight="bold">DOA Soil</text>
+        </svg>
+      </div>
+      <div class="qr-link">doa-soil-app.vercel.app</div>
+    </div>
+  </div>
+
+  <div class="page-num">11</div>
+</div>
+</body>
+</html>

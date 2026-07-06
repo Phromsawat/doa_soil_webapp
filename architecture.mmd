@@ -1,0 +1,46 @@
+graph TD
+    %% User Personas
+    subgraph Users
+        F[Farmers / General Users]
+        A[Administrators]
+    end
+
+    %% Frontend Web Application
+    subgraph Frontend ["Frontend (Next.js / React / TypeScript)"]
+        UI[User Interface]
+        ImgCapture[Image Capture & Upload]
+        Dashboard[Admin Dashboard]
+    end
+
+    %% Backend Services
+    subgraph Backend ["Backend (FastAPI / Python / Docker)"]
+        API[API Gateway / Router]
+        Inference[ML Model Inference Engine]
+        Auth[Authentication & Authorization]
+        DataMgr[Data Management Service]
+    end
+
+    %% Databases
+    subgraph Storage ["Databases (PostgreSQL / MinIO)"]
+        UserDB[(User & Roles DB)]
+        GeoDB[(Coordinate & Soil Data DB)]
+        ModelStore[(Model Artifacts Storage)]
+    end
+
+    %% Connections
+    F -->|Access via Browser/Mobile| UI
+    A -->|Manage System| Dashboard
+    
+    UI --> ImgCapture
+    ImgCapture -->|Upload Soil Image| API
+    Dashboard -->|Manage Users & Data| API
+    
+    API --> Auth
+    Auth --> UserDB
+    
+    API --> Inference
+    Inference -->|Load Model| ModelStore
+    Inference -->|Return Analysis| GeoDB
+    
+    API --> DataMgr
+    DataMgr --> GeoDB
