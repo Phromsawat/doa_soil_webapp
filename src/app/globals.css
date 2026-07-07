@@ -83,7 +83,7 @@ body {
 
 body {
   background-color: var(--color-background);
-  color: var(--color-primary);
+  color: var(--color-text-primary);
   font-family: var(--font-thai);
 }
 

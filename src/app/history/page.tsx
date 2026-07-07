@@ -41,7 +41,7 @@ function npkBadge(label: "N" | "P" | "K", val: number | null) {
 
   return (
     <div className="flex items-center gap-1.5 whitespace-nowrap">
-      <span className="font-bold text-text-primary">{label}</span>
+      <span className="font-medium text-text-primary">{label}</span>
       <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${colorClass}`}>{text}</span>
     </div>
   )
@@ -123,13 +123,13 @@ export default function HistoryPage() {
 
   return (
     <div className="font-thai pb-24 space-y-5 px-4 max-w-3xl mx-auto pt-4">
-      {/* Top Bar */}
-      <div className="flex items-center justify-between mb-2">
-        <h1 className="text-lg font-bold text-text-primary">ประวัติการวิเคราะห์</h1>
-        <div className="bg-green-100 text-primary text-xs font-bold px-3 py-1 rounded-full">
-          ทั้งหมด {analyses.length} รายการ
+      {/* Badge */}
+      <div className="flex justify-center mb-2">
+        <div className="bg-green-100 text-gray-700 text-xs font-bold px-3 py-1 rounded-full">
+          {analyses.length} รายการ
         </div>
       </div>
+
 
       {/* Search */}
       <div className="flex gap-2">
@@ -140,7 +140,7 @@ export default function HistoryPage() {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="ค้นหาจังหวัด อำเภอ หรือชื่อพืช..."
-            className="w-full h-12 bg-white rounded-full pl-12 pr-4 text-sm border border-gray-200 focus:outline-none focus:border-primary"
+            className="w-full h-12 bg-white rounded-full pl-12 pr-4 text-sm border border-gray-200 focus:outline-none focus:border-gray-400"
           />
         </div>
         <button className="w-12 h-12 bg-white rounded-full flex items-center justify-center border border-gray-200 text-text-primary shrink-0 hover:bg-gray-50 transition-colors">
@@ -154,7 +154,7 @@ export default function HistoryPage() {
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
-            className={`px-5 py-2 rounded-full text-sm font-bold whitespace-nowrap transition-colors ${
+            className={`px-5 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-colors ${
               activeTab === tab
                 ? "bg-text-primary text-white"
                 : "bg-white text-text-secondary border border-gray-200 hover:bg-gray-50"
@@ -194,22 +194,33 @@ export default function HistoryPage() {
                     // eslint-disable-next-line @next/next/no-img-element
                     <img src={firstImage} alt="soil sample" className="w-full h-full object-cover" />
                   ) : (
-                    <FileText className="w-8 h-8 text-gray-300" />
+                    <FileText className="w-5 h-5 text-gray-300" strokeWidth={1} />
                   )}
                 </div>
 
                 <div className="flex-1 flex flex-col justify-between min-w-0">
                   <div>
                     <div className="flex justify-between items-start mb-1 gap-2">
-                      <h3 className="font-bold text-text-primary text-sm leading-tight truncate">
-                        {item.notes ?? (item.input_mode === "image_upload" ? "วิเคราะห์จากรูป" : "กรอกค่าเอง")}
+                      <h3 className="font-medium text-text-primary text-sm leading-tight truncate">
+                        {(() => {
+                        if (item.input_mode === "map_pin" && item.notes) {
+                          const parts = item.notes.split("|||")
+                          return parts[0] ?? item.notes
+                        }
+                        return item.notes ?? (item.input_mode === "image_upload" ? "วิเคราะห์จากรูป" : "กรอกค่าเอง")
+                      })()}
                       </h3>
-                      <div className={`text-[10px] font-bold px-2 py-0.5 rounded-full whitespace-nowrap shrink-0 ${
-                        item.status === "completed" ? "bg-green-100 text-primary"
-                        : item.status === "pending" ? "bg-orange-100 text-orange-600"
-                        : "bg-red-100 text-red-600"
-                      }`}>
-                        {item.status === "completed" ? "เสร็จสิ้น" : item.status === "pending" ? "รอดำเนินการ" : "ล้มเหลว"}
+                      <div className="flex items-center gap-1 shrink-0">
+                        {item.input_mode === "map_pin" && (
+                          <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-blue-50 text-blue-600 whitespace-nowrap">ปักพิกัด</span>
+                        )}
+                        <div className={`text-[10px] font-bold px-2 py-0.5 rounded-full whitespace-nowrap ${
+                          item.status === "completed" ? "bg-green-100 text-gray-700"
+                          : item.status === "pending" ? "bg-orange-100 text-orange-600"
+                          : "bg-red-100 text-red-600"
+                        }`}>
+                          {item.status === "completed" ? "เสร็จสิ้น" : item.status === "pending" ? "รอดำเนินการ" : "ล้มเหลว"}
+                        </div>
                       </div>
                     </div>
                     <div className="text-xs text-text-secondary font-medium truncate">
@@ -231,7 +242,7 @@ export default function HistoryPage() {
                     </div>
                   )}
 
-                  <Link href={`/analyze/result?id=${item.id}`} className="mt-3 flex items-center justify-end text-xs font-bold text-primary hover:text-primary/80 transition-colors">
+                  <Link href={`/analyze/result?id=${item.id}`} className="mt-3 flex items-center justify-end text-xs font-medium text-gray-700 hover:text-gray-500 transition-colors">
                     ดูรายละเอียด <ChevronRightIcon className="w-4 h-4 ml-0.5" />
                   </Link>
                 </div>

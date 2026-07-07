@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { ArrowLeft, Lock, Loader2, CheckCircle2 } from "lucide-react"
+import { ArrowLeft, Lock, Loader2, CheckCircle2, Eye, EyeOff } from "lucide-react"
 import { useUser } from "@/lib/supabase/useUser"
 import { updatePassword } from "@/lib/supabase/auth"
 
@@ -89,21 +89,17 @@ export default function ChangePasswordPage() {
     <div className="flex-1 w-full flex flex-col items-center px-4 pt-12 pb-32 font-thai bg-background">
       <div className="w-full max-w-[380px] bg-white rounded-3xl shadow-xl shadow-black/5 border border-gray-100 p-8 space-y-6 relative">
 
-        <Link href="/profile" className="absolute top-6 left-6 text-gray-400 hover:text-gray-700 transition-colors">
-          <ArrowLeft className="w-5 h-5" />
-        </Link>
-        <h1 className="text-lg font-bold text-[#1A4D2E] text-center pt-2">เปลี่ยนรหัสผ่าน</h1>
-
-        <div className="flex items-center justify-center pt-2">
-          <div className="w-16 h-16 rounded-full bg-[#1A4D2E]/10 flex items-center justify-center">
-            <Lock className="w-8 h-8 text-[#1A4D2E]" />
-          </div>
+        <div className="flex items-center justify-center relative">
+          <Link href="/profile" className="absolute left-0 text-gray-400 hover:text-gray-700 transition-colors">
+            <ArrowLeft className="w-5 h-5" />
+          </Link>
+          <h1 className="text-lg font-medium text-gray-900">เปลี่ยนรหัสผ่าน</h1>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
 
           <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-gray-600">รหัสผ่านใหม่</label>
+            <label className="text-xs font-semibold text-gray-600 pl-4">รหัสผ่านใหม่</label>
             <div className="relative">
               <input
                 type={showPassword ? "text" : "password"}
@@ -112,20 +108,20 @@ export default function ChangePasswordPage() {
                 required
                 minLength={6}
                 placeholder="อย่างน้อย 6 ตัวอักษร"
-                className="w-full h-11 px-4 pr-16 rounded-full bg-gray-50 border border-gray-100 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#1A4D2E]/20 focus:border-[#1A4D2E]"
+                className="w-full h-11 px-4 pr-16 rounded-full bg-gray-50 border border-gray-100 text-sm text-gray-900 focus:outline-none focus:border-[#1A4D2E]"
               />
               <button
                 type="button"
                 onClick={() => setShowPassword((s) => !s)}
-                className="absolute right-4 top-3 text-xs text-gray-500 hover:text-gray-700"
+                className="absolute right-4 top-3 text-gray-400 hover:text-gray-600"
               >
-                {showPassword ? "ซ่อน" : "แสดง"}
+                {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
               </button>
             </div>
           </div>
 
           <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-gray-600">ยืนยันรหัสผ่านใหม่</label>
+            <label className="text-xs font-semibold text-gray-600 pl-4">ยืนยันรหัสผ่านใหม่</label>
             <input
               type={showPassword ? "text" : "password"}
               value={confirmPassword}
@@ -133,7 +129,7 @@ export default function ChangePasswordPage() {
               required
               minLength={6}
               placeholder="ใส่รหัสผ่านอีกครั้ง"
-              className="w-full h-11 px-4 rounded-full bg-gray-50 border border-gray-100 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#1A4D2E]/20 focus:border-[#1A4D2E]"
+              className="w-full h-11 px-4 rounded-full bg-gray-50 border border-gray-100 text-sm text-gray-900 focus:outline-none focus:border-[#1A4D2E]"
             />
           </div>
 
@@ -149,7 +145,11 @@ export default function ChangePasswordPage() {
           <button
             type="submit"
             disabled={saving || !newPassword || !confirmPassword}
-            className="w-full h-11 rounded-full bg-[#1A4D2E] hover:bg-[#143a22] text-white font-bold text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+            className={`w-full h-11 rounded-full text-white font-bold text-sm transition-colors flex items-center justify-center gap-2 ${
+              newPassword && confirmPassword
+                ? "bg-[#1A4D2E] hover:bg-[#143a22] cursor-pointer"
+                : "bg-[#1A4D2E]/50 cursor-not-allowed"
+            }`}
           >
             {saving ? <><Loader2 className="w-4 h-4 animate-spin" /> กำลังเปลี่ยน...</> : "เปลี่ยนรหัสผ่าน"}
           </button>
