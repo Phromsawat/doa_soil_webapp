@@ -264,5 +264,44 @@ A: ผมเขียน docs ใน `docs/PROGRESS_REPORT.md` ดูได้
 
 ---
 
+---
+
+## 📅 Work Log
+
+### วันที่ 7 กรกฎาคม 2569
+
+**หน้า Change Password (`src/app/profile/change-password/page.tsx`)**
+- เปลี่ยนปุ่ม "แสดง"/"ซ่อน" รหัสผ่าน เป็น icon ตา (Eye / EyeOff จาก lucide-react)
+
+**หน้า History (`src/app/history/page.tsx` + `src/components/layout/bar.tsx`)**
+- ย้าย title "ประวัติการวิเคราะห์" ไปกลาง header — ใช้ `absolute inset-0 justify-center` ให้ title ลอยตรงกลางจริงๆ ไม่ว่า left/right content กว้างแค่ไหน
+- ซ่อนปุ่ม "หน้าหลัก" ใน bar บนหน้า History สำหรับ mobile/tablet (`hidden lg:flex`) — เหลือแค่ desktop
+- ย้าย badge "X รายการ" ไปตรงกลาง + เปลี่ยนสีตัวหนังสือจากเขียว (`text-primary`) เป็น `text-gray-700`
+- ลบ title ซ้ำที่อยู่ใน page content (เหลือแค่ใน bar)
+- ลดความหนาตัวหนังสือ: `font-bold` → `font-medium` (ปุ่ม tab, card title, badge NPK, ลิงก์ "ดูรายละเอียด")
+- เปลี่ยนสีลิงก์ "ดูรายละเอียด" + badge "เสร็จสิ้น" จากเขียว → `text-gray-700`
+- ลดขนาด icon FileText (thumbnail fallback): `w-8 h-8` → `w-5 h-5 strokeWidth={1}`
+
+**Bug fix: ตัวหนังสือ placeholder สีเขียวทั้งแอป (`src/app/globals.css`)**
+- แก้ `body { color: var(--color-primary) }` → `color: var(--color-text-primary)` — body สีเขียวทำให้ placeholder ทุก input รับ inherit แล้วออกมาสีเขียวหมด
+
+**หน้า Analyze Result (`src/app/analyze/result/page.tsx`)**
+- ลดความหนาตัวหนังสือ: `font-bold` / `font-semibold` → `font-medium` (14 จุด)
+- อัพเดทสี progress bar NPK ให้ตรง design system: ต่ำ `#ff000d`, ปานกลาง `#ffd188`, สูง `#85c98a` (ดึงค่าจาก MapView.tsx)
+- ค่า NPK: เปลี่ยนจาก `ค่า — ระดับ` เป็น `ค่า (ระดับ)` — ลบขีดกลาง ใช้วงเล็บแทน
+- ค่า NPK text color → neutral gray (`text-text-secondary`) ไม่ใช้สีตาม level อีกต่อไป
+- ลบ icon Sprout จากหัวข้อ "เลือกพืชที่จะปลูก"
+- ลบ icon Droplets จากหัวข้อ "คำแนะนำการจัดการปุ๋ย"
+- Select dropdown: เพิ่ม `appearance-none` + `ChevronDown` absolute position ด้านขวา — ลูกศรอยู่ในช่องพอดี ทุก browser
+
+---
+
+### วันที่ 8 กรกฎาคม 2569
+
+**หน้า Analyze Result (`src/app/analyze/result/page.tsx`)**
+- Badge "กรอกค่าเอง" / "อัปโหลดรูป": เปลี่ยนสีจากเขียว (`text-primary`) → `text-gray-700`
+
+---
+
 > สงสัยอะไรถามได้ที่ Discord
 > รายงานครบ: [PROGRESS_REPORT.md](./PROGRESS_REPORT.md)
