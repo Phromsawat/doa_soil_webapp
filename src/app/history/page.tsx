@@ -185,7 +185,10 @@ export default function HistoryPage() {
         <div className="space-y-3 pt-2">
           {filtered.map((item) => {
             const firstImage = item.analysis_images?.[0]?.public_url
-            const location = [item.district, item.amphur, item.province].filter(Boolean).join(" ") || "ไม่ระบุที่อยู่"
+            const location = [item.district, item.amphur, item.province].filter(Boolean).join(" ") ||
+              (item.latitude && item.longitude
+                ? `${Number(item.latitude).toFixed(4)}, ${Number(item.longitude).toFixed(4)}`
+                : "ไม่ระบุที่อยู่")
             return (
               <div key={item.id} className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100 flex gap-4">
                 {/* Thumbnail */}

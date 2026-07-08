@@ -57,6 +57,7 @@ export default function Bar() {
     }
   }, [pathname])
 
+  const isAdminPage = pathname.startsWith("/admin")
   const isAnalyzeMain = pathname === "/analyze"
   const isAnalyzeSub = pathname !== "/analyze" && pathname.startsWith("/analyze")
   const isAnalyze = pathname.startsWith("/analyze")
@@ -182,6 +183,15 @@ export default function Bar() {
             </h2>
           </div>
         )
+      )}
+
+      {isAdminPage && user && (
+        <button
+          onClick={() => setIsProfileOpen(true)}
+          className="lg:hidden ml-auto w-9 h-9 rounded-full bg-[#1A4D2E] hover:opacity-90 text-white flex items-center justify-center text-sm font-bold transition-opacity shadow-sm"
+        >
+          {isAnonymous ? t('anonymousUserName').charAt(0).toUpperCase() : initial}
+        </button>
       )}
 
       {!(isAnalyzeMain || isAnalyzeSub) && (

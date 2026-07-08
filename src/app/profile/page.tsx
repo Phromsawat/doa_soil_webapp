@@ -41,6 +41,11 @@ export default function ProfilePage() {
       .finally(() => setLoading(false))
   }, [user, userLoading, router])
 
+  const isDirty =
+    fullName.trim() !== (profile?.full_name ?? "") ||
+    nickname.trim() !== (profile?.nickname ?? "") ||
+    phone.trim() !== (profile?.phone ?? "")
+
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault()
     setError(null)
@@ -91,10 +96,12 @@ export default function ProfilePage() {
     <div className="flex-1 w-full flex flex-col items-center px-4 pt-12 pb-32 font-thai bg-background">
       <div className="w-full max-w-[440px] bg-white rounded-3xl shadow-xl shadow-black/5 border border-gray-100 p-8 space-y-6 relative">
 
-        <Link href="/" className="absolute top-6 left-6 text-gray-400 hover:text-gray-700 transition-colors">
-          <ArrowLeft className="w-5 h-5" />
-        </Link>
-        <h1 className="text-lg font-bold text-[#1A4D2E] text-center pt-2">แก้ไขโปรไฟล์</h1>
+        <div className="flex items-center justify-center relative">
+          <Link href="/" className="absolute left-0 text-gray-400 hover:text-gray-700 transition-colors">
+            <ArrowLeft className="w-5 h-5" />
+          </Link>
+          <h1 className="text-lg font-medium text-gray-900">แก้ไขโปรไฟล์</h1>
+        </div>
 
         <div className="flex items-center justify-center pt-2">
           <div className="w-20 h-20 rounded-full bg-[#1A4D2E] text-white flex items-center justify-center text-3xl font-bold shadow-lg">
@@ -105,9 +112,7 @@ export default function ProfilePage() {
         <form onSubmit={handleSave} className="space-y-4">
 
           <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-gray-600 flex items-center gap-1.5">
-              <Mail className="w-3.5 h-3.5" /> อีเมล
-            </label>
+            <label className="text-xs font-semibold text-gray-600 pl-4">อีเมล</label>
             <input
               type="email"
               value={user?.email ?? profile?.email ?? ""}
@@ -118,39 +123,35 @@ export default function ProfilePage() {
           </div>
 
           <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-gray-600 flex items-center gap-1.5">
-              <UserIcon className="w-3.5 h-3.5" /> ชื่อ-นามสกุล
-            </label>
+            <label className="text-xs font-semibold text-gray-600 pl-4">ชื่อ-นามสกุล</label>
             <input
               type="text"
               value={fullName}
               onChange={(e) => setFullName(e.target.value)}
               placeholder="ระบุชื่อ-นามสกุล"
-              className="w-full h-11 px-4 rounded-full bg-gray-50 border border-gray-100 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#1A4D2E]/20 focus:border-[#1A4D2E]"
+              className="w-full h-11 px-4 rounded-full bg-gray-50 border border-gray-100 text-sm text-gray-900 focus:outline-none focus:border-[#1A4D2E]"
             />
           </div>
 
           <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-gray-600">ชื่อเล่น</label>
+            <label className="text-xs font-semibold text-gray-600 pl-4">ชื่อเล่น</label>
             <input
               type="text"
               value={nickname}
               onChange={(e) => setNickname(e.target.value)}
               placeholder="ระบุชื่อเล่น (แสดงในเมนู)"
-              className="w-full h-11 px-4 rounded-full bg-gray-50 border border-gray-100 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#1A4D2E]/20 focus:border-[#1A4D2E]"
+              className="w-full h-11 px-4 rounded-full bg-gray-50 border border-gray-100 text-sm text-gray-900 focus:outline-none focus:border-[#1A4D2E]"
             />
           </div>
 
           <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-gray-600 flex items-center gap-1.5">
-              <Phone className="w-3.5 h-3.5" /> เบอร์โทร
-            </label>
+            <label className="text-xs font-semibold text-gray-600 pl-4">เบอร์โทร</label>
             <input
               type="tel"
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
               placeholder="08x-xxx-xxxx"
-              className="w-full h-11 px-4 rounded-full bg-gray-50 border border-gray-100 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#1A4D2E]/20 focus:border-[#1A4D2E]"
+              className="w-full h-11 px-4 rounded-full bg-gray-50 border border-gray-100 text-sm text-gray-900 focus:outline-none focus:border-[#1A4D2E]"
             />
           </div>
 
@@ -165,8 +166,12 @@ export default function ProfilePage() {
 
           <button
             type="submit"
-            disabled={saving}
-            className="w-full h-11 rounded-full bg-[#1A4D2E] hover:bg-[#143a22] text-white font-bold text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+            disabled={saving || !isDirty}
+            className={`w-full h-11 rounded-full text-white font-bold text-sm transition-colors flex items-center justify-center gap-2 ${
+              isDirty
+                ? "bg-[#1A4D2E] hover:bg-[#143a22] cursor-pointer"
+                : "bg-[#1A4D2E]/50 cursor-not-allowed"
+            }`}
           >
             {saving ? <><Loader2 className="w-4 h-4 animate-spin" /> กำลังบันทึก...</> : "บันทึก"}
           </button>
@@ -175,12 +180,10 @@ export default function ProfilePage() {
         <div className="pt-4 border-t border-gray-100">
           <Link
             href="/profile/change-password"
-            className="flex items-center justify-between p-4 rounded-xl bg-gray-50 hover:bg-gray-100 transition-colors"
+            className="flex items-center justify-between py-3 px-1 hover:opacity-70 transition-opacity"
           >
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-[#1A4D2E]/10 flex items-center justify-center">
-                <Lock className="w-5 h-5 text-[#1A4D2E]" />
-              </div>
+              <Lock className="w-5 h-5 text-gray-400" />
               <div>
                 <p className="font-semibold text-sm text-gray-800">เปลี่ยนรหัสผ่าน</p>
                 <p className="text-xs text-gray-500">อัปเดตรหัสผ่านบัญชี</p>

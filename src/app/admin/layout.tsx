@@ -33,7 +33,7 @@ export default async function AdminLayout({
           name: profile.full_name ?? profile.nickname ?? "Admin",
         }}
       />
-      <main className="flex-1 lg:ml-64 px-4 lg:px-8 py-6 overflow-x-hidden">
+      <main className="flex-1 lg:ml-64 px-4 lg:px-8 py-6 pb-20 lg:pb-6 overflow-x-hidden">
         {children}
       </main>
     </div>

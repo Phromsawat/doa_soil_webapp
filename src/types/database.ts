@@ -7,7 +7,7 @@ export type UserRole = "user" | "admin"
 export type CropTypeUnit = "per_tree" | "per_rai"
 export type RecommendationMode = "100%" | "70%"
 export type TargetUnit = "g/tree/year" | "kg/rai"
-export type InputMode = "image_upload" | "manual_form"
+export type InputMode = "image_upload" | "manual_form" | "map_pin"
 export type AnalysisStatus = "pending" | "completed" | "failed"
 export type NutrientCode = "OM" | "P" | "K"
 
