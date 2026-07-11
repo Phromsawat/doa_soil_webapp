@@ -1,6 +1,6 @@
 "use client"
 
-import { ArrowLeft, Home, Sprout, History, User, Info, Phone as PhoneIcon, Menu, X, ChevronDown } from "lucide-react"
+import { ArrowLeft, Home, Sprout, History, User, Info, Phone as PhoneIcon, Menu, X, ChevronDown, Map as MapIcon } from "lucide-react"
 import { usePathname, useRouter } from "next/navigation"
 import Link from "next/link"
 import { useLanguage } from "@/components/providers/LanguageProvider"
@@ -82,6 +82,7 @@ export default function Bar() {
 
   const navLinks = [
     { href: "/", label: t('homeMenu'), icon: Home },
+    { href: "/map", label: t('mapMenu'), icon: MapIcon },
     { href: "/#about", label: t('aboutMenu'), icon: Info },
     { href: "/#terms", label: t('termsMenu'), icon: Info },
     { href: "/#contact", label: t('contactMenu'), icon: PhoneIcon },
