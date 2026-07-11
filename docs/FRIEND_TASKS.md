@@ -303,5 +303,56 @@ A: ผมเขียน docs ใน `docs/PROGRESS_REPORT.md` ดูได้
 
 ---
 
+### วันที่ 12 กรกฎาคม 2569
+
+**หน้าแผนที่ (`src/app/map/SoilMaps.tsx`) — ออกแบบใหม่ทั้งหน้า**
+
+- เพิ่มเข็มทิศ (N + ลูกศร) วงกลมขาว มุมบนซ้าย — `z-[1000]`
+- เพิ่มปุ่ม zoom +/- แนวตั้ง ชิดขวากลาง
+- เพิ่มปุ่ม My Location ใช้ icon `/precision.png`
+  - กดปุ่ม → pin ปักที่ตำแหน่งผู้ใช้ + map zoom ไปที่นั้น
+  - ย้าย pin ต่อได้โดยแตะที่อื่นบนแผนที่
+- Legend ย้ายไป `top-16 left-3` ตลอด (ไม่ขึ้นกับ breakpoint)
+- Legend dots เปลี่ยนจาก `rounded-sm` → `rounded-full` (วงกลม)
+- Basemap เปลี่ยนจาก `voyager` → `voyager_nolabels` (ไม่มีชื่อเมือง)
+- เพิ่ม "THAILAND" label marker ตรงกลางประเทศ (ชดเชยการเอา labels ออก)
+- PIN marker: วงกลมสีเขียวเข้ม `#1A4D2E` ขนาดเล็ก 13×13px
+- Tab active: เปลี่ยนจาก `bg-emerald-500` → `bg-[#1A4D2E]` (ตรงกับปุ่มหลัก)
+- Card active border: เปลี่ยนจาก `border-emerald-300` → `border-[#1A4D2E]` พร้อม bg ขาวแทน mint
+- พิกัดใน card: จัดกึ่งกลาง
+- ลบ user location dot (watchPosition) — ใช้ PIN เป็น indicator เดียว
+
+**Layout (`src/components/layout/bar.tsx`) — แก้ z-index menu ทับแผนที่**
+
+- Menu overlay: `z-[45]` → `z-[1200]`
+- Menu drawer: `z-[50]` → `z-[1300]`
+- Profile overlay: `z-[55]` → `z-[1200]`
+- Profile drawer: `z-[60]` → `z-[1300]`
+- สาเหตุ: Leaflet map controls ใช้ `z-[1000]`/`z-[1001]` ทำให้เมนูโดนทับเมื่ออยู่บนหน้าแผนที่
+
+**Admin (`src/app/admin/page.tsx`)**
+
+- เอา em dash + bullet list ออก เปลี่ยนเป็น white dot flex items
+- เปลี่ยน gradient background → solid `bg-[#1A4D2E]`
+
+**BottomNav (`src/components/layout/BottomNav.tsx`)**
+
+- icon "ภาพรวม" admin: `LayoutDashboard` → `BarChart2`
+- เอา active state background pill ออก — เหลือแค่เปลี่ยนสีตัวหนังสือ
+
+**Bar — หน้าแผนที่ (`src/components/layout/bar.tsx`)**
+
+- เพิ่ม map page header: แสดง `← หน้าหลัก | แผนที่` จัดกึ่งกลาง (เหมือนหน้าย่อยอื่น)
+- เพิ่มปุ่ม profile avatar บน mobile สำหรับหน้า admin (`isAdminPage`)
+
+**เกณฑ์ดิน (`MAP.md` + 3 ไฟล์)**
+
+- สร้าง `MAP.md` — ตารางเกณฑ์ OM/P/K อ้างอิงกรมวิชาการเกษตร
+- แก้ threshold ที่ผิดใน `fertilizer/page.tsx`, `history/page.tsx`, `storage.ts`
+  - P: `<15` → `<10`, `<=45` → `<=25`
+  - K: `<50` → `<60`, `<=100` → `<=90`
+
+---
+
 > สงสัยอะไรถามได้ที่ Discord
 > รายงานครบ: [PROGRESS_REPORT.md](./PROGRESS_REPORT.md)

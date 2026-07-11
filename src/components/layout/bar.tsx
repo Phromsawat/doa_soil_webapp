@@ -78,6 +78,11 @@ export default function Bar() {
   } else if (isHistory) {
     title = "ประวัติการวิเคราะห์"
     showBack = true
+    centerTitle = true
+  } else if (pathname === "/map") {
+    title = "แผนที่"
+    showBack = true
+    centerTitle = true
   }
 
   const navLinks = [
@@ -215,13 +220,13 @@ export default function Bar() {
         <>
           {/* Overlay */}
           <div 
-            className={`fixed inset-0 bg-black/40 z-[45] lg:hidden transition-opacity duration-300 ${isMobileMenuOpen ? 'opacity-100 visible' : 'opacity-0 invisible'}`}
+            className={`fixed inset-0 bg-black/40 z-[1200] lg:hidden transition-opacity duration-300 ${isMobileMenuOpen ? 'opacity-100 visible' : 'opacity-0 invisible'}`}
             onClick={() => setIsMobileMenuOpen(false)}
           />
           
           {/* Drawer */}
           <div 
-            className={`fixed top-0 right-0 h-full w-[240px] bg-[#F5F5F5] z-[50] lg:hidden transform transition-transform duration-300 ease-in-out flex flex-col p-6 shadow-2xl overflow-y-auto ${isMobileMenuOpen ? 'translate-x-0' : 'translate-x-full'}`}
+            className={`fixed top-0 right-0 h-full w-[240px] bg-[#F5F5F5] z-[1300] lg:hidden transform transition-transform duration-300 ease-in-out flex flex-col p-6 shadow-2xl overflow-y-auto ${isMobileMenuOpen ? 'translate-x-0' : 'translate-x-full'}`}
           >
             <div className="flex justify-end mb-8">
               <button onClick={() => setIsMobileMenuOpen(false)} className="p-2 -mr-4 text-gray-500 hover:text-gray-800 transition-colors">
@@ -314,12 +319,12 @@ export default function Bar() {
 
       {/* Profile Drawer */}
       <div 
-        className={`fixed inset-0 bg-black/40 z-[55] transition-opacity duration-300 ${isProfileOpen ? 'opacity-100 visible' : 'opacity-0 invisible'}`}
+        className={`fixed inset-0 bg-black/40 z-[1200] transition-opacity duration-300 ${isProfileOpen ? 'opacity-100 visible' : 'opacity-0 invisible'}`}
         onClick={() => setIsProfileOpen(false)}
       />
       
       <div 
-        className={`fixed top-0 right-0 h-full w-[340px] max-w-full bg-[#F5F5F5] z-[60] transform transition-transform duration-300 ease-in-out flex flex-col overflow-y-auto ${isProfileOpen ? 'translate-x-0' : 'translate-x-full'}`}
+        className={`fixed top-0 right-0 h-full w-[340px] max-w-full bg-[#F5F5F5] z-[1300] transform transition-transform duration-300 ease-in-out flex flex-col overflow-y-auto ${isProfileOpen ? 'translate-x-0' : 'translate-x-full'}`}
       >
         <div className="bg-white px-6 py-8 shadow-sm flex items-center gap-4 rounded-b-[2rem] mb-6">
           <div className="w-14 h-14 rounded-full bg-[#1A4D2E] text-white flex items-center justify-center text-xl font-bold shrink-0">

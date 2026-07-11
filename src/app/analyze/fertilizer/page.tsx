@@ -67,18 +67,18 @@ function isFruit(c: CropType): c is FruitKey {
 type ExcelLevel = "low" | "med" | "high"
 
 function classifyOM(v: number): ExcelLevel {
-  if (v < 2) return "low"
-  if (v <= 3) return "med"
+  if (v < 1.5) return "low"
+  if (v <= 3.5) return "med"
   return "high"
 }
 function classifyP(v: number): ExcelLevel {
-  if (v < 15) return "low"
-  if (v <= 45) return "med"
+  if (v < 10) return "low"
+  if (v <= 25) return "med"
   return "high"
 }
 function classifyK(v: number): ExcelLevel {
-  if (v < 50) return "low"
-  if (v <= 100) return "med"
+  if (v < 60) return "low"
+  if (v <= 90) return "med"
   return "high"
 }
 

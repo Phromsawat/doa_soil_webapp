@@ -29,12 +29,12 @@ function npkBadge(label: "N" | "P" | "K", val: number | null) {
       else if (val <= 60) { text = "ปานกลาง"; colorClass = "bg-orange-100 text-orange-600" }
       else { text = "สูง"; colorClass = "bg-green-100 text-primary" }
     } else if (label === "P") {
-      if (val < 15) { text = "ต่ำ"; colorClass = "bg-red-100 text-red-600" }
-      else if (val <= 45) { text = "ปานกลาง"; colorClass = "bg-orange-100 text-orange-600" }
+      if (val < 10) { text = "ต่ำ"; colorClass = "bg-red-100 text-red-600" }
+      else if (val <= 25) { text = "ปานกลาง"; colorClass = "bg-orange-100 text-orange-600" }
       else { text = "สูง"; colorClass = "bg-green-100 text-primary" }
     } else {
-      if (val < 50) { text = "ต่ำ"; colorClass = "bg-red-100 text-red-600" }
-      else if (val <= 100) { text = "ปานกลาง"; colorClass = "bg-orange-100 text-orange-600" }
+      if (val < 60) { text = "ต่ำ"; colorClass = "bg-red-100 text-red-600" }
+      else if (val <= 90) { text = "ปานกลาง"; colorClass = "bg-orange-100 text-orange-600" }
       else { text = "สูง"; colorClass = "bg-green-100 text-primary" }
     }
   }
