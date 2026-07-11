@@ -2,8 +2,8 @@
 
 import dynamic from "next/dynamic"
 
-const MapView = dynamic(() => import("./MapView"), { ssr: false })
+const SoilMaps = dynamic(() => import("./SoilMaps"), { ssr: false })
 
 export default function MapPage() {
-  return <MapView />
+  return <SoilMaps />
 }
