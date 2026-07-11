@@ -1,33 +1,18 @@
 "use client"
 
-import { ArrowLeft, Home, Sprout, History, User, Info, Phone as PhoneIcon, Menu, X, ChevronDown, Map as MapIcon } from "lucide-react"
+import { ArrowLeft, Home, Sprout, History, User, Info, Phone as PhoneIcon, Menu, X, ChevronDown } from "lucide-react"
 import { usePathname, useRouter } from "next/navigation"
 import Link from "next/link"
 import { useLanguage } from "@/components/providers/LanguageProvider"
 import { useState, useEffect } from "react"
-import { useUser, useIsAdmin } from "@/lib/supabase/useUser"
-import { signOut } from "@/lib/supabase/auth"
 
 export default function Bar() {
   const pathname = usePathname()
   const router = useRouter()
   const { language, setLanguage, t } = useLanguage()
-  const { user, isAnonymous, displayName, initial } = useUser()
-  const { isAdmin } = useIsAdmin()
   const [activeHash, setActiveHash] = useState("")
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const [isProfileOpen, setIsProfileOpen] = useState(false)
-
-  const handleSignOut = async () => {
-    try {
-      await signOut()
-      setIsProfileOpen(false)
-      router.push("/")
-      router.refresh()
-    } catch (err) {
-      console.error("Sign out error:", err)
-    }
-  }
   const [isDropdownOpen, setIsDropdownOpen] = useState(false)
 
   useEffect(() => {
@@ -39,16 +24,12 @@ export default function Bar() {
     
     window.addEventListener("hashchange", handleHashChange)
     window.addEventListener("toggle-mobile-menu", handleToggleMenu)
-
+    
     return () => {
       window.removeEventListener("hashchange", handleHashChange)
       window.removeEventListener("toggle-mobile-menu", handleToggleMenu)
     }
   }, [])
-
-  useEffect(() => {
-    window.dispatchEvent(new CustomEvent("mobile-menu-state", { detail: isMobileMenuOpen }))
-  }, [isMobileMenuOpen])
 
   useEffect(() => {
     // Reset hash when changing pages entirely
@@ -57,12 +38,10 @@ export default function Bar() {
     }
   }, [pathname])
 
-  const isAdminPage = pathname.startsWith("/admin")
   const isAnalyzeMain = pathname === "/analyze"
   const isAnalyzeSub = pathname !== "/analyze" && pathname.startsWith("/analyze")
   const isAnalyze = pathname.startsWith("/analyze")
   const isHistory = pathname.startsWith("/history")
-  const isMap = pathname === "/map"
 
   if (
     pathname === "/login" || 
@@ -89,6 +68,8 @@ export default function Bar() {
       title = "คำนวณสูตรปุ๋ย"
     } else if (pathname === "/analyze/map") {
       title = "เลือกพิกัดบนแผนที่"
+    } else if (pathname === "/analyze/result") {
+      title = "ผลการทำนาย"
     } else {
       title = "วิเคราะห์ดิน"
     }
@@ -97,16 +78,10 @@ export default function Bar() {
   } else if (isHistory) {
     title = "ประวัติการวิเคราะห์"
     showBack = true
-    centerTitle = true
-  } else if (isMap) {
-    title = "แผนที่"
-    showBack = true
-    centerTitle = true
   }
 
   const navLinks = [
     { href: "/", label: t('homeMenu'), icon: Home },
-    { href: "/map", label: t('mapMenu'), icon: MapIcon },
     { href: "/#about", label: t('aboutMenu'), icon: Info },
     { href: "/#terms", label: t('termsMenu'), icon: Info },
     { href: "/#contact", label: t('contactMenu'), icon: PhoneIcon },
@@ -117,19 +92,7 @@ export default function Bar() {
       <header className={`h-16 flex items-center px-4 fixed top-0 left-0 right-0 z-40 ${pathname === '/my-page' ? 'bg-transparent justify-end pointer-events-none' : 'bg-white/60 backdrop-blur-lg border-b border-white/20 shadow-sm justify-between'}`}>
       
       {pathname !== '/my-page' && (
-        isHistory ? (
-          <>
-            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-              <h2 className="font-medium font-thai text-lg text-text-primary">ประวัติการวิเคราะห์</h2>
-            </div>
-            <div className="flex items-center gap-3 relative z-10">
-              <button onClick={() => router.push('/')} className="hidden lg:flex items-center gap-1 p-1 -ml-1 pr-2 text-text-primary hover:bg-gray-100 rounded-full transition-colors">
-                <ArrowLeft className="w-6 h-6" />
-                <span className="font-thai font-medium text-[15px]">หน้าหลัก</span>
-              </button>
-            </div>
-          </>
-        ) : centerTitle ? (
+        centerTitle ? (
           <>
             <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
               {(pathname === '/analyze/upload' || pathname === '/analyze/form' || pathname === '/analyze/fertilizer') ? (
@@ -152,14 +115,14 @@ export default function Bar() {
                   )}
                 </div>
               ) : (
-                <h2 className="font-medium font-thai text-lg text-text-primary">
+                <h2 className="font-semibold font-thai text-lg text-text-primary">
                   {title}
                 </h2>
               )}
             </div>
             <div className="flex items-center gap-3 relative z-10">
               {showBack && pathname !== '/analyze/map' && (
-                <button onClick={() => router.push('/')} className={`${isHistory ? 'flex' : 'hidden lg:flex'} items-center gap-1 p-1 -ml-1 pr-2 text-text-primary hover:bg-gray-100 rounded-full transition-colors`}>
+                <button onClick={() => router.push('/')} className="hidden lg:flex items-center gap-1 p-1 -ml-1 pr-2 text-text-primary hover:bg-gray-100 rounded-full transition-colors">
                   <ArrowLeft className="w-6 h-6" />
                   <span className="font-thai font-medium text-[15px]">หน้าหลัก</span>
                 </button>
@@ -183,15 +146,6 @@ export default function Bar() {
             </h2>
           </div>
         )
-      )}
-
-      {isAdminPage && user && (
-        <button
-          onClick={() => setIsProfileOpen(true)}
-          className="lg:hidden ml-auto w-9 h-9 rounded-full bg-[#1A4D2E] hover:opacity-90 text-white flex items-center justify-center text-sm font-bold transition-opacity shadow-sm"
-        >
-          {isAnonymous ? t('anonymousUserName').charAt(0).toUpperCase() : initial}
-        </button>
       )}
 
       {!(isAnalyzeMain || isAnalyzeSub) && (
@@ -245,14 +199,7 @@ export default function Bar() {
                   />
                 </button>
               )}
-              {user ? (
-                <button
-                  onClick={() => setIsProfileOpen(true)}
-                  className="w-9 h-9 rounded-full bg-[#1A4D2E] hover:opacity-90 text-white flex items-center justify-center text-sm font-bold transition-opacity shadow-sm"
-                >
-                  {isAnonymous ? t('anonymousUserName').charAt(0).toUpperCase() : initial}
-                </button>
-              ) : pathname === '/' ? (
+              {pathname === '/' ? (
                 <Link href="/login" className="flex items-center justify-center py-1.5 px-4 w-[120px] bg-[#1A4D2E] hover:bg-[#143a22] text-white rounded-full font-medium transition-all shadow-sm text-sm">
                   {t('login')}
                 </Link>
@@ -353,27 +300,13 @@ export default function Bar() {
                 <span>{language === 'th' ? 'ไทย' : 'EN'}</span>
               </button>
 
-              {user ? (
-                <button
-                  onClick={() => { setIsMobileMenuOpen(false); setIsProfileOpen(true); }}
-                  className="mt-2 flex items-center justify-center gap-2 w-full py-2 bg-[#1A4D2E] hover:bg-[#143a22] text-white rounded-full font-medium transition-all shadow-sm"
-                >
-                  <div className="w-6 h-6 rounded-full bg-white/20 flex items-center justify-center text-xs font-bold">
-                    {isAnonymous ? t('anonymousUserName').charAt(0).toUpperCase() : initial}
-                  </div>
-                  <span className="truncate max-w-[140px]">
-                    {isAnonymous ? t('anonymousUserName') : displayName}
-                  </span>
-                </button>
-              ) : (
-                <Link
-                  href="/login"
-                  onClick={() => setIsMobileMenuOpen(false)}
-                  className="mt-2 flex items-center justify-center w-full py-2 bg-[#E1F0E5] hover:bg-[#d1e6d8] text-[#1A1A1A] rounded-full font-medium transition-all shadow-sm"
-                >
-                  {t('login')}
-                </Link>
-              )}
+              <Link 
+                href="/login"
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="mt-2 flex items-center justify-center w-full py-2 bg-[#E1F0E5] hover:bg-[#d1e6d8] text-[#1A1A1A] rounded-full font-medium transition-all shadow-sm"
+              >
+                {t('login')}
+              </Link>
             </div>
           </div>
         </>
@@ -384,82 +317,51 @@ export default function Bar() {
         onClick={() => setIsProfileOpen(false)}
       />
       
-      <div
-        className={`fixed top-0 right-0 h-full w-[280px] bg-[#F5F5F5] z-[60] transform transition-transform duration-300 ease-in-out flex flex-col p-6 shadow-2xl overflow-y-auto ${isProfileOpen ? 'translate-x-0' : 'translate-x-full'}`}
+      <div 
+        className={`fixed top-0 right-0 h-full w-[340px] max-w-full bg-[#F5F5F5] z-[60] transform transition-transform duration-300 ease-in-out flex flex-col overflow-y-auto ${isProfileOpen ? 'translate-x-0' : 'translate-x-full'}`}
       >
-        <div className="flex justify-end mb-6">
-          <button onClick={() => setIsProfileOpen(false)} className="p-2 -mr-2 text-gray-500 hover:text-gray-800 transition-colors">
-            <X className="w-6 h-6" />
-          </button>
+        <div className="bg-white px-6 py-8 shadow-sm flex items-center gap-4 rounded-b-[2rem] mb-6">
+          <div className="w-14 h-14 rounded-full bg-[#1A4D2E] text-white flex items-center justify-center text-xl font-bold shrink-0">
+            O
+          </div>
+          <span className="font-bold text-[#0f321d] text-lg">สวัสดี, 0821511958</span>
         </div>
 
-        {/* User info */}
-        <div className="flex items-center gap-3 mb-8">
-          <div className="w-10 h-10 rounded-full bg-[#1A4D2E] text-white flex items-center justify-center text-base font-bold shrink-0">
-            {initial}
+        <div className="flex flex-col px-5 gap-3 flex-1">
+          <Link href="/" onClick={() => setIsProfileOpen(false)} className="bg-white rounded-[1rem] py-3.5 px-5 font-bold text-[#0f321d] text-[16px] shadow-sm hover:bg-gray-50 transition-colors">
+            หน้าหลัก
+          </Link>
+          <Link href="/my-page" onClick={() => setIsProfileOpen(false)} className="bg-white rounded-[1rem] py-3.5 px-5 font-bold text-[#0f321d] text-[16px] shadow-sm hover:bg-gray-50 transition-colors">
+            แก้ไขโปรไฟล์
+          </Link>
+          <Link href="/my-page" onClick={() => setIsProfileOpen(false)} className="bg-white rounded-[1rem] py-3.5 px-5 font-bold text-[#0f321d] text-[16px] shadow-sm hover:bg-gray-50 transition-colors">
+            เปลี่ยนรหัสผ่าน
+          </Link>
+          <div className="bg-white rounded-[1rem] py-2 px-5 font-bold text-[#0f321d] text-[16px] shadow-sm flex items-center justify-between">
+            <span>ภาษา</span>
+            <button 
+              onClick={() => setLanguage(language === 'th' ? 'en' : 'th')}
+              className="flex items-center gap-2 bg-[#F5F5F5] hover:bg-[#EBEBEB] px-3 py-1.5 rounded-full transition-colors"
+            >
+              <img 
+                src={language === 'th' ? "https://flagcdn.com/w40/th.png" : "https://flagcdn.com/w40/gb.png"} 
+                alt={language === 'th' ? "Thai Flag" : "UK Flag"} 
+                className="w-5 h-5 rounded-full object-cover border border-white/50 shadow-sm bg-white" 
+              />
+              <span className="text-sm font-medium text-[#1A1A1A]">{language === 'th' ? 'ไทย' : 'EN'}</span>
+            </button>
           </div>
-          <div className="flex-1 min-w-0">
-            <p className="font-semibold text-[#1A1A1A] text-[15px] truncate">
-              {isAnonymous ? t('anonymousUserName') : displayName}
-            </p>
-            {isAnonymous && (
-              <span className="inline-block text-[10px] px-2 py-0.5 rounded-full bg-orange-100 text-orange-700 font-bold">
-                {t('anonymousLabel')}
-              </span>
-            )}
-          </div>
-        </div>
-
-        <div className="flex flex-col gap-8 flex-1">
-          <Link href="/" onClick={() => setIsProfileOpen(false)} className="text-[16px] font-thai text-[#1A1A1A] font-normal hover:text-primary transition-colors">
-            {t('homeMenu')}
+          <Link href="/my-page" onClick={() => setIsProfileOpen(false)} className="bg-white rounded-[1rem] py-3.5 px-5 font-bold text-[#0f321d] text-[16px] shadow-sm hover:bg-gray-50 transition-colors">
+            ให้คะแนนความพึงพอใจ
           </Link>
 
-          <Link href="/history" onClick={() => setIsProfileOpen(false)} className="text-[16px] font-thai text-[#1A1A1A] font-normal hover:text-primary transition-colors">
-            {t('analysisHistory')}
-          </Link>
-
-          {isAdmin && (
-            <Link href="/admin" onClick={() => setIsProfileOpen(false)} className="text-[16px] font-thai text-primary font-medium hover:opacity-80 transition-opacity flex items-center justify-between">
-              <span>Admin Panel</span>
-              <span>›</span>
-            </Link>
-          )}
-
-          {isAnonymous ? (
-            <Link href="/signup" onClick={() => setIsProfileOpen(false)} className="text-[16px] font-thai text-[#1A4D2E] font-medium hover:opacity-80 transition-opacity">
-              {t('signupForPermanent')}
-            </Link>
-          ) : (
-            <>
-              <Link href="/profile" onClick={() => setIsProfileOpen(false)} className="text-[16px] font-thai text-[#1A1A1A] font-normal hover:text-primary transition-colors">
-                {t('editProfile')}
-              </Link>
-              <Link href="/profile/change-password" onClick={() => setIsProfileOpen(false)} className="text-[16px] font-thai text-[#1A1A1A] font-normal hover:text-primary transition-colors">
-                {t('changePassword')}
-              </Link>
-            </>
-          )}
-
-          <button
-            onClick={() => setLanguage(language === 'th' ? 'en' : 'th')}
-            className="flex items-center gap-3 text-[#1A1A1A] font-thai text-[16px] font-normal transition-opacity hover:opacity-80 text-left"
-          >
-            <img
-              src={language === 'th' ? "https://flagcdn.com/w40/th.png" : "https://flagcdn.com/w40/gb.png"}
-              alt={language === 'th' ? "Thai Flag" : "UK Flag"}
-              className="w-6 h-6 rounded-full object-cover shadow-sm border border-black/10"
-            />
-            <span>{language === 'th' ? 'ไทย' : 'EN'}</span>
-          </button>
-
-          <button onClick={handleSignOut} className="text-[#F58220] font-thai text-[16px] font-normal hover:opacity-80 transition-opacity text-left">
-            {t('signOutBtn')}
+          <button onClick={() => { setIsProfileOpen(false); router.push('/'); }} className="mt-8 text-[#F58220] font-bold text-[17px] hover:opacity-80 transition-opacity">
+            ออกจากระบบ
           </button>
         </div>
 
-        <div className="pt-10 text-center">
-          <p className="text-[12px] text-gray-400">เวอร์ชัน 2.1.10</p>
+        <div className="px-6 pb-6 pt-10 text-center">
+          <p className="text-[12px] text-gray-400">เวอร์ชัน : 2.1.10 d255cc0c วันที่ : 13 พฤษภาคม 2026 เวลา 17:56</p>
         </div>
       </div>
     </>
