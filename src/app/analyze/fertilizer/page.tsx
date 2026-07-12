@@ -49,11 +49,11 @@ const CROP_LABEL: Record<CropType, string> = {
 const FRUIT_KEYS: FruitKey[] = ["durian", "mangosteen", "rambutan", "mango", "longan", "lychee", "orange", "coconut", "pineapple"]
 
 const CROP_GROUPS: { label: string; crops: CropType[] }[] = [
-  { label: "ไม้ผล (คำนวณจริง)", crops: FRUIT_KEYS },
-  { label: "ไม้ผลอื่น (mockup)", crops: ["jackfruit", "guava", "banana", "lime"] },
-  { label: "พืชไร่ (mockup)", crops: ["rice", "maize", "sugarcane", "cassava"] },
-  { label: "ไม้ยืนต้น (mockup)", crops: ["rubber"] },
-  { label: "พืชผัก (mockup)", crops: ["chili", "tomato", "cucumber", "leafy", "pumpkin"] },
+  { label: "ไม้ผล", crops: FRUIT_KEYS },
+  { label: "ไม้ผลอื่น", crops: ["jackfruit", "guava", "banana", "lime"] },
+  { label: "พืชไร่", crops: ["rice", "maize", "sugarcane", "cassava"] },
+  { label: "ไม้ยืนต้น", crops: ["rubber"] },
+  { label: "พืชผัก", crops: ["chili", "tomato", "cucumber", "leafy", "pumpkin"] },
 ]
 
 function isFruit(c: CropType): c is FruitKey {
