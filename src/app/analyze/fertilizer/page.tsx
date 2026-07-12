@@ -229,7 +229,7 @@ export default function FertilizerPage() {
               ))}
             </select>
             {!currentIsFruit && (
-              <p className="text-[11px] text-orange-600 pl-2">พืชนี้ยังเป็น mockup — ยังไม่มีข้อมูลอ้างอิงในระบบ</p>
+              <p className="text-[11px] text-orange-600 pl-2">พืชนี้ยังไม่มีข้อมูลอ้างอิงในระบบ</p>
             )}
           </div>
           <div className="space-y-2">
@@ -318,10 +318,10 @@ export default function FertilizerPage() {
             {!result.isFruit ? (
               <div className="bg-orange-50 border border-orange-100 rounded-xl p-5 text-center">
                 <p className="text-sm text-orange-700 font-semibold">
-                  พืชนี้ยังเป็น mockup
+                  พืชนี้ยังไม่มีข้อมูลอ้างอิง
                 </p>
                 <p className="text-xs text-orange-600 mt-1">
-                  ระบบยังไม่มีตารางคำนวณอ้างอิงสำหรับ &quot;{CROP_LABEL[crop]}&quot; รอเพิ่มข้อมูลจากกรมพัฒนาที่ดิน
+                  ระบบยังไม่มีตารางคำนวณอ้างอิงสำหรับ &quot;{CROP_LABEL[crop]}&quot;
                 </p>
               </div>
             ) : (
