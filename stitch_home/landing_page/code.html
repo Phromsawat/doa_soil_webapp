@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+
+<html lang="th"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>DOA-Soil Test Kit - กรมวิชาการเกษตร</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&amp;family=Noto+Sans+Thai:wght@400;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        :root {
+            --notoSans: 'Noto Sans Thai', sans-serif;
+            --inter: 'Inter', sans-serif;
+        }
+        body {
+            font-family: var(--inter);
+            -webkit-font-smoothing: antialiased;
+        }
+        .font-display-sm { font-family: var(--notoSans); }
+        .font-headline-md { font-family: var(--notoSans); }
+        .font-title-lg { font-family: var(--notoSans); }
+        .font-label-md { font-family: var(--inter); }
+        .font-body-lg { font-family: var(--inter); }
+        .font-body-md { font-family: var(--inter); }
+        
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "tertiary": "#000b05",
+                      "primary-fixed-dim": "#b5c8e5",
+                      "surface-tint": "#4d6079",
+                      "on-background": "#191c1c",
+                      "on-primary-fixed": "#081c32",
+                      "on-tertiary-container": "#579476",
+                      "secondary": "#006c48",
+                      "on-secondary-container": "#00734d",
+                      "surface-container-high": "#e6e9e8",
+                      "on-surface": "#191c1c",
+                      "on-error": "#ffffff",
+                      "on-secondary-fixed-variant": "#005235",
+                      "error-container": "#ffdad6",
+                      "primary-fixed": "#d2e4ff",
+                      "primary-container": "#0d2137",
+                      "on-tertiary-fixed": "#002114",
+                      "on-tertiary": "#ffffff",
+                      "inverse-primary": "#b5c8e5",
+                      "secondary-fixed-dim": "#75daa8",
+                      "surface-container-lowest": "#ffffff",
+                      "inverse-on-surface": "#eff1f0",
+                      "secondary-fixed": "#92f7c3",
+                      "inverse-surface": "#2e3131",
+                      "surface-bright": "#f8faf9",
+                      "on-tertiary-fixed-variant": "#0e5138",
+                      "on-primary-fixed-variant": "#364860",
+                      "tertiary-fixed": "#b1f0ce",
+                      "on-secondary": "#ffffff",
+                      "error": "#ba1a1a",
+                      "background": "#f8faf9",
+                      "outline-variant": "#c4c6cd",
+                      "surface": "#f8faf9",
+                      "secondary-container": "#92f7c3",
+                      "primary": "#000917",
+                      "outline": "#74777d",
+                      "on-secondary-fixed": "#002113",
+                      "on-error-container": "#93000a",
+                      "on-surface-variant": "#44474d",
+                      "tertiary-fixed-dim": "#95d4b3",
+                      "tertiary-container": "#002617",
+                      "on-primary-container": "#7689a4",
+                      "surface-variant": "#e1e3e2",
+                      "surface-dim": "#d8dada",
+                      "surface-container-highest": "#e1e3e2",
+                      "surface-container-low": "#f2f4f3",
+                      "surface-container": "#eceeed",
+                      "on-primary": "#ffffff"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "xs": "4px",
+                      "lg": "24px",
+                      "base": "4px",
+                      "gutter": "16px",
+                      "xl": "32px",
+                      "md": "16px",
+                      "container-margin": "16px",
+                      "sm": "8px"
+              },
+              "fontFamily": {
+                      "display-sm": ["Noto Sans Thai"],
+                      "label-md": ["Inter"],
+                      "body-lg": ["Inter"],
+                      "title-lg": ["Noto Sans Thai"],
+                      "display-lg-mobile": ["Noto Sans Thai"],
+                      "data-lg": ["Inter"],
+                      "headline-md": ["Noto Sans Thai"],
+                      "body-md": ["Inter"],
+                      "display-lg": ["Noto Sans Thai"]
+              },
+              "fontSize": {
+                      "display-sm": ["24px", {"lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "700"}],
+                      "label-md": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                      "body-lg": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                      "title-lg": ["18px", {"lineHeight": "24px", "fontWeight": "600"}],
+                      "display-lg-mobile": ["26px", {"lineHeight": "32px", "fontWeight": "700"}],
+                      "data-lg": ["28px", {"lineHeight": "32px", "letterSpacing": "-0.03em", "fontWeight": "700"}],
+                      "headline-md": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+                      "body-md": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                      "display-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "700"}]
+              }
+            },
+          },
+        }
+      </script>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-background min-h-screen">
+<!-- Top AppBar (Shared Component Logic) -->
+<header class="bg-surface dark:bg-inverse-surface shadow-sm docked full-width top-0 sticky z-50 flex justify-between items-center w-full px-container-margin h-16">
+<div class="flex items-center gap-sm">
+<span class="material-symbols-outlined text-secondary dark:text-secondary-fixed" data-icon="agriculture">agriculture</span>
+<h1 class="font-display-sm text-display-sm text-primary dark:text-primary-fixed">DOA Soil Analysis</h1>
+</div>
+<div class="flex items-center gap-md">
+<button class="material-symbols-outlined text-on-surface-variant dark:text-outline-variant hover:bg-surface-container-high transition-colors p-2 rounded-full" data-icon="notifications">notifications</button>
+<button class="hidden md:block px-lg py-2 bg-secondary text-on-secondary rounded-full font-label-md text-label-md active:scale-95 duration-100">เข้าสู่ระบบ</button>
+</div>
+</header>
+<main>
+<!-- Hero Section -->
+<section class="relative min-h-[751px] flex items-center overflow-hidden bg-primary-container text-white px-container-margin py-xl">
+<!-- Decorative background elements -->
+<div class="absolute inset-0 z-0 opacity-20 pointer-events-none">
+<img class="w-full h-full object-cover mix-blend-overlay" data-alt="A professional aerial view of a vibrant Thai agricultural landscape during golden hour. The composition shows neat rows of crops stretching to the horizon under a soft, hazy sunset. The colors are dominated by deep greens and earthy browns, reflecting a stable and prosperous government agricultural initiative. The lighting is warm and authoritative, suggesting growth and technological advancement in precision farming." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAVgd0wl3ybYjmuMV-QWJeijIZUB7OhIwsNbupNVusjvgIOlIFbBOY0ioQaQ36ShoAR0-3IF5pWZLwxijHacMwVYwIQ0xFC8DxNeMUZrEZw077BUYEg-V8hXz3KnRqNDGnbhjU16RxV9I1agTqXBzA0a_Mrx7-svqt4EMZFys4Z0FPi_At2nB-5vD3Puod2JhIzJwhsuSxT3Gejk8gLB466pxLKRkeImjfLXg8sEFeHyJ0xq5zpakUXxXS7xcSCjwHCYB1IdpkxREE"/>
+</div>
+<div class="container mx-auto relative z-10 grid grid-cols-1 md:grid-cols-2 gap-xl items-center">
+<div class="space-y-lg text-center md:text-left">
+<span class="inline-block px-4 py-1 rounded-full bg-secondary text-on-secondary font-label-md text-label-md tracking-wider">OFFICIAL SYSTEM</span>
+<h2 class="font-display-lg text-display-lg-mobile md:text-display-lg leading-tight font-extrabold">
+                        DOA-Soil Test Kit
+                    </h2>
+<p class="font-title-lg text-title-lg opacity-90 max-w-xl mx-auto md:mx-0">
+                        ระบบวิเคราะห์ดินและคำแนะนำการใช้ปุ๋ย สำหรับเกษตรกรไทย
+                    </p>
+<div class="flex flex-col sm:flex-row gap-md justify-center md:justify-start pt-md">
+<button class="px-xl py-4 bg-[#52B788] text-white rounded-xl font-headline-md text-headline-md active:scale-95 transition-transform">
+                            เข้าสู่ระบบ
+                        </button>
+<button class="px-xl py-4 border-2 border-white text-white rounded-xl font-headline-md text-headline-md hover:bg-white/10 active:scale-95 transition-transform">
+                            เรียนรู้เพิ่มเติม
+                        </button>
+</div>
+</div>
+<!-- Floating Data Visualization Card -->
+<div class="hidden md:block relative animate-float">
+<div class="glass-card p-xl rounded-2xl shadow-2xl space-y-md">
+<div class="flex justify-between items-center border-b border-white/10 pb-md">
+<span class="font-title-lg text-white">Soil Analysis Result</span>
+<span class="material-symbols-outlined text-secondary-fixed" data-icon="biotech">biotech</span>
+</div>
+<div class="grid grid-cols-2 gap-md">
+<div class="p-md bg-white/5 rounded-lg border border-white/5">
+<p class="text-white/60 font-label-md">Nitrogen (N)</p>
+<p class="text-display-sm text-secondary-fixed">Medium</p>
+</div>
+<div class="p-md bg-white/5 rounded-lg border border-white/5">
+<p class="text-white/60 font-label-md">Phosphorus (P)</p>
+<p class="text-display-sm text-secondary-fixed">Optimal</p>
+</div>
+</div>
+<div class="pt-md">
+<div class="h-2 w-full bg-white/10 rounded-full overflow-hidden">
+<div class="h-full bg-secondary-fixed w-3/4"></div>
+</div>
+<p class="text-white/60 font-label-md mt-2">Analysis Confidence: 98%</p>
+</div>
+</div>
+<!-- Small decorative element -->
+<div class="absolute -bottom-8 -right-8 glass-card p-lg rounded-xl shadow-xl animate-pulse">
+<span class="material-symbols-outlined text-secondary-fixed text-4xl" data-icon="qr_code_scanner" data-weight="fill">qr_code_scanner</span>
+</div>
+</div>
+</div>
+</section>
+<!-- Features Section -->
+<section class="py-xl px-container-margin bg-background">
+<div class="container mx-auto">
+<div class="text-center mb-xl">
+<h3 class="font-headline-md text-headline-md text-primary mb-2">นวัตกรรมเพื่อการเกษตรแม่นยำ</h3>
+<div class="h-1 w-16 bg-secondary mx-auto rounded-full"></div>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-lg">
+<!-- Feature 1: AI Analysis -->
+<div class="group p-lg bg-surface border border-outline-variant rounded-xl hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1">
+<div class="w-14 h-14 bg-secondary-container text-on-secondary-container rounded-2xl flex items-center justify-center mb-lg group-hover:rotate-12 transition-transform">
+<span class="material-symbols-outlined text-3xl" data-icon="biotech" data-weight="fill">biotech</span>
+</div>
+<h4 class="font-title-lg text-title-lg text-primary mb-md">วิเคราะห์ด้วย AI</h4>
+<p class="font-body-md text-body-md text-on-surface-variant">
+                            ถ่ายรูปชุดทดสอบและอ่านผลทันทีด้วยเทคโนโลยี AI ประมวลผลแม่นยำระดับห้องปฏิบัติการ
+                        </p>
+</div>
+<!-- Feature 2: Fertilizer Recommendations -->
+<div class="group p-lg bg-surface border border-outline-variant rounded-xl hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1">
+<div class="w-14 h-14 bg-tertiary-fixed text-on-tertiary-fixed-variant rounded-2xl flex items-center justify-center mb-lg group-hover:rotate-12 transition-transform">
+<span class="material-symbols-outlined text-3xl" data-icon="grass" data-weight="fill">grass</span>
+</div>
+<h4 class="font-title-lg text-title-lg text-primary mb-md">คำแนะนำปุ๋ย</h4>
+<p class="font-body-md text-body-md text-on-surface-variant">
+                            สูตรปุ๋ยที่แม่นยำตามค่าวิเคราะห์ดินและชนิดพืช ช่วยลดต้นทุนและเพิ่มผลผลิตอย่างยั่งยืน
+                        </p>
+</div>
+<!-- Feature 3: Save & Share -->
+<div class="group p-lg bg-surface border border-outline-variant rounded-xl hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1">
+<div class="w-14 h-14 bg-primary-fixed text-on-primary-fixed-variant rounded-2xl flex items-center justify-center mb-lg group-hover:rotate-12 transition-transform">
+<span class="material-symbols-outlined text-3xl" data-icon="cloud_upload" data-weight="fill">cloud_upload</span>
+</div>
+<h4 class="font-title-lg text-title-lg text-primary mb-md">บันทึกและแชร์</h4>
+<p class="font-body-md text-body-md text-on-surface-variant">
+                            เก็บข้อมูลประวัติการตรวจดินและแชร์ผลให้ผู้เชี่ยวชาญได้ทุกที่ทุกเวลา ผ่านระบบคลาวด์ที่ปลอดภัย
+                        </p>
+</div>
+</div>
+</div>
+</section>
+<!-- Partner Footer -->
+<footer class="bg-primary-container text-white py-xl px-container-margin">
+<div class="container mx-auto">
+<div class="flex flex-col md:flex-row justify-between items-center gap-xl border-b border-white/10 pb-xl">
+<div class="text-center md:text-left">
+<p class="font-label-md text-white/60 mb-md uppercase tracking-widest">Co-Developed By</p>
+<div class="flex flex-wrap justify-center md:justify-start items-center gap-xl grayscale opacity-80 hover:grayscale-0 hover:opacity-100 transition-all">
+<div class="flex items-center gap-sm">
+<span class="material-symbols-outlined text-3xl text-secondary-fixed" data-icon="account_balance">account_balance</span>
+<span class="font-title-lg">กรมวิชาการเกษตร</span>
+</div>
+<div class="h-8 w-[1px] bg-white/20 hidden md:block"></div>
+<div class="flex items-center gap-sm">
+<span class="material-symbols-outlined text-3xl text-secondary-fixed" data-icon="science">science</span>
+<span class="font-title-lg">สวก. (ARDA)</span>
+</div>
+</div>
+</div>
+<div class="flex gap-lg">
+<a class="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center hover:bg-secondary transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="facebook">face_nod</span>
+</a>
+<a class="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center hover:bg-secondary transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="link">link</span>
+</a>
+</div>
+</div>
+<div class="pt-lg flex flex-col md:flex-row justify-between items-center font-body-md text-white/40 gap-md">
+<p>© 2024 Department of Agriculture, Thailand. All rights reserved.</p>
+<div class="flex gap-lg">
+<a class="hover:text-white transition-colors" href="#">นโยบายความเป็นส่วนตัว</a>
+<a class="hover:text-white transition-colors" href="#">ติดต่อสอบถาม</a>
+</div>
+</div>
+</div>
+</footer>
+</main>
+<!-- Bottom Navigation (Mobile Only Shell) -->
+<nav class="md:hidden fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 py-2 pb-safe bg-surface-container-lowest border-t border-outline-variant">
+<button class="flex flex-col items-center justify-center bg-secondary-container text-on-secondary-container rounded-full px-4 py-1 active:scale-90 transition-transform duration-150">
+<span class="material-symbols-outlined" data-icon="home" data-weight="fill">home</span>
+<span class="font-label-md text-label-md">Home</span>
+</button>
+<button class="flex flex-col items-center justify-center text-on-surface-variant px-4 py-1 active:scale-90 transition-transform duration-150">
+<span class="material-symbols-outlined" data-icon="biotech">biotech</span>
+<span class="font-label-md text-label-md">Soil Test</span>
+</button>
+<button class="flex flex-col items-center justify-center text-on-surface-variant px-4 py-1 active:scale-90 transition-transform duration-150">
+<span class="material-symbols-outlined" data-icon="history">history</span>
+<span class="font-label-md text-label-md">History</span>
+</button>
+<button class="flex flex-col items-center justify-center text-on-surface-variant px-4 py-1 active:scale-90 transition-transform duration-150">
+<span class="material-symbols-outlined" data-icon="person">person</span>
+<span class="font-label-md text-label-md">Profile</span>
+</button>
+</nav>
+<script>
+        // Micro-interaction for float animation
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes float {
+                0% { transform: translateY(0px); }
+                50% { transform: translateY(-20px); }
+                100% { transform: translateY(0px); }
+            }
+            .animate-float {
+                animation: float 6s ease-in-out infinite;
+            }
+        `;
+        document.head.appendChild(style);
+    </script>
+</body></html>

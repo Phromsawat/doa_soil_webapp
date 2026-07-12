@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+
+<html lang="th"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&amp;family=Noto+Sans+Thai:wght@400;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        body { font-family: 'Inter', 'Noto Sans Thai', sans-serif; }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "tertiary": "#000b05",
+                      "primary-fixed-dim": "#b5c8e5",
+                      "surface-tint": "#4d6079",
+                      "on-background": "#191c1c",
+                      "on-primary-fixed": "#081c32",
+                      "on-tertiary-container": "#579476",
+                      "secondary": "#006c48",
+                      "on-secondary-container": "#00734d",
+                      "surface-container-high": "#e6e9e8",
+                      "on-surface": "#191c1c",
+                      "on-error": "#ffffff",
+                      "on-secondary-fixed-variant": "#005235",
+                      "error-container": "#ffdad6",
+                      "primary-fixed": "#d2e4ff",
+                      "primary-container": "#0d2137",
+                      "on-tertiary-fixed": "#002114",
+                      "on-tertiary": "#ffffff",
+                      "inverse-primary": "#b5c8e5",
+                      "secondary-fixed-dim": "#75daa8",
+                      "surface-container-lowest": "#ffffff",
+                      "inverse-on-surface": "#eff1f0",
+                      "secondary-fixed": "#92f7c3",
+                      "inverse-surface": "#2e3131",
+                      "surface-bright": "#f8faf9",
+                      "on-tertiary-fixed-variant": "#0e5138",
+                      "on-primary-fixed-variant": "#364860",
+                      "tertiary-fixed": "#b1f0ce",
+                      "on-secondary": "#ffffff",
+                      "error": "#ba1a1a",
+                      "background": "#f8faf9",
+                      "outline-variant": "#c4c6cd",
+                      "surface": "#f8faf9",
+                      "secondary-container": "#92f7c3",
+                      "primary": "#000917",
+                      "outline": "#74777d",
+                      "on-secondary-fixed": "#002113",
+                      "on-error-container": "#93000a",
+                      "on-surface-variant": "#44474d",
+                      "tertiary-fixed-dim": "#95d4b3",
+                      "tertiary-container": "#002617",
+                      "on-primary-container": "#7689a4",
+                      "surface-variant": "#e1e3e2",
+                      "surface-dim": "#d8dada",
+                      "surface-container-highest": "#e1e3e2",
+                      "surface-container-low": "#f2f4f3",
+                      "surface-container": "#eceeed",
+                      "on-primary": "#ffffff"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "xs": "4px",
+                      "lg": "24px",
+                      "base": "4px",
+                      "gutter": "16px",
+                      "xl": "32px",
+                      "md": "16px",
+                      "container-margin": "16px",
+                      "sm": "8px"
+              },
+              "fontFamily": {
+                      "display-sm": ["Noto Sans Thai", "notoSans"],
+                      "label-md": ["Inter", "inter"],
+                      "body-lg": ["Inter", "inter"],
+                      "title-lg": ["Noto Sans Thai", "notoSans"],
+                      "display-lg-mobile": ["Noto Sans Thai", "notoSans"],
+                      "data-lg": ["Inter", "inter"],
+                      "headline-md": ["Noto Sans Thai", "notoSans"],
+                      "body-md": ["Inter", "inter"],
+                      "display-lg": ["Noto Sans Thai", "notoSans"]
+              },
+              "fontSize": {
+                      "display-sm": ["24px", {"lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "700"}],
+                      "label-md": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                      "body-lg": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                      "title-lg": ["18px", {"lineHeight": "24px", "fontWeight": "600"}],
+                      "display-lg-mobile": ["26px", {"lineHeight": "32px", "fontWeight": "700"}],
+                      "data-lg": ["28px", {"lineHeight": "32px", "letterSpacing": "-0.03em", "fontWeight": "700"}],
+                      "headline-md": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+                      "body-md": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                      "display-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "700"}]
+              }
+            },
+          },
+        }
+      </script>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-surface text-on-surface min-h-screen pb-24">
+<!-- Top Navigation Bar -->
+<header class="bg-surface dark:bg-inverse-surface shadow-sm docked full-width top-0 sticky z-50 flex justify-between items-center w-full px-container-margin h-16">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-secondary dark:text-secondary-fixed" style="font-size: 24px;">agriculture</span>
+<h1 class="font-display-sm text-display-sm text-primary dark:text-primary-fixed">DOA Soil Analysis</h1>
+</div>
+<div class="flex items-center gap-2">
+<button class="material-symbols-outlined p-2 rounded-full hover:bg-surface-container-high dark:hover:bg-surface-container-low transition-colors active:scale-95 duration-100 text-on-surface-variant dark:text-outline-variant">notifications</button>
+</div>
+</header>
+<main class="max-w-4xl mx-auto px-container-margin py-6 space-y-6">
+<!-- Header & Search -->
+<div class="space-y-4">
+<div class="flex items-center justify-between">
+<h2 class="font-headline-md text-headline-md-mobile text-primary">ประวัติการวิเคราะห์</h2>
+<span class="font-label-md text-label-md bg-secondary-container text-on-secondary-container px-3 py-1 rounded-full">ทั้งหมด 42 รายการ</span>
+</div>
+<div class="flex gap-2 w-full">
+<div class="relative flex-grow group">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline group-focus-within:text-secondary">search</span>
+<input class="w-full pl-10 pr-4 py-3 bg-white border border-outline-variant rounded-xl focus:ring-2 focus:ring-secondary focus:border-secondary outline-none transition-all font-body-md text-body-md" placeholder="ค้นหาประวัติ..." type="text"/>
+</div>
+<button class="flex items-center justify-center bg-white border border-outline-variant rounded-xl px-4 hover:bg-surface-container-low transition-colors">
+<span class="material-symbols-outlined text-primary">tune</span>
+</button>
+</div>
+</div>
+<!-- Filter Chips -->
+<div class="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
+<button class="bg-primary text-white px-5 py-2 rounded-full font-label-md text-label-md whitespace-nowrap">ทั้งหมด</button>
+<button class="bg-white border border-outline-variant text-on-surface-variant px-5 py-2 rounded-full font-label-md text-label-md whitespace-nowrap hover:bg-surface-container-low">วิเคราะห์เสร็จสิ้น</button>
+<button class="bg-white border border-outline-variant text-on-surface-variant px-5 py-2 rounded-full font-label-md text-label-md whitespace-nowrap hover:bg-surface-container-low">รอดำเนินการ</button>
+</div>
+<!-- History Cards -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-4">
+<!-- Card 1: Rice -->
+<div class="bg-white rounded-xl border border-outline-variant p-4 shadow-sm hover:shadow-md transition-shadow cursor-pointer group">
+<div class="flex justify-between items-start mb-4">
+<div class="flex items-center gap-3">
+<div class="w-12 h-12 rounded-lg bg-surface-container-high flex items-center justify-center overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="A lush green field of young rice plants growing in a wet paddy under bright sunlight. The agricultural scene represents modern farming precision with vibrant emerald hues and soft natural lighting. The style is clean, sharp, and reflects professional agricultural documentation." src="https://lh3.googleusercontent.com/aida-public/AB6AXuA5wsE0_A7-lQ3yez1yoJQTTHA3rLOeT5cOGR51T4CEgJLmIhLkcZeiDs15YLT1JzHuZyY8VUcscq9TXgQ6_7I6vc_TV5eQBCECwsjRdKrUtLI0Yi9g8wJSZ_6MPIiPGm8n8eunuRW2FBIfcjxkGEsnRW5F6UrRzDDhmfCwJrixBKKpcioixZ0eHtUon3X4SCxk7t1RQR-x9t34mmVdRRN2kZyMC-Q-9rRwN8pJjkP9TENJUkkG2aNW4UDvGYy-HhaxFJV5Kw-6oaU"/>
+</div>
+<div>
+<h3 class="font-title-lg text-title-lg text-primary">ข้าวเจ้า (หอมมะลิ 105)</h3>
+<div class="flex items-center text-on-surface-variant text-body-md font-body-md">
+<span class="material-symbols-outlined text-sm mr-1">location_on</span>
+                                นครสวรรค์
+                            </div>
+</div>
+</div>
+<div class="flex flex-col items-end gap-1">
+<span class="text-on-surface-variant font-label-md text-label-md">15 พ.ย. 2566</span>
+<span class="bg-on-secondary-container/10 text-on-secondary-container px-2 py-0.5 rounded text-xs font-bold uppercase tracking-wider">Completed</span>
+</div>
+</div>
+<div class="flex flex-wrap items-center justify-between gap-4 pt-3 border-t border-outline-variant/30">
+<div class="flex gap-2">
+<div class="bg-error-container/50 px-3 py-1 rounded flex items-center gap-1.5">
+<span class="font-bold text-error text-xs">N</span>
+<span class="text-xs font-semibold text-on-error-container">Low</span>
+</div>
+<div class="bg-secondary-container/50 px-3 py-1 rounded flex items-center gap-1.5">
+<span class="font-bold text-secondary text-xs">P</span>
+<span class="text-xs font-semibold text-on-secondary-container">Med</span>
+</div>
+<div class="bg-tertiary-fixed px-3 py-1 rounded flex items-center gap-1.5">
+<span class="font-bold text-on-tertiary-fixed-variant text-xs">K</span>
+<span class="text-xs font-semibold text-on-tertiary-fixed-variant">High</span>
+</div>
+</div>
+<button class="flex items-center gap-1 text-secondary font-label-md text-label-md group-hover:translate-x-1 transition-transform">
+                        ดูรายละเอียด
+                        <span class="material-symbols-outlined text-sm">arrow_forward_ios</span>
+</button>
+</div>
+</div>
+<!-- Card 2: Cassava -->
+<div class="bg-white rounded-xl border border-outline-variant p-4 shadow-sm hover:shadow-md transition-shadow cursor-pointer group">
+<div class="flex justify-between items-start mb-4">
+<div class="flex items-center gap-3">
+<div class="w-12 h-12 rounded-lg bg-surface-container-high flex items-center justify-center overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="Close up of healthy cassava plant leaves in a bright agricultural nursery. The leaves are vibrant green with intricate vein patterns. The lighting is diffused and professional, emphasizing the health of the crop in a clean, high-tech agricultural research setting." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCuw2_PSeR2I3DgEUICPyocEcu8deUuHHDd0JRriUplXmqi4LSMvp6u8_egJy5Sr5vTRf36ZZNyqhEZJH7X-MT_qAvpGhDDHc8WuB7pOW9VjC6MCUjjCPziqN76JpJGViSeXFucgCfwv0DY7dTTrlMqQHzid4yOx_m_6kTFNwQOOxaGlxHeHtkJquIbl2bCp8DCJtGgLWpHK1AFx8H1-Z8KxGIsqCaI0ttFJ9U49rZWjPj3J_1d0OxkMc_1SBzCXY7o6ojiW0YAl-k"/>
+</div>
+<div>
+<h3 class="font-title-lg text-title-lg text-primary">มันสำปะหลัง</h3>
+<div class="flex items-center text-on-surface-variant text-body-md font-body-md">
+<span class="material-symbols-outlined text-sm mr-1">location_on</span>
+                                กาญจนบุรี
+                            </div>
+</div>
+</div>
+<div class="flex flex-col items-end gap-1">
+<span class="text-on-surface-variant font-label-md text-label-md">12 พ.ย. 2566</span>
+<span class="bg-orange-100 text-orange-800 px-2 py-0.5 rounded text-xs font-bold uppercase tracking-wider">Pending</span>
+</div>
+</div>
+<div class="flex flex-wrap items-center justify-between gap-4 pt-3 border-t border-outline-variant/30">
+<div class="flex gap-2 opacity-50 italic text-on-surface-variant text-xs">
+                        กำลังรอผลการวิเคราะห์จากห้องปฏิบัติการ...
+                    </div>
+<button class="flex items-center gap-1 text-secondary font-label-md text-label-md group-hover:translate-x-1 transition-transform">
+                        ตรวจสอบสถานะ
+                        <span class="material-symbols-outlined text-sm">arrow_forward_ios</span>
+</button>
+</div>
+</div>
+<!-- Card 3: Corn -->
+<div class="bg-white rounded-xl border border-outline-variant p-4 shadow-sm hover:shadow-md transition-shadow cursor-pointer group">
+<div class="flex justify-between items-start mb-4">
+<div class="flex items-center gap-3">
+<div class="w-12 h-12 rounded-lg bg-surface-container-high flex items-center justify-center overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="A macro shot of a golden yellow corn cob still on its stalk in a sunny field. The textures of the kernels and the green husk are crisp and clear. Soft bokeh in the background creates a warm, high-quality agricultural photography style with natural morning light." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCDAMJeA_tJIICO_d5TYO-5y0u_hgKgUvRS2ddXnrk6Ljs9ng7WRzi5vQsFTzGvUTBSv30qdMKhlldq9G5sZhbDW9XeWDuMQLutX-Nv7xMUkPtbRcUYivXYJl3q1gC3lVYsy1wiZgaZ5JhqwswUI0PF9R_54AEQruV396A_Q2xS9f9Eba5-BTQH80JWJB4UyUVIP_qT4qwVlUbWCosW4mkWP8SFiezuxJrHmDvYWUBEyqSV2p7ViJviY9YEDUlw1oysb6JaoRBssNg"/>
+</div>
+<div>
+<h3 class="font-title-lg text-title-lg text-primary">ข้าวโพดเลี้ยงสัตว์</h3>
+<div class="flex items-center text-on-surface-variant text-body-md font-body-md">
+<span class="material-symbols-outlined text-sm mr-1">location_on</span>
+                                เพชรบูรณ์
+                            </div>
+</div>
+</div>
+<div class="flex flex-col items-end gap-1">
+<span class="text-on-surface-variant font-label-md text-label-md">05 พ.ย. 2566</span>
+<span class="bg-on-secondary-container/10 text-on-secondary-container px-2 py-0.5 rounded text-xs font-bold uppercase tracking-wider">Completed</span>
+</div>
+</div>
+<div class="flex flex-wrap items-center justify-between gap-4 pt-3 border-t border-outline-variant/30">
+<div class="flex gap-2">
+<div class="bg-secondary-container/50 px-3 py-1 rounded flex items-center gap-1.5">
+<span class="font-bold text-secondary text-xs">N</span>
+<span class="text-xs font-semibold text-on-secondary-container">Med</span>
+</div>
+<div class="bg-secondary-container/50 px-3 py-1 rounded flex items-center gap-1.5">
+<span class="font-bold text-secondary text-xs">P</span>
+<span class="text-xs font-semibold text-on-secondary-container">Med</span>
+</div>
+<div class="bg-secondary-container/50 px-3 py-1 rounded flex items-center gap-1.5">
+<span class="font-bold text-secondary text-xs">K</span>
+<span class="text-xs font-semibold text-on-secondary-container">Med</span>
+</div>
+</div>
+<button class="flex items-center gap-1 text-secondary font-label-md text-label-md group-hover:translate-x-1 transition-transform">
+                        ดูรายละเอียด
+                        <span class="material-symbols-outlined text-sm">arrow_forward_ios</span>
+</button>
+</div>
+</div>
+<!-- Card 4: Rubber -->
+<div class="bg-white rounded-xl border border-outline-variant p-4 shadow-sm hover:shadow-md transition-shadow cursor-pointer group">
+<div class="flex justify-between items-start mb-4">
+<div class="flex items-center gap-3">
+<div class="w-12 h-12 rounded-lg bg-surface-container-high flex items-center justify-center overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="A focused shot of a rubber tree trunk with a collection cup, set in a misty, organized plantation. The scene is quiet and professional, capturing the essence of rubber production with high contrast and cool tones. The visual language is authoritative and modern." src="https://lh3.googleusercontent.com/aida-public/AB6AXuC7-g_aCycyxY2GG1r_3TmSm0hKb1hGD5O2a3ZrmiQGhJ2opX4zwx13-2UoNTqauvL5hVVFNAjf92LqyYEShoven1ySZWaM9BGeFFThXlc_hKicf7F8XMwDmF3Zf_BjsZGIBiuz2XizU0ewTqGjtmP0jXraKKK1IaCEqU1jT7_Oc5eCdrqRr2xfo9mQnvlsBdQWO2JWxhkwuXL9aQ0Px5yMY8PPsSJdHF8LJhyCJlDmdIPmc06Ulx8xdS2SbkaRJdHwhOTXugWOm2I"/>
+</div>
+<div>
+<h3 class="font-title-lg text-title-lg text-primary">ยางพารา</h3>
+<div class="flex items-center text-on-surface-variant text-body-md font-body-md">
+<span class="material-symbols-outlined text-sm mr-1">location_on</span>
+                                สุราษฎร์ธานี
+                            </div>
+</div>
+</div>
+<div class="flex flex-col items-end gap-1">
+<span class="text-on-surface-variant font-label-md text-label-md">28 ต.ค. 2566</span>
+<span class="bg-on-secondary-container/10 text-on-secondary-container px-2 py-0.5 rounded text-xs font-bold uppercase tracking-wider">Completed</span>
+</div>
+</div>
+<div class="flex flex-wrap items-center justify-between gap-4 pt-3 border-t border-outline-variant/30">
+<div class="flex gap-2">
+<div class="bg-tertiary-fixed px-3 py-1 rounded flex items-center gap-1.5">
+<span class="font-bold text-on-tertiary-fixed-variant text-xs">N</span>
+<span class="text-xs font-semibold text-on-tertiary-fixed-variant">High</span>
+</div>
+<div class="bg-error-container/50 px-3 py-1 rounded flex items-center gap-1.5">
+<span class="font-bold text-error text-xs">P</span>
+<span class="text-xs font-semibold text-on-error-container">Low</span>
+</div>
+<div class="bg-secondary-container/50 px-3 py-1 rounded flex items-center gap-1.5">
+<span class="font-bold text-secondary text-xs">K</span>
+<span class="text-xs font-semibold text-on-secondary-container">Med</span>
+</div>
+</div>
+<button class="flex items-center gap-1 text-secondary font-label-md text-label-md group-hover:translate-x-1 transition-transform">
+                        ดูรายละเอียด
+                        <span class="material-symbols-outlined text-sm">arrow_forward_ios</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Pagination -->
+<div class="flex items-center justify-center gap-4 pt-6 pb-12">
+<button class="w-10 h-10 flex items-center justify-center rounded-full border border-outline-variant text-on-surface-variant hover:bg-surface-container-high active:scale-90 transition-all">
+<span class="material-symbols-outlined">chevron_left</span>
+</button>
+<div class="flex items-center gap-1 font-label-md text-label-md text-on-surface">
+<span>หน้า</span>
+<span class="bg-primary-container text-on-primary-container px-3 py-1 rounded-md font-bold">1</span>
+<span>จาก 5</span>
+</div>
+<button class="w-10 h-10 flex items-center justify-center rounded-full border border-outline-variant text-on-surface-variant hover:bg-surface-container-high active:scale-90 transition-all">
+<span class="material-symbols-outlined">chevron_right</span>
+</button>
+</div>
+</main>
+<!-- Bottom Navigation Bar -->
+<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 py-2 pb-safe bg-surface-container-lowest dark:bg-surface-container-lowest border-t border-outline-variant">
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-outline-variant px-4 py-1 hover:bg-surface-container-high transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="home">home</span>
+<span class="font-label-md text-label-md">Home</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-outline-variant px-4 py-1 hover:bg-surface-container-high transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="biotech">biotech</span>
+<span class="font-label-md text-label-md">Soil Test</span>
+</a>
+<a class="flex flex-col items-center justify-center bg-secondary-container dark:bg-secondary-fixed-variant text-on-secondary-container dark:text-secondary-fixed rounded-full px-4 py-1 active:scale-90 transition-transform duration-150" href="#">
+<span class="material-symbols-outlined" data-icon="history" style="font-variation-settings: 'FILL' 1;">history</span>
+<span class="font-label-md text-label-md">History</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-outline-variant px-4 py-1 hover:bg-surface-container-high transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="person">person</span>
+<span class="font-label-md text-label-md">Profile</span>
+</a>
+</nav>
+<script>
+        // Simple micro-interaction for active filter selection
+        document.querySelectorAll('button[class*="rounded-full"]').forEach(btn => {
+            btn.addEventListener('click', function() {
+                if(this.textContent.trim() === 'ทั้งหมด' || this.textContent.trim() === 'วิเคราะห์เสร็จสิ้น' || this.textContent.trim() === 'รอดำเนินการ') {
+                    document.querySelectorAll('button[class*="rounded-full"]').forEach(b => {
+                        if(b.textContent.trim() === 'ทั้งหมด' || b.textContent.trim() === 'วิเคราะห์เสร็จสิ้น' || b.textContent.trim() === 'รอดำเนินการ') {
+                            b.classList.remove('bg-primary', 'text-white');
+                            b.classList.add('bg-white', 'border', 'border-outline-variant', 'text-on-surface-variant');
+                        }
+                    });
+                    this.classList.remove('bg-white', 'border', 'border-outline-variant', 'text-on-surface-variant');
+                    this.classList.add('bg-primary', 'text-white');
+                }
+            });
+        });
+    </script>
+</body></html>

@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+
+<html lang="th"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>DOA Soil Analysis - Photo Upload</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@100..900&amp;family=Inter:wght@100..900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-tertiary": "#ffffff",
+                        "on-tertiary-fixed": "#002114",
+                        "on-background": "#191c1c",
+                        "surface-container-low": "#f2f4f3",
+                        "secondary": "#006c48",
+                        "surface-container": "#eceeed",
+                        "inverse-on-surface": "#eff1f0",
+                        "surface": "#f8faf9",
+                        "surface-bright": "#f8faf9",
+                        "on-tertiary-fixed-variant": "#0e5138",
+                        "inverse-primary": "#b5c8e5",
+                        "primary-container": "#0d2137",
+                        "tertiary-fixed": "#b1f0ce",
+                        "on-primary-fixed": "#081c32",
+                        "tertiary-fixed-dim": "#95d4b3",
+                        "on-secondary": "#ffffff",
+                        "on-surface-variant": "#44474d",
+                        "primary": "#000917",
+                        "surface-container-high": "#e6e9e8",
+                        "secondary-fixed": "#92f7c3",
+                        "primary-fixed": "#d2e4ff",
+                        "on-secondary-container": "#00734d",
+                        "surface-container-lowest": "#ffffff",
+                        "on-surface": "#191c1c",
+                        "primary-fixed-dim": "#b5c8e5",
+                        "surface-dim": "#d8dada",
+                        "background": "#f8faf9",
+                        "on-primary-container": "#7689a4",
+                        "secondary-container": "#92f7c3",
+                        "error-container": "#ffdad6",
+                        "error": "#ba1a1a",
+                        "on-error": "#ffffff",
+                        "on-primary": "#ffffff",
+                        "on-primary-fixed-variant": "#364860",
+                        "on-secondary-fixed-variant": "#005235",
+                        "on-error-container": "#93000a",
+                        "surface-tint": "#4d6079",
+                        "tertiary-container": "#002617",
+                        "surface-variant": "#e1e3e2",
+                        "on-secondary-fixed": "#002113",
+                        "tertiary": "#000b05",
+                        "outline": "#74777d",
+                        "inverse-surface": "#2e3131",
+                        "surface-container-highest": "#e1e3e2",
+                        "secondary-fixed-dim": "#75daa8",
+                        "outline-variant": "#c4c6cd",
+                        "on-tertiary-container": "#579476",
+                        "mint-accent": "#52B788"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "base": "4px",
+                        "md": "16px",
+                        "sm": "8px",
+                        "lg": "24px",
+                        "gutter": "16px",
+                        "container-margin": "16px",
+                        "xs": "4px",
+                        "xl": "32px"
+                    },
+                    "fontFamily": {
+                        "body-lg": ["Inter", "Noto Sans Thai"],
+                        "headline-md": ["Noto Sans Thai"],
+                        "data-lg": ["Inter"],
+                        "display-sm": ["Noto Sans Thai"],
+                        "display-lg": ["Noto Sans Thai"],
+                        "label-md": ["Inter", "Noto Sans Thai"],
+                        "body-md": ["Inter", "Noto Sans Thai"],
+                        "title-lg": ["Noto Sans Thai"],
+                        "display-lg-mobile": ["Noto Sans Thai"]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body { font-family: 'Inter', 'Noto Sans Thai', sans-serif; }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .progress-shimmer {
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+            background-size: 200% 100%;
+            animation: shimmer 1.5s infinite;
+        }
+        @keyframes shimmer {
+            0% { background-position: -200% 0; }
+            100% { background-position: 200% 0; }
+        }
+        .loading-bar {
+            width: 0%;
+            transition: width 0.3s ease-in-out;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-surface text-on-surface min-h-screen flex flex-col">
+<!-- TopAppBar -->
+<header class="bg-surface dark:bg-inverse-surface shadow-sm docked full-width top-0 sticky z-50 flex justify-between items-center w-full px-container-margin h-16">
+<div class="flex items-center gap-sm">
+<span class="material-symbols-outlined text-secondary dark:text-secondary-fixed">agriculture</span>
+<h1 class="font-display-sm text-display-sm text-primary dark:text-primary-fixed">DOA Soil Analysis</h1>
+</div>
+<div class="flex items-center gap-md">
+<button class="material-symbols-outlined text-on-surface-variant dark:text-outline-variant hover:bg-surface-container-high dark:hover:bg-surface-container-low transition-colors p-2 rounded-full active:scale-95 duration-100">notifications</button>
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="flex-grow w-full max-w-screen-md mx-auto px-container-margin py-xl flex flex-col gap-lg">
+<!-- Step Indicator -->
+<div class="flex items-center justify-between px-md mb-sm">
+<div class="flex flex-col items-center gap-xs">
+<div class="w-8 h-8 rounded-full bg-secondary-container text-on-secondary-container flex items-center justify-center font-label-md text-label-md">1</div>
+<span class="font-label-md text-label-md text-on-surface-variant">ข้อมูลทั่วไป</span>
+</div>
+<div class="flex-grow h-[2px] bg-secondary-container mx-2 mb-6"></div>
+<div class="flex flex-col items-center gap-xs">
+<div class="w-10 h-10 rounded-full bg-mint-accent text-on-tertiary flex items-center justify-center font-title-lg text-title-lg ring-4 ring-secondary-container/30">2</div>
+<span class="font-label-md text-label-md text-secondary font-bold">อัปโหลดรูปภาพ</span>
+</div>
+<div class="flex-grow h-[2px] bg-surface-container-highest mx-2 mb-6"></div>
+<div class="flex flex-col items-center gap-xs">
+<div class="w-8 h-8 rounded-full bg-surface-container-highest text-on-surface-variant flex items-center justify-center font-label-md text-label-md">3</div>
+<span class="font-label-md text-label-md text-on-surface-variant">สรุปผล</span>
+</div>
+</div>
+<!-- Upload & Processing Section -->
+<div class="bg-surface-container-lowest rounded-xl border border-outline-variant p-lg shadow-sm flex flex-col gap-lg relative overflow-hidden">
+<div class="flex flex-col gap-sm">
+<h2 class="font-headline-md text-headline-md-mobile text-primary">การวิเคราะห์หน้าดินด้วย AI</h2>
+<p class="font-body-md text-body-md text-on-surface-variant">อัปโหลดรูปภาพตัวอย่างดินที่ชัดเจนเพื่อให้ระบบ AI ประมวลผลธาตุอาหารเบื้องต้น</p>
+</div>
+<!-- Drag & Drop Zone -->
+<div class="border-2 border-dashed border-outline-variant rounded-xl p-xl flex flex-col items-center justify-center gap-md bg-surface transition-all cursor-pointer hover:border-mint-accent hover:bg-secondary-container/10 group" id="drop-zone">
+<div class="w-16 h-16 rounded-full bg-surface-container flex items-center justify-center group-hover:bg-secondary-container transition-colors">
+<span class="material-symbols-outlined text-secondary text-[40px]">cloud_upload</span>
+</div>
+<div class="text-center">
+<p class="font-title-lg text-title-lg text-on-surface mb-xs">เลือกรูปภาพหรือลากมาวางที่นี่</p>
+<p class="font-body-md text-body-md text-on-surface-variant">รองรับไฟล์ JPG, PNG ขนาดไม่เกิน 10MB</p>
+</div>
+<button class="px-lg py-sm bg-secondary text-on-secondary rounded-full font-label-md text-label-md hover:bg-primary-container transition-colors">
+                    เลือกไฟล์
+                </button>
+</div>
+<!-- Processing State (Hidden by default, shown via JS) -->
+<div class="hidden flex flex-col gap-lg animate-fade-in" id="loading-state">
+<div class="flex items-center gap-md p-md bg-surface-container rounded-lg border border-outline-variant">
+<div class="w-24 h-24 rounded-lg bg-surface-variant flex-shrink-0 overflow-hidden relative border border-outline-variant">
+<img class="w-full h-full object-cover" data-alt="A close-up photograph of a fresh soil sample held in a clear laboratory container. The soil is dark brown and nutrient-rich, with visible organic texture. The background is a clean, modern agricultural laboratory with soft, diffused white lighting and professional scientific equipment. The overall mood is clinical, high-tech, and precise, emphasizing the digital analysis process." id="preview-thumbnail" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC_DqV1jXkoNMDfTo0pz4dJ-hZt5mOziBJDstAj-Gv0akRPjPjcbSoMUtWHqSOX5ipfyIG4Q6KYoIe3IKv9t5Ckl_vPGBxazz9ymvxaybdBezUn6okkl7sK5kDlkZaM_8PVmyJzo-xVDQpGSdy-9nsbBYCy7Qzw6p0bUpFsNf_nFMZywKSVHhTM1cfl6Wk5SJF0p7B5YCUNs0Mctej_-F8E4zsuP2SLIcE_KPRULPfOk1klyTwXZ-VC7xZWE2OGi_gBrmFHr_vJmNA"/>
+<div class="absolute inset-0 bg-secondary/20 flex items-center justify-center">
+<span class="material-symbols-outlined text-white animate-spin">autorenew</span>
+</div>
+</div>
+<div class="flex-grow flex flex-col gap-sm">
+<div class="flex justify-between items-center">
+<span class="font-title-lg text-title-lg text-secondary flex items-center gap-xs">
+                                AI กำลังอ่านผล...
+                            </span>
+<span class="font-data-lg text-label-md text-secondary" id="progress-percent">45%</span>
+</div>
+<div class="w-full h-3 bg-surface-variant rounded-full overflow-hidden">
+<div class="loading-bar h-full bg-mint-accent progress-shimmer" id="loading-bar" style="width: 45%;"></div>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant italic">กำลังตรวจหามวลธาตุอาหารและระดับความเป็นกรด-ด่าง...</p>
+</div>
+</div>
+<!-- Feature Analysis Chips (Micro-interaction) -->
+<div class="flex flex-wrap gap-sm">
+<div class="px-md py-xs rounded-full bg-secondary-container text-on-secondary-container font-label-md text-label-md flex items-center gap-xs">
+<span class="material-symbols-outlined text-[16px]">check_circle</span> ตรวจจับเนื้อดิน
+                    </div>
+<div class="px-md py-xs rounded-full bg-secondary-container text-on-secondary-container font-label-md text-label-md flex items-center gap-xs">
+<span class="material-symbols-outlined text-[16px]">check_circle</span> วิเคราะห์เม็ดสี
+                    </div>
+<div class="px-md py-xs rounded-full bg-surface-container text-on-surface-variant font-label-md text-label-md flex items-center gap-xs animate-pulse">
+<span class="material-symbols-outlined text-[16px]">hourglass_empty</span> ประมวลผลความชื้น
+                    </div>
+</div>
+</div>
+</div>
+<!-- Footer Buttons -->
+<div class="flex justify-between items-center mt-md">
+<button class="px-xl py-md border border-primary-container text-primary-container rounded-full font-title-lg text-title-lg hover:bg-surface-container transition-all flex items-center gap-xs active:scale-95">
+<span class="material-symbols-outlined">arrow_back</span>
+                ย้อนกลับ
+            </button>
+<button class="px-xl py-md bg-outline-variant text-on-surface-variant cursor-not-allowed rounded-full font-title-lg text-title-lg transition-all flex items-center gap-xs" disabled="" id="next-button">
+                ถัดไป
+                <span class="material-symbols-outlined">arrow_forward</span>
+</button>
+</div>
+</main>
+<!-- BottomNavBar (Mobile Only) -->
+<nav class="md:hidden fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 py-2 pb-safe bg-surface-container-lowest border-t border-outline-variant rounded-t-xl">
+<div class="flex flex-col items-center justify-center text-on-surface-variant px-4 py-1 hover:bg-surface-container-high transition-colors">
+<span class="material-symbols-outlined">home</span>
+<span class="font-label-md text-label-md">Home</span>
+</div>
+<div class="flex flex-col items-center justify-center bg-secondary-container text-on-secondary-container rounded-full px-4 py-1 active:scale-90 transition-transform duration-150">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">biotech</span>
+<span class="font-label-md text-label-md">Soil Test</span>
+</div>
+<div class="flex flex-col items-center justify-center text-on-surface-variant px-4 py-1 hover:bg-surface-container-high transition-colors">
+<span class="material-symbols-outlined">history</span>
+<span class="font-label-md text-label-md">History</span>
+</div>
+<div class="flex flex-col items-center justify-center text-on-surface-variant px-4 py-1 hover:bg-surface-container-high transition-colors">
+<span class="material-symbols-outlined">person</span>
+<span class="font-label-md text-label-md">Profile</span>
+</div>
+</nav>
+<script>
+        // Simulation for UI demonstration
+        const dropZone = document.getElementById('drop-zone');
+        const loadingState = document.getElementById('loading-state');
+        const loadingBar = document.getElementById('loading-bar');
+        const progressPercent = document.getElementById('progress-percent');
+        const nextButton = document.getElementById('next-button');
+
+        dropZone.addEventListener('click', () => {
+            // Simulate starting the upload
+            dropZone.classList.add('hidden');
+            loadingState.classList.remove('hidden');
+            
+            let progress = 0;
+            const interval = setInterval(() => {
+                progress += Math.floor(Math.random() * 15);
+                if (progress >= 100) {
+                    progress = 100;
+                    clearInterval(interval);
+                    
+                    // Enable Next button
+                    nextButton.disabled = false;
+                    nextButton.classList.remove('bg-outline-variant', 'text-on-surface-variant', 'cursor-not-allowed');
+                    nextButton.classList.add('bg-secondary', 'text-on-secondary', 'hover:bg-primary-container', 'active:scale-95');
+                }
+                loadingBar.style.width = progress + '%';
+                progressPercent.innerText = progress + '%';
+            }, 500);
+        });
+
+        // Simple drag & drop visual feedback
+        ['dragenter', 'dragover'].forEach(eventName => {
+            dropZone.addEventListener(eventName, (e) => {
+                e.preventDefault();
+                dropZone.classList.add('border-mint-accent', 'bg-secondary-container/20');
+            }, false);
+        });
+
+        ['dragleave', 'drop'].forEach(eventName => {
+            dropZone.addEventListener(eventName, (e) => {
+                e.preventDefault();
+                dropZone.classList.remove('border-mint-accent', 'bg-secondary-container/20');
+            }, false);
+        });
+    </script>
+</body></html>

@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+
+<html lang="th"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&amp;family=Noto+Sans:wght@400;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "on-tertiary": "#ffffff",
+                    "on-tertiary-fixed": "#002114",
+                    "on-background": "#191c1c",
+                    "surface-container-low": "#f2f4f3",
+                    "secondary": "#006c48",
+                    "surface-container": "#eceeed",
+                    "inverse-on-surface": "#eff1f0",
+                    "surface": "#f8faf9",
+                    "surface-bright": "#f8faf9",
+                    "on-tertiary-fixed-variant": "#0e5138",
+                    "inverse-primary": "#b5c8e5",
+                    "primary-container": "#0d2137",
+                    "tertiary-fixed": "#b1f0ce",
+                    "on-primary-fixed": "#081c32",
+                    "tertiary-fixed-dim": "#95d4b3",
+                    "on-secondary": "#ffffff",
+                    "on-surface-variant": "#44474d",
+                    "primary": "#000917",
+                    "surface-container-high": "#e6e9e8",
+                    "secondary-fixed": "#92f7c3",
+                    "primary-fixed": "#d2e4ff",
+                    "on-secondary-container": "#00734d",
+                    "surface-container-lowest": "#ffffff",
+                    "on-surface": "#191c1c",
+                    "primary-fixed-dim": "#b5c8e5",
+                    "surface-dim": "#d8dada",
+                    "background": "#f8faf9",
+                    "on-primary-container": "#7689a4",
+                    "secondary-container": "#92f7c3",
+                    "error-container": "#ffdad6",
+                    "error": "#ba1a1a",
+                    "on-error": "#ffffff",
+                    "on-primary": "#ffffff",
+                    "on-primary-fixed-variant": "#364860",
+                    "on-secondary-fixed-variant": "#005235",
+                    "on-error-container": "#93000a",
+                    "surface-tint": "#4d6079",
+                    "tertiary-container": "#002617",
+                    "surface-variant": "#e1e3e2",
+                    "on-secondary-fixed": "#002113",
+                    "tertiary": "#000b05",
+                    "outline": "#74777d",
+                    "inverse-surface": "#2e3131",
+                    "surface-container-highest": "#e1e3e2",
+                    "secondary-fixed-dim": "#75daa8",
+                    "outline-variant": "#c4c6cd",
+                    "on-tertiary-container": "#579476"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "base": "4px",
+                    "md": "16px",
+                    "sm": "8px",
+                    "lg": "24px",
+                    "gutter": "16px",
+                    "container-margin": "16px",
+                    "xs": "4px",
+                    "xl": "32px"
+            },
+            "fontFamily": {
+                    "body-lg": ["Inter"],
+                    "headline-md": ["Noto Sans"],
+                    "data-lg": ["Inter"],
+                    "display-sm": ["Noto Sans"],
+                    "display-lg": ["Noto Sans"],
+                    "label-md": ["Inter"],
+                    "body-md": ["Inter"],
+                    "title-lg": ["Noto Sans"],
+                    "display-lg-mobile": ["Noto Sans"]
+            },
+            "fontSize": {
+                    "body-lg": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                    "headline-md": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+                    "data-lg": ["28px", {"lineHeight": "32px", "letterSpacing": "-0.03em", "fontWeight": "700"}],
+                    "display-sm": ["24px", {"lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "700"}],
+                    "display-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "label-md": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                    "body-md": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                    "title-lg": ["18px", {"lineHeight": "24px", "fontWeight": "600"}],
+                    "display-lg-mobile": ["26px", {"lineHeight": "32px", "fontWeight": "700"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        body { background-color: #f8faf9; font-family: 'Inter', sans-serif; }
+        .glass-card { background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(10px); }
+        .custom-shadow { box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+        .btn-primary { background-color: #52B788; color: white; transition: all 0.2s; }
+        .btn-primary:hover { background-color: #40916c; transform: translateY(-1px); }
+        .btn-secondary { border: 1px solid #0D2137; color: #0D2137; transition: all 0.2s; }
+        .btn-secondary:hover { background-color: #0D2137; color: white; }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="text-on-background min-h-screen pb-24">
+<!-- Top Navigation Anchor (Shared Component) -->
+<header class="bg-surface dark:bg-inverse-surface shadow-sm docked full-width top-0 sticky z-50 flex justify-between items-center w-full px-container-margin h-16">
+<div class="flex items-center gap-sm">
+<span class="material-symbols-outlined text-secondary dark:text-secondary-fixed">agriculture</span>
+<h1 class="font-display-sm text-display-sm text-primary dark:text-primary-fixed">DOA Soil Analysis</h1>
+</div>
+<button class="material-symbols-outlined text-on-surface-variant dark:text-outline-variant hover:bg-surface-container-high dark:hover:bg-surface-container-low transition-colors active:scale-95 duration-100 p-2 rounded-full">notifications</button>
+</header>
+<main class="max-w-4xl mx-auto px-container-margin pt-sm">
+<!-- Step Indicator -->
+<nav class="flex items-center justify-center py-lg">
+<div class="flex items-center w-full max-w-md">
+<div class="flex flex-col items-center flex-1">
+<div class="w-8 h-8 rounded-full bg-secondary text-on-secondary flex items-center justify-center font-label-md text-label-md">
+<span class="material-symbols-outlined text-[18px]" style="font-variation-settings: 'FILL' 1;">check</span>
+</div>
+<span class="font-label-md text-label-md mt-base text-secondary">Step 1</span>
+</div>
+<div class="h-[2px] flex-1 bg-secondary mx-2 mb-5"></div>
+<div class="flex flex-col items-center flex-1">
+<div class="w-8 h-8 rounded-full bg-secondary text-on-secondary flex items-center justify-center font-label-md text-label-md">
+<span class="material-symbols-outlined text-[18px]" style="font-variation-settings: 'FILL' 1;">check</span>
+</div>
+<span class="font-label-md text-label-md mt-base text-secondary">Step 2</span>
+</div>
+<div class="h-[2px] flex-1 bg-secondary mx-2 mb-5"></div>
+<div class="flex flex-col items-center flex-1">
+<div class="w-8 h-8 rounded-full bg-primary text-on-primary flex items-center justify-center font-label-md text-label-md ring-4 ring-primary-fixed">3</div>
+<span class="font-label-md text-label-md mt-base text-primary font-bold">Step 3</span>
+</div>
+</div>
+</nav>
+<!-- Summary Title Section -->
+<section class="mb-lg">
+<h2 class="font-headline-md text-headline-md-mobile md:text-headline-md text-primary mb-base">ผลการวิเคราะห์และคำแนะนำ</h2>
+<p class="font-body-md text-body-md text-on-surface-variant">ข้อมูลสรุปแร่ธาตุในดินและแนวทางการบำรุงรักษาสำหรับเกษตรกรรมแม่นยำ</p>
+</section>
+<!-- Results Bento Grid Layout -->
+<div class="grid grid-cols-1 md:grid-cols-12 gap-md">
+<!-- Summary Card: Nutrient Charts -->
+<div class="md:col-span-7 bg-surface-container-lowest rounded-xl p-lg border border-outline-variant custom-shadow">
+<div class="flex justify-between items-start mb-lg">
+<h3 class="font-title-lg text-title-lg text-primary">ระดับธาตุอาหารหลัก</h3>
+<span class="bg-secondary-container text-on-secondary-container px-sm py-1 rounded-full font-label-md text-label-md">ดินดี</span>
+</div>
+<div class="space-y-lg">
+<!-- Nitrogen (N) -->
+<div class="space-y-base">
+<div class="flex justify-between items-end">
+<span class="font-body-md text-body-md font-semibold text-primary">Nitrogen (N)</span>
+<span class="font-label-md text-label-md text-on-surface-variant">75% - ปานกลาง</span>
+</div>
+<div class="w-full bg-surface-container-high h-3 rounded-full overflow-hidden">
+<div class="h-full bg-blue-500 transition-all duration-1000" style="width: 75%;"></div>
+</div>
+</div>
+<!-- Phosphorus (P) -->
+<div class="space-y-base">
+<div class="flex justify-between items-end">
+<span class="font-body-md text-body-md font-semibold text-primary">Phosphorus (P)</span>
+<span class="font-label-md text-label-md text-on-surface-variant">42% - ต่ำ</span>
+</div>
+<div class="w-full bg-surface-container-high h-3 rounded-full overflow-hidden">
+<div class="h-full bg-orange-500 transition-all duration-1000" style="width: 42%;"></div>
+</div>
+</div>
+<!-- Potassium (K) -->
+<div class="space-y-base">
+<div class="flex justify-between items-end">
+<span class="font-body-md text-body-md font-semibold text-primary">Potassium (K)</span>
+<span class="font-label-md text-label-md text-on-surface-variant">90% - สูง</span>
+</div>
+<div class="w-full bg-surface-container-high h-3 rounded-full overflow-hidden">
+<div class="h-full bg-secondary transition-all duration-1000" style="width: 90%;"></div>
+</div>
+</div>
+</div>
+<div class="mt-xl pt-lg border-t border-outline-variant flex items-center gap-sm">
+<span class="material-symbols-outlined text-secondary">info</span>
+<p class="font-body-md text-body-md text-on-surface-variant italic">ดินมีความอุดมสมบูรณ์ในระดับที่เหมาะสมสำหรับพืชไร่</p>
+</div>
+</div>
+<!-- Recommendation Visual -->
+<div class="md:col-span-5 relative rounded-xl overflow-hidden min-h-[200px] border border-outline-variant custom-shadow">
+<img class="absolute inset-0 w-full h-full object-cover" data-alt="A lush green rice field in Thailand during the golden hour, showing healthy rice stalks with heavy grains. The scene is illuminated by soft, warm sunlight, emphasizing a professional agricultural and high-tech farming aesthetic. The composition is clean and minimalist, reflecting a modern corporate AgriTech identity with natural earth tones and a sense of abundance." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAZObH2tVl8BdXqbWDBOtnUQjhobAJzLlaQVJcn1kdMdseRcFnFLEU-PntnU8jYOMs_Kqtfo7y9vMLVTLWJgzZTMQa3xACLH_5qkzr_Ukw9rnkU6tT9nSuwVop-S11SCT9jZd_-V13Fhb7YoF3alXw4BzOFfoFucbAloHEEblwfg31yfmHIG8mhn-b8_GDT_c7QMHVLr32RFp7FxpdvPBGh9K8h0puTdtez5JU8zAya6-b2dBhCwpnri24wiK_bN--2R9xVEalWQGI"/>
+<div class="absolute inset-0 bg-gradient-to-t from-primary-container/80 to-transparent flex flex-col justify-end p-lg">
+<h4 class="text-on-primary font-title-lg text-title-lg">พื้นที่ปลูก: อ.กำแพงแสน</h4>
+<p class="text-primary-fixed font-body-md text-body-md">ชนิดพืช: ข้าวเจ้า (กข43)</p>
+</div>
+</div>
+<!-- Recommendation Details Card -->
+<div class="md:col-span-12 bg-white rounded-xl border border-outline-variant custom-shadow overflow-hidden">
+<div class="bg-primary-container px-lg py-md flex items-center gap-sm">
+<span class="material-symbols-outlined text-secondary-fixed">assignment</span>
+<h3 class="font-title-lg text-title-lg text-white">คำแนะนำการใช้ปุ๋ย</h3>
+</div>
+<div class="p-lg grid grid-cols-1 md:grid-cols-3 gap-lg">
+<div class="flex items-start gap-md">
+<div class="bg-surface-container-high p-sm rounded-lg">
+<span class="material-symbols-outlined text-primary">science</span>
+</div>
+<div>
+<p class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider mb-xs">สูตรปุ๋ย</p>
+<p class="font-headline-md text-headline-md-mobile text-primary font-bold">16-20-0</p>
+<p class="font-body-md text-body-md text-on-surface-variant mt-xs">เน้นบำรุงรากและลำต้น</p>
+</div>
+</div>
+<div class="flex items-start gap-md border-y md:border-y-0 md:border-x border-outline-variant py-md md:py-0 md:px-lg">
+<div class="bg-surface-container-high p-sm rounded-lg">
+<span class="material-symbols-outlined text-primary">scale</span>
+</div>
+<div>
+<p class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider mb-xs">ปริมาณต่อไร่</p>
+<p class="font-headline-md text-headline-md-mobile text-primary font-bold">25-30 กก.</p>
+<p class="font-body-md text-body-md text-on-surface-variant mt-xs">คำนวณตามพื้นที่ 10 ไร่</p>
+</div>
+</div>
+<div class="flex items-start gap-md">
+<div class="bg-surface-container-high p-sm rounded-lg">
+<span class="material-symbols-outlined text-primary">event_upcoming</span>
+</div>
+<div>
+<p class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider mb-xs">ช่วงเวลาที่ใส่</p>
+<p class="font-headline-md text-headline-md-mobile text-primary font-bold">ระยะแตกกอ</p>
+<p class="font-body-md text-body-md text-on-surface-variant mt-xs">อายุ 20-30 วันหลังปลูก</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Action Area -->
+<div class="md:col-span-12 flex flex-col md:flex-row items-center justify-between gap-md pt-lg">
+<a class="text-secondary font-title-lg text-title-lg flex items-center gap-base hover:underline decoration-2 underline-offset-4" href="#">
+<span class="material-symbols-outlined">restart_alt</span>
+                    วิเคราะห์ใหม่
+                </a>
+<div class="flex flex-col sm:flex-row gap-md w-full md:w-auto">
+<button class="btn-secondary px-xl py-md rounded-xl font-title-lg text-title-lg flex items-center justify-center gap-sm min-w-[160px]">
+<span class="material-symbols-outlined text-[20px]">share</span>
+                        แชร์ผล
+                    </button>
+<button class="btn-primary px-xl py-md rounded-xl font-title-lg text-title-lg flex items-center justify-center gap-sm min-w-[200px]">
+<span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 1;">save</span>
+                        บันทึกผล
+                    </button>
+</div>
+</div>
+</div>
+</main>
+<!-- Bottom Navigation Anchor (Shared Component) -->
+<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 py-2 pb-safe bg-surface-container-lowest dark:bg-surface-container-lowest border-t border-outline-variant rounded-t-xl md:hidden">
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-outline-variant px-4 py-1 hover:bg-surface-container-high" href="#">
+<span class="material-symbols-outlined" data-icon="home">home</span>
+<span class="font-label-md text-label-md mt-1">Home</span>
+</a>
+<a class="flex flex-col items-center justify-center bg-secondary-container dark:bg-secondary-fixed-variant text-on-secondary-container dark:text-secondary-fixed rounded-full px-4 py-1" href="#">
+<span class="material-symbols-outlined" data-icon="biotech" style="font-variation-settings: 'FILL' 1;">biotech</span>
+<span class="font-label-md text-label-md mt-1">Soil Test</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-outline-variant px-4 py-1 hover:bg-surface-container-high" href="#">
+<span class="material-symbols-outlined" data-icon="history">history</span>
+<span class="font-label-md text-label-md mt-1">History</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-outline-variant px-4 py-1 hover:bg-surface-container-high" href="#">
+<span class="material-symbols-outlined" data-icon="person">person</span>
+<span class="font-label-md text-label-md mt-1">Profile</span>
+</a>
+</nav>
+<script>
+        // Micro-interaction for bar charts
+        window.addEventListener('DOMContentLoaded', () => {
+            const bars = document.querySelectorAll('.h-full');
+            bars.forEach(bar => {
+                const targetWidth = bar.style.width;
+                bar.style.width = '0%';
+                setTimeout(() => {
+                    bar.style.width = targetWidth;
+                }, 100);
+            });
+        });
+    </script>
+</body></html>
