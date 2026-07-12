@@ -43,6 +43,7 @@ from PIL import Image
 HERE = os.path.dirname(os.path.abspath(__file__))
 PROJECT = os.path.abspath(os.path.join(HERE, ".."))
 TIFF_DIR = r"E:\DOA_Soil\OMPK_Test_MAP"
+SUM_TIFF = r"E:\DOA_Soil\TH_SUM\TH_SUM.tif"   # คะแนนความอุดมสมบูรณ์รวม (3-9)
 PNG_DIR = os.path.join(PROJECT, "public", "soil-maps")
 SQL_PATH = os.path.join(PROJECT, "supabase", "migrations", "003_soil_grid.sql")
 
@@ -73,6 +74,7 @@ THRESHOLDS = {          # (t_low, t_high): low if v<t_low ; high if v>t_high ; e
     "om": (1.5, 3.5),
     "p":  (10.0, 25.0),
     "k":  (60.0, 90.0),
+    "sum": (5.0, 6.0),  # คะแนนรวม 3-9: ต่ำ 3-4 / ปานกลาง 5-6 / สูง 7-9
 }
 
 def classify(nutrient, a):
@@ -160,6 +162,30 @@ def main():
         img.save(out)
         cnt = {name: int((valid_m & (lvl == c)).sum()) for c, name in enumerate(LEVEL_NAMES)}
         print(f"  {k}_level.png  {dst_w}x{dst_h} (mercator)  low={cnt['low']} medium={cnt['medium']} high={cnt['high']}")
+
+    # ---- 1b) SUM overlay (ความอุดมสมบูรณ์รวม 3-9 จาก TH_SUM.tif, grid เดียวกัน) ----
+    with rasterio.open(SUM_TIFF) as sds:
+        sarr = sds.read(1).astype(np.float64)
+        snod = sds.nodata
+        st, scrs = sds.transform, sds.crs
+    ssrc = np.where((sarr >= 0) & (sarr < 1e6) & (sarr != snod), sarr, np.nan).astype(np.float32)
+    sdst = np.full((dst_h, dst_w), np.nan, dtype=np.float32)
+    reproject(
+        source=ssrc, destination=sdst,
+        src_transform=st, src_crs=scrs, src_nodata=np.nan,
+        dst_transform=dst_transform, dst_crs=dst_crs, dst_nodata=np.nan,
+        resampling=Resampling.nearest,
+    )
+    svalid = np.isfinite(sdst)
+    slvl = classify("sum", np.nan_to_num(sdst, nan=-1e30))
+    srgba = np.zeros((dst_h, dst_w, 4), dtype=np.uint8)
+    for code, name in enumerate(LEVEL_NAMES):
+        mask = svalid & (slvl == code)
+        r, g, b = COLORS[name]
+        srgba[mask] = (r, g, b, 255)
+    Image.fromarray(srgba, mode="RGBA").save(os.path.join(PNG_DIR, "sum_level.png"))
+    scnt = {name: int((svalid & (slvl == c)).sum()) for c, name in enumerate(LEVEL_NAMES)}
+    print(f"  sum_level.png  {dst_w}x{dst_h} (mercator)  low={scnt['low']} medium={scnt['medium']} high={scnt['high']}")
 
     # ---- 2) SQL migration ----
     rows_idx = np.argwhere(valid)   # (row, col) pairs

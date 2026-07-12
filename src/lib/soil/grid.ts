@@ -32,16 +32,21 @@ export const LEVEL_LABEL_TH: Record<SoilLevel, string> = {
   high: "สูง",
 }
 
-// เกณฑ์มาตรฐานกรมพัฒนาที่ดิน: low ถ้า v<lo, high ถ้า v>hi, ที่เหลือ medium
+// layer "sum" = ความอุดมสมบูรณ์รวม (คะแนน 3-9) เป็น layer ที่ 4 นอกจากธาตุอาหาร
+export type Layer = Nutrient | "sum"
+
+// เกณฑ์: low ถ้า v<lo, high ถ้า v>hi, ที่เหลือ medium
+// om/p/k = เกณฑ์กรมพัฒนาที่ดิน · sum = คะแนนรวม (3-4 ต่ำ / 5-6 ปานกลาง / 7-9 สูง)
 // ต้องตรงกับ THRESHOLDS ใน scripts/extract_soil_grid.py
-const THRESHOLDS: Record<Nutrient, [number, number]> = {
+const THRESHOLDS: Record<Layer, [number, number]> = {
   om: [1.5, 3.5],
   p: [10, 25],
   k: [60, 90],
+  sum: [5, 6],
 }
 
 export function classify(
-  nutrient: Nutrient,
+  nutrient: Layer,
   v: number | null | undefined
 ): SoilLevel | null {
   if (v == null || !Number.isFinite(v)) return null
@@ -52,8 +57,8 @@ export function classify(
 }
 
 export const NUTRIENT_META: Record<
-  Nutrient,
-  { key: Nutrient; label: string; short: string; unit: string; overlay: string }
+  Layer,
+  { key: Layer; label: string; short: string; unit: string; overlay: string }
 > = {
   om: {
     key: "om",
@@ -76,9 +81,35 @@ export const NUTRIENT_META: Record<
     unit: "mg/kg",
     overlay: "/soil-maps/k_level.png",
   },
+  sum: {
+    key: "sum",
+    label: "ความอุดมสมบูรณ์",
+    short: "รวม",
+    unit: "คะแนน",
+    overlay: "/soil-maps/sum_level.png",
+  },
 }
 
 export const NUTRIENTS: Nutrient[] = ["om", "p", "k"]
+
+// layer ทั้งหมดที่แสดงบนแผนที่ (รวม sum เป็นแท็บที่ 4)
+export const LAYERS: Layer[] = ["om", "p", "k", "sum"]
+
+const LEVEL_SCORE: Record<SoilLevel, number> = { low: 1, medium: 2, high: 3 }
+
+// คะแนนความอุดมสมบูรณ์รวม = ผลรวม level ของ OM+P+K (3-9) — ตรงกับ TH_SUM 100%
+// คืน null ถ้าข้อมูลไม่ครบ
+export function soilScore(
+  om: number | null | undefined,
+  p: number | null | undefined,
+  k: number | null | undefined
+): number | null {
+  const lo = classify("om", om)
+  const lp = classify("p", p)
+  const lk = classify("k", k)
+  if (!lo || !lp || !lk) return null
+  return LEVEL_SCORE[lo] + LEVEL_SCORE[lp] + LEVEL_SCORE[lk]
+}
 
 // แปลง lat/lng -> ดัชนีเซลล์ (row, col). คืน null ถ้าอยู่นอก grid
 export function toGridIndex(

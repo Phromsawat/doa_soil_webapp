@@ -15,12 +15,14 @@ import { Plus, Minus } from "lucide-react"
 
 import {
   NUTRIENTS,
+  LAYERS,
   NUTRIENT_META,
   LEVEL_COLORS,
   LEVEL_LABEL_TH,
   SOIL_BOUNDS,
   classify,
-  type Nutrient,
+  soilScore,
+  type Layer,
   type SoilLevel,
 } from "@/lib/soil/grid"
 import { getSoilAtPoint, type SoilAtPoint } from "@/lib/supabase/soilGrid"
@@ -70,7 +72,7 @@ function LevelBadge({ level }: { level: SoilLevel | null }) {
 }
 
 export default function SoilMaps() {
-  const [active, setActive] = useState<Nutrient>("om")
+  const [active, setActive] = useState<Layer>("om")
   const [picked, setPicked] = useState<{ lat: number; lng: number } | null>(null)
   const [result, setResult] = useState<SoilAtPoint | null>(null)
   const [loading, setLoading] = useState(false)
@@ -80,6 +82,8 @@ export default function SoilMaps() {
   const handleMapReady = useCallback((map: L.Map) => setMapInstance(map), [])
 
   const meta = NUTRIENT_META[active]
+  const score = result ? soilScore(result.om, result.p, result.k) : null
+  const sumLevel = score != null ? classify("sum", score) : null
 
   function goToMyLocation() {
     if (!navigator.geolocation || !mapInstance) return
@@ -179,7 +183,7 @@ export default function SoilMaps() {
       {/* แท็บเลือกธาตุอาหาร — pill ลอยด้านบน */}
       <div className="pointer-events-none absolute inset-x-0 top-3 z-[1000] flex justify-center px-3">
         <div className="pointer-events-auto flex rounded-full bg-white/85 p-1 shadow-lg ring-1 ring-black/5 backdrop-blur">
-          {NUTRIENTS.map((n) => {
+          {LAYERS.map((n) => {
             const m = NUTRIENT_META[n]
             const on = n === active
             return (
@@ -240,7 +244,25 @@ export default function SoilMaps() {
                 </p>
               )}
               {!loading && result && (
-                <div className="grid grid-cols-3 gap-2">
+                <>
+                  {/* คะแนนความอุดมสมบูรณ์รวม (ผลรวม level OM+P+K = 3-9) */}
+                  <div
+                    className={`mb-2 flex items-center justify-between rounded-xl border px-3 py-2 ${
+                      active === "sum"
+                        ? "border-[#1A4D2E] bg-white/60"
+                        : "border-gray-100 bg-white/60"
+                    }`}
+                  >
+                    <span className="text-xs text-gray-600">ความอุดมสมบูรณ์รวม</span>
+                    <span className="flex items-center gap-2">
+                      <span className="text-base font-bold text-gray-800">
+                        {score ?? "—"}
+                        <span className="text-[11px] font-normal text-gray-400">/9</span>
+                      </span>
+                      <LevelBadge level={sumLevel} />
+                    </span>
+                  </div>
+                  <div className="grid grid-cols-3 gap-2">
                   {NUTRIENTS.map((n) => {
                     const m = NUTRIENT_META[n]
                     const val = result[n]
@@ -264,7 +286,8 @@ export default function SoilMaps() {
                       </div>
                     )
                   })}
-                </div>
+                  </div>
+                </>
               )}
             </>
           )}
