@@ -31,6 +31,7 @@ export const translations = {
     aboutMenu: "เกี่ยวกับโครงการ",
     termsMenu: "เงื่อนไขและนโยบาย",
     contactMenu: "ติดต่อเรา",
+    mapMenu: "แผนที่",
     soilSampling: "วิธีการเก็บตัวอย่างดิน",
     doaKits: "การวิเคราะห์ดินด้วย DOA-SOil Test Kits",
     userGuide: "คู่มือการใช้เว็บแอปฯ",
@@ -59,7 +60,22 @@ export const translations = {
     emailLabel: "Email",
 
     // Footer
-    copyright: "สงวนลิขสิทธิ์ © 2567 กรมวิชาการเกษตร และ ศูนย์เทคโนโลยีอิเล็กทรอนิกส์และคอมพิวเตอร์แห่งชาติ"
+    copyright: "สงวนลิขสิทธิ์ © 2567 กรมวิชาการเกษตร และ ศูนย์เทคโนโลยีอิเล็กทรอนิกส์และคอมพิวเตอร์แห่งชาติ",
+
+    // Profile Drawer
+    greeting: "สวัสดี",
+    anonymousLabel: "ผู้ใช้ไม่ระบุตัวตน",
+    anonymousUserName: "ผู้ใช้ทั่วไป",
+    signupForPermanent: "สมัครสมาชิกเพื่อเก็บข้อมูลถาวร",
+    editProfile: "แก้ไขโปรไฟล์",
+    changePassword: "เปลี่ยนรหัสผ่าน",
+    languageLabel: "ภาษา",
+    signOutBtn: "ออกจากระบบ",
+
+    // History
+    historyMenu: "ประวัติ",
+    analysisHistory: "ประวัติการวิเคราะห์",
+    menuLabel: "เมนู"
   },
   en: {
     // Hero Section
@@ -93,6 +109,7 @@ export const translations = {
     aboutMenu: "About Project",
     termsMenu: "Terms & Privacy",
     contactMenu: "Contact Us",
+    mapMenu: "Map",
     soilSampling: "Soil Sampling Methods",
     doaKits: "Soil Analysis with DOA-Soil Test Kits",
     userGuide: "Web App User Guide",
@@ -121,7 +138,22 @@ export const translations = {
     emailLabel: "Email",
 
     // Footer
-    copyright: "Copyright © 2024 Department of Agriculture and National Electronics and Computer Technology Center"
+    copyright: "Copyright © 2024 Department of Agriculture and National Electronics and Computer Technology Center",
+
+    // Profile Drawer
+    greeting: "Hi",
+    anonymousLabel: "Anonymous user",
+    anonymousUserName: "Guest",
+    signupForPermanent: "Sign up to save data permanently",
+    editProfile: "Edit Profile",
+    changePassword: "Change Password",
+    languageLabel: "Language",
+    signOutBtn: "Sign Out",
+
+    // History
+    historyMenu: "History",
+    analysisHistory: "Analysis History",
+    menuLabel: "Menu"
   }
 }
 

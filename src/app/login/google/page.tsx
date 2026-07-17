@@ -25,32 +25,11 @@ export default function GoogleMockLoginPage() {
 
       <div className="w-full max-w-[400px] border-t border-[#dadce0]">
         
-        {/* Mock Account */}
-        <button 
+        {/* Use another account */}
+        <button
           onClick={handleAccountSelect}
           disabled={isLoading}
-          className="w-full flex items-center py-3 px-1 border-b border-[#dadce0] hover:bg-[#f8f9fa] transition-colors text-left relative"
-        >
-          <div className="w-10 h-10 rounded-full bg-[#1e8e3e] flex items-center justify-center text-white font-medium text-lg mr-4 shrink-0 overflow-hidden">
-             {/* Mock profile picture */}
-             <div className="w-full h-full bg-[#0d652d] flex items-center justify-center">
-               <span className="text-white text-xl">P</span>
-             </div>
-          </div>
-          <div className="flex flex-col flex-1 overflow-hidden">
-            <span className="text-[14px] font-medium text-[#3c4043] truncate">Phromsawat Phoolprom</span>
-            <span className="text-[12px] text-[#5f6368] truncate">phromsawat0101@gmail.com</span>
-          </div>
-          {isLoading && (
-            <div className="absolute inset-0 bg-white/50 flex items-center justify-center">
-              <div className="w-5 h-5 border-2 border-[#1a73e8]/30 border-t-[#1a73e8] rounded-full animate-spin"></div>
-            </div>
-          )}
-        </button>
-
-        {/* Use another account */}
-        <button 
-          className="w-full flex items-center py-4 px-1 border-b border-[#dadce0] hover:bg-[#f8f9fa] transition-colors text-left"
+          className="w-full flex items-center py-4 px-1 border-b border-[#dadce0] hover:bg-[#f8f9fa] transition-colors text-left relative"
         >
           <div className="w-10 h-10 rounded-full flex items-center justify-center mr-4 shrink-0 text-[#5f6368]">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
@@ -58,6 +37,11 @@ export default function GoogleMockLoginPage() {
             </svg>
           </div>
           <span className="text-[14px] font-medium text-[#3c4043]">Use another account</span>
+          {isLoading && (
+            <div className="absolute inset-0 bg-white/50 flex items-center justify-center">
+              <div className="w-5 h-5 border-2 border-[#1a73e8]/30 border-t-[#1a73e8] rounded-full animate-spin"></div>
+            </div>
+          )}
         </button>
 
       </div>

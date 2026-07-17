@@ -1,0 +1,5366 @@
+{
+  "durian": {
+    "low_low_low": {
+      "nurture": {
+        "urea": 3500,
+        "dap": 1800,
+        "kcl": 3200
+      },
+      "bud": {
+        "urea": 1700,
+        "dap": 500,
+        "kcl": 500
+      },
+      "fruit": {
+        "urea": 800,
+        "dap": 600,
+        "kcl": 1000
+      },
+      "quality": {
+        "urea": 1000,
+        "dap": 700,
+        "kcl": 1000
+      }
+    },
+    "low_low_med": {
+      "nurture": {
+        "urea": 3500,
+        "dap": 1800,
+        "kcl": 1600
+      },
+      "bud": {
+        "urea": 1700,
+        "dap": 500,
+        "kcl": 300
+      },
+      "fruit": {
+        "urea": 800,
+        "dap": 600,
+        "kcl": 500
+      },
+      "quality": {
+        "urea": 1000,
+        "dap": 700,
+        "kcl": 500
+      }
+    },
+    "low_low_high": {
+      "nurture": {
+        "urea": 3500,
+        "dap": 1800,
+        "kcl": 800
+      },
+      "bud": {
+        "urea": 1700,
+        "dap": 500,
+        "kcl": 100
+      },
+      "fruit": {
+        "urea": 800,
+        "dap": 600,
+        "kcl": 200
+      },
+      "quality": {
+        "urea": 1000,
+        "dap": 700,
+        "kcl": 300
+      }
+    },
+    "low_med_low": {
+      "nurture": {
+        "urea": 3800,
+        "dap": 900,
+        "kcl": 3200
+      },
+      "bud": {
+        "urea": 1800,
+        "dap": 300,
+        "kcl": 500
+      },
+      "fruit": {
+        "urea": 900,
+        "dap": 300,
+        "kcl": 1000
+      },
+      "quality": {
+        "urea": 1100,
+        "dap": 300,
+        "kcl": 1000
+      }
+    },
+    "low_med_med": {
+      "nurture": {
+        "urea": 3800,
+        "dap": 900,
+        "kcl": 1600
+      },
+      "bud": {
+        "urea": 1800,
+        "dap": 300,
+        "kcl": 300
+      },
+      "fruit": {
+        "urea": 900,
+        "dap": 300,
+        "kcl": 500
+      },
+      "quality": {
+        "urea": 1100,
+        "dap": 300,
+        "kcl": 500
+      }
+    },
+    "low_med_high": {
+      "nurture": {
+        "urea": 3800,
+        "dap": 900,
+        "kcl": 800
+      },
+      "bud": {
+        "urea": 1800,
+        "dap": 300,
+        "kcl": 100
+      },
+      "fruit": {
+        "urea": 900,
+        "dap": 300,
+        "kcl": 200
+      },
+      "quality": {
+        "urea": 1100,
+        "dap": 300,
+        "kcl": 300
+      }
+    },
+    "low_high_low": {
+      "nurture": {
+        "urea": 4000,
+        "dap": 400,
+        "kcl": 3200
+      },
+      "bud": {
+        "urea": 1900,
+        "dap": 100,
+        "kcl": 500
+      },
+      "fruit": {
+        "urea": 1000,
+        "dap": 100,
+        "kcl": 1000
+      },
+      "quality": {
+        "urea": 1100,
+        "dap": 200,
+        "kcl": 1000
+      }
+    },
+    "low_high_med": {
+      "nurture": {
+        "urea": 4000,
+        "dap": 400,
+        "kcl": 1600
+      },
+      "bud": {
+        "urea": 1900,
+        "dap": 100,
+        "kcl": 300
+      },
+      "fruit": {
+        "urea": 1000,
+        "dap": 100,
+        "kcl": 500
+      },
+      "quality": {
+        "urea": 1100,
+        "dap": 200,
+        "kcl": 500
+      }
+    },
+    "low_high_high": {
+      "nurture": {
+        "urea": 4000,
+        "dap": 400,
+        "kcl": 800
+      },
+      "bud": {
+        "urea": 1900,
+        "dap": 100,
+        "kcl": 100
+      },
+      "fruit": {
+        "urea": 1000,
+        "dap": 100,
+        "kcl": 200
+      },
+      "quality": {
+        "urea": 1100,
+        "dap": 200,
+        "kcl": 300
+      }
+    },
+    "med_low_low": {
+      "nurture": {
+        "urea": 1400,
+        "dap": 1800,
+        "kcl": 3200
+      },
+      "bud": {
+        "urea": 700,
+        "dap": 500,
+        "kcl": 500
+      },
+      "fruit": {
+        "urea": 300,
+        "dap": 600,
+        "kcl": 1000
+      },
+      "quality": {
+        "urea": 400,
+        "dap": 700,
+        "kcl": 1000
+      }
+    },
+    "med_low_med": {
+      "nurture": {
+        "urea": 1400,
+        "dap": 1800,
+        "kcl": 1600
+      },
+      "bud": {
+        "urea": 700,
+        "dap": 500,
+        "kcl": 300
+      },
+      "fruit": {
+        "urea": 300,
+        "dap": 600,
+        "kcl": 500
+      },
+      "quality": {
+        "urea": 400,
+        "dap": 700,
+        "kcl": 500
+      }
+    },
+    "med_low_high": {
+      "nurture": {
+        "urea": 1400,
+        "dap": 1800,
+        "kcl": 800
+      },
+      "bud": {
+        "urea": 700,
+        "dap": 500,
+        "kcl": 100
+      },
+      "fruit": {
+        "urea": 300,
+        "dap": 600,
+        "kcl": 200
+      },
+      "quality": {
+        "urea": 400,
+        "dap": 700,
+        "kcl": 300
+      }
+    },
+    "med_med_low": {
+      "nurture": {
+        "urea": 1700,
+        "dap": 900,
+        "kcl": 3200
+      },
+      "bud": {
+        "urea": 800,
+        "dap": 300,
+        "kcl": 500
+      },
+      "fruit": {
+        "urea": 400,
+        "dap": 300,
+        "kcl": 1000
+      },
+      "quality": {
+        "urea": 500,
+        "dap": 300,
+        "kcl": 1000
+      }
+    },
+    "med_med_med": {
+      "nurture": {
+        "urea": 1700,
+        "dap": 900,
+        "kcl": 1600
+      },
+      "bud": {
+        "urea": 800,
+        "dap": 300,
+        "kcl": 300
+      },
+      "fruit": {
+        "urea": 400,
+        "dap": 300,
+        "kcl": 500
+      },
+      "quality": {
+        "urea": 500,
+        "dap": 300,
+        "kcl": 500
+      }
+    },
+    "med_med_high": {
+      "nurture": {
+        "urea": 1700,
+        "dap": 900,
+        "kcl": 800
+      },
+      "bud": {
+        "urea": 800,
+        "dap": 300,
+        "kcl": 100
+      },
+      "fruit": {
+        "urea": 400,
+        "dap": 300,
+        "kcl": 200
+      },
+      "quality": {
+        "urea": 500,
+        "dap": 300,
+        "kcl": 300
+      }
+    },
+    "med_high_low": {
+      "nurture": {
+        "urea": 2000,
+        "dap": 400,
+        "kcl": 3200
+      },
+      "bud": {
+        "urea": 900,
+        "dap": 100,
+        "kcl": 500
+      },
+      "fruit": {
+        "urea": 500,
+        "dap": 100,
+        "kcl": 1000
+      },
+      "quality": {
+        "urea": 600,
+        "dap": 200,
+        "kcl": 1000
+      }
+    },
+    "med_high_med": {
+      "nurture": {
+        "urea": 2000,
+        "dap": 400,
+        "kcl": 1600
+      },
+      "bud": {
+        "urea": 900,
+        "dap": 100,
+        "kcl": 300
+      },
+      "fruit": {
+        "urea": 500,
+        "dap": 100,
+        "kcl": 500
+      },
+      "quality": {
+        "urea": 600,
+        "dap": 200,
+        "kcl": 500
+      }
+    },
+    "med_high_high": {
+      "nurture": {
+        "urea": 2000,
+        "dap": 400,
+        "kcl": 800
+      },
+      "bud": {
+        "urea": 900,
+        "dap": 100,
+        "kcl": 100
+      },
+      "fruit": {
+        "urea": 500,
+        "dap": 100,
+        "kcl": 200
+      },
+      "quality": {
+        "urea": 600,
+        "dap": 200,
+        "kcl": 300
+      }
+    },
+    "high_low_low": {
+      "nurture": {
+        "urea": 900,
+        "dap": 1800,
+        "kcl": 3200
+      },
+      "bud": {
+        "urea": 500,
+        "dap": 500,
+        "kcl": 500
+      },
+      "fruit": {
+        "urea": 200,
+        "dap": 600,
+        "kcl": 1000
+      },
+      "quality": {
+        "urea": 200,
+        "dap": 700,
+        "kcl": 1000
+      }
+    },
+    "high_low_med": {
+      "nurture": {
+        "urea": 900,
+        "dap": 1800,
+        "kcl": 1600
+      },
+      "bud": {
+        "urea": 500,
+        "dap": 500,
+        "kcl": 300
+      },
+      "fruit": {
+        "urea": 200,
+        "dap": 600,
+        "kcl": 500
+      },
+      "quality": {
+        "urea": 200,
+        "dap": 700,
+        "kcl": 500
+      }
+    },
+    "high_low_high": {
+      "nurture": {
+        "urea": 900,
+        "dap": 1800,
+        "kcl": 800
+      },
+      "bud": {
+        "urea": 500,
+        "dap": 500,
+        "kcl": 100
+      },
+      "fruit": {
+        "urea": 200,
+        "dap": 600,
+        "kcl": 200
+      },
+      "quality": {
+        "urea": 200,
+        "dap": 700,
+        "kcl": 300
+      }
+    },
+    "high_med_low": {
+      "nurture": {
+        "urea": 1200,
+        "dap": 900,
+        "kcl": 3200
+      },
+      "bud": {
+        "urea": 600,
+        "dap": 300,
+        "kcl": 500
+      },
+      "fruit": {
+        "urea": 300,
+        "dap": 300,
+        "kcl": 1000
+      },
+      "quality": {
+        "urea": 300,
+        "dap": 300,
+        "kcl": 1000
+      }
+    },
+    "high_med_med": {
+      "nurture": {
+        "urea": 1200,
+        "dap": 900,
+        "kcl": 1600
+      },
+      "bud": {
+        "urea": 600,
+        "dap": 300,
+        "kcl": 300
+      },
+      "fruit": {
+        "urea": 300,
+        "dap": 300,
+        "kcl": 500
+      },
+      "quality": {
+        "urea": 300,
+        "dap": 300,
+        "kcl": 500
+      }
+    },
+    "high_med_high": {
+      "nurture": {
+        "urea": 1200,
+        "dap": 900,
+        "kcl": 800
+      },
+      "bud": {
+        "urea": 600,
+        "dap": 300,
+        "kcl": 100
+      },
+      "fruit": {
+        "urea": 300,
+        "dap": 300,
+        "kcl": 200
+      },
+      "quality": {
+        "urea": 300,
+        "dap": 300,
+        "kcl": 300
+      }
+    },
+    "high_high_low": {
+      "nurture": {
+        "urea": 1500,
+        "dap": 400,
+        "kcl": 3200
+      },
+      "bud": {
+        "urea": 700,
+        "dap": 100,
+        "kcl": 500
+      },
+      "fruit": {
+        "urea": 400,
+        "dap": 100,
+        "kcl": 1000
+      },
+      "quality": {
+        "urea": 400,
+        "dap": 200,
+        "kcl": 1000
+      }
+    },
+    "high_high_med": {
+      "nurture": {
+        "urea": 1500,
+        "dap": 400,
+        "kcl": 1600
+      },
+      "bud": {
+        "urea": 700,
+        "dap": 100,
+        "kcl": 300
+      },
+      "fruit": {
+        "urea": 400,
+        "dap": 100,
+        "kcl": 500
+      },
+      "quality": {
+        "urea": 400,
+        "dap": 200,
+        "kcl": 500
+      }
+    },
+    "high_high_high": {
+      "nurture": {
+        "urea": 1500,
+        "dap": 400,
+        "kcl": 800
+      },
+      "bud": {
+        "urea": 700,
+        "dap": 100,
+        "kcl": 100
+      },
+      "fruit": {
+        "urea": 400,
+        "dap": 100,
+        "kcl": 200
+      },
+      "quality": {
+        "urea": 400,
+        "dap": 200,
+        "kcl": 300
+      }
+    }
+  },
+  "mangosteen": {
+    "low_low_low": {
+      "nurture": {
+        "urea": 2400,
+        "dap": 1500,
+        "kcl": 3400
+      },
+      "bud": {
+        "urea": 1100,
+        "dap": 500,
+        "kcl": 500
+      },
+      "fruit": {
+        "urea": 600,
+        "dap": 600,
+        "kcl": 1000
+      },
+      "quality": {
+        "urea": 700,
+        "dap": 400,
+        "kcl": 1000
+      }
+    },
+    "low_low_med": {
+      "nurture": {
+        "urea": 2400,
+        "dap": 1500,
+        "kcl": 1700
+      },
+      "bud": {
+        "urea": 1100,
+        "dap": 500,
+        "kcl": 300
+      },
+      "fruit": {
+        "urea": 600,
+        "dap": 600,
+        "kcl": 500
+      },
+      "quality": {
+        "urea": 700,
+        "dap": 400,
+        "kcl": 500
+      }
+    },
+    "low_low_high": {
+      "nurture": {
+        "urea": 2400,
+        "dap": 1500,
+        "kcl": 800
+      },
+      "bud": {
+        "urea": 1100,
+        "dap": 500,
+        "kcl": 100
+      },
+      "fruit": {
+        "urea": 600,
+        "dap": 600,
+        "kcl": 200
+      },
+      "quality": {
+        "urea": 700,
+        "dap": 400,
+        "kcl": 200
+      }
+    },
+    "low_med_low": {
+      "nurture": {
+        "urea": 2700,
+        "dap": 800,
+        "kcl": 3400
+      },
+      "bud": {
+        "urea": 1200,
+        "dap": 300,
+        "kcl": 500
+      },
+      "fruit": {
+        "urea": 700,
+        "dap": 300,
+        "kcl": 1000
+      },
+      "quality": {
+        "urea": 800,
+        "dap": 200,
+        "kcl": 1000
+      }
+    },
+    "low_med_med": {
+      "nurture": {
+        "urea": 2700,
+        "dap": 800,
+        "kcl": 1700
+      },
+      "bud": {
+        "urea": 1200,
+        "dap": 300,
+        "kcl": 300
+      },
+      "fruit": {
+        "urea": 700,
+        "dap": 300,
+        "kcl": 500
+      },
+      "quality": {
+        "urea": 800,
+        "dap": 200,
+        "kcl": 500
+      }
+    },
+    "low_med_high": {
+      "nurture": {
+        "urea": 2700,
+        "dap": 800,
+        "kcl": 800
+      },
+      "bud": {
+        "urea": 1200,
+        "dap": 300,
+        "kcl": 100
+      },
+      "fruit": {
+        "urea": 700,
+        "dap": 300,
+        "kcl": 200
+      },
+      "quality": {
+        "urea": 800,
+        "dap": 200,
+        "kcl": 200
+      }
+    },
+    "low_high_low": {
+      "nurture": {
+        "urea": 3000,
+        "dap": 400,
+        "kcl": 3400
+      },
+      "bud": {
+        "urea": 1300,
+        "dap": 100,
+        "kcl": 500
+      },
+      "fruit": {
+        "urea": 800,
+        "dap": 200,
+        "kcl": 1000
+      },
+      "quality": {
+        "urea": 900,
+        "dap": 100,
+        "kcl": 1000
+      }
+    },
+    "low_high_med": {
+      "nurture": {
+        "urea": 3000,
+        "dap": 400,
+        "kcl": 1700
+      },
+      "bud": {
+        "urea": 1300,
+        "dap": 100,
+        "kcl": 300
+      },
+      "fruit": {
+        "urea": 800,
+        "dap": 200,
+        "kcl": 500
+      },
+      "quality": {
+        "urea": 900,
+        "dap": 100,
+        "kcl": 500
+      }
+    },
+    "low_high_high": {
+      "nurture": {
+        "urea": 3000,
+        "dap": 400,
+        "kcl": 800
+      },
+      "bud": {
+        "urea": 1300,
+        "dap": 100,
+        "kcl": 100
+      },
+      "fruit": {
+        "urea": 800,
+        "dap": 200,
+        "kcl": 200
+      },
+      "quality": {
+        "urea": 900,
+        "dap": 100,
+        "kcl": 200
+      }
+    },
+    "med_low_low": {
+      "nurture": {
+        "urea": 900,
+        "dap": 1500,
+        "kcl": 3400
+      },
+      "bud": {
+        "urea": 400,
+        "dap": 500,
+        "kcl": 500
+      },
+      "fruit": {
+        "urea": 200,
+        "dap": 600,
+        "kcl": 1000
+      },
+      "quality": {
+        "urea": 300,
+        "dap": 400,
+        "kcl": 1000
+      }
+    },
+    "med_low_med": {
+      "nurture": {
+        "urea": 900,
+        "dap": 1500,
+        "kcl": 1700
+      },
+      "bud": {
+        "urea": 400,
+        "dap": 500,
+        "kcl": 300
+      },
+      "fruit": {
+        "urea": 200,
+        "dap": 600,
+        "kcl": 500
+      },
+      "quality": {
+        "urea": 300,
+        "dap": 400,
+        "kcl": 500
+      }
+    },
+    "med_low_high": {
+      "nurture": {
+        "urea": 900,
+        "dap": 1500,
+        "kcl": 800
+      },
+      "bud": {
+        "urea": 400,
+        "dap": 500,
+        "kcl": 100
+      },
+      "fruit": {
+        "urea": 200,
+        "dap": 600,
+        "kcl": 200
+      },
+      "quality": {
+        "urea": 300,
+        "dap": 400,
+        "kcl": 200
+      }
+    },
+    "med_med_low": {
+      "nurture": {
+        "urea": 1200,
+        "dap": 800,
+        "kcl": 3400
+      },
+      "bud": {
+        "urea": 500,
+        "dap": 300,
+        "kcl": 500
+      },
+      "fruit": {
+        "urea": 300,
+        "dap": 300,
+        "kcl": 1000
+      },
+      "quality": {
+        "urea": 400,
+        "dap": 200,
+        "kcl": 1000
+      }
+    },
+    "med_med_med": {
+      "nurture": {
+        "urea": 1200,
+        "dap": 800,
+        "kcl": 1700
+      },
+      "bud": {
+        "urea": 500,
+        "dap": 300,
+        "kcl": 300
+      },
+      "fruit": {
+        "urea": 300,
+        "dap": 300,
+        "kcl": 500
+      },
+      "quality": {
+        "urea": 400,
+        "dap": 200,
+        "kcl": 500
+      }
+    },
+    "med_med_high": {
+      "nurture": {
+        "urea": 1200,
+        "dap": 800,
+        "kcl": 800
+      },
+      "bud": {
+        "urea": 500,
+        "dap": 300,
+        "kcl": 100
+      },
+      "fruit": {
+        "urea": 300,
+        "dap": 300,
+        "kcl": 200
+      },
+      "quality": {
+        "urea": 400,
+        "dap": 200,
+        "kcl": 200
+      }
+    },
+    "med_high_low": {
+      "nurture": {
+        "urea": 1400,
+        "dap": 400,
+        "kcl": 3400
+      },
+      "bud": {
+        "urea": 600,
+        "dap": 100,
+        "kcl": 500
+      },
+      "fruit": {
+        "urea": 400,
+        "dap": 200,
+        "kcl": 1000
+      },
+      "quality": {
+        "urea": 400,
+        "dap": 100,
+        "kcl": 1000
+      }
+    },
+    "med_high_med": {
+      "nurture": {
+        "urea": 1400,
+        "dap": 400,
+        "kcl": 1700
+      },
+      "bud": {
+        "urea": 600,
+        "dap": 100,
+        "kcl": 300
+      },
+      "fruit": {
+        "urea": 400,
+        "dap": 200,
+        "kcl": 500
+      },
+      "quality": {
+        "urea": 400,
+        "dap": 100,
+        "kcl": 500
+      }
+    },
+    "med_high_high": {
+      "nurture": {
+        "urea": 1400,
+        "dap": 400,
+        "kcl": 800
+      },
+      "bud": {
+        "urea": 600,
+        "dap": 100,
+        "kcl": 100
+      },
+      "fruit": {
+        "urea": 400,
+        "dap": 200,
+        "kcl": 200
+      },
+      "quality": {
+        "urea": 400,
+        "dap": 100,
+        "kcl": 200
+      }
+    },
+    "high_low_low": {
+      "nurture": {
+        "urea": 300,
+        "dap": 1500,
+        "kcl": 3400
+      },
+      "bud": {
+        "urea": 100,
+        "dap": 500,
+        "kcl": 500
+      },
+      "fruit": {
+        "urea": 100,
+        "dap": 600,
+        "kcl": 1000
+      },
+      "quality": {
+        "urea": 100,
+        "dap": 400,
+        "kcl": 1000
+      }
+    },
+    "high_low_med": {
+      "nurture": {
+        "urea": 300,
+        "dap": 1500,
+        "kcl": 1700
+      },
+      "bud": {
+        "urea": 100,
+        "dap": 500,
+        "kcl": 300
+      },
+      "fruit": {
+        "urea": 100,
+        "dap": 600,
+        "kcl": 500
+      },
+      "quality": {
+        "urea": 100,
+        "dap": 400,
+        "kcl": 500
+      }
+    },
+    "high_low_high": {
+      "nurture": {
+        "urea": 300,
+        "dap": 1500,
+        "kcl": 800
+      },
+      "bud": {
+        "urea": 100,
+        "dap": 500,
+        "kcl": 100
+      },
+      "fruit": {
+        "urea": 100,
+        "dap": 600,
+        "kcl": 200
+      },
+      "quality": {
+        "urea": 100,
+        "dap": 400,
+        "kcl": 200
+      }
+    },
+    "high_med_low": {
+      "nurture": {
+        "urea": 500,
+        "dap": 800,
+        "kcl": 3400
+      },
+      "bud": {
+        "urea": 200,
+        "dap": 300,
+        "kcl": 500
+      },
+      "fruit": {
+        "urea": 100,
+        "dap": 300,
+        "kcl": 1000
+      },
+      "quality": {
+        "urea": 200,
+        "dap": 200,
+        "kcl": 1000
+      }
+    },
+    "high_med_med": {
+      "nurture": {
+        "urea": 500,
+        "dap": 800,
+        "kcl": 1700
+      },
+      "bud": {
+        "urea": 200,
+        "dap": 300,
+        "kcl": 300
+      },
+      "fruit": {
+        "urea": 100,
+        "dap": 300,
+        "kcl": 500
+      },
+      "quality": {
+        "urea": 200,
+        "dap": 200,
+        "kcl": 500
+      }
+    },
+    "high_med_high": {
+      "nurture": {
+        "urea": 500,
+        "dap": 800,
+        "kcl": 800
+      },
+      "bud": {
+        "urea": 200,
+        "dap": 300,
+        "kcl": 100
+      },
+      "fruit": {
+        "urea": 100,
+        "dap": 300,
+        "kcl": 200
+      },
+      "quality": {
+        "urea": 200,
+        "dap": 200,
+        "kcl": 200
+      }
+    },
+    "high_high_low": {
+      "nurture": {
+        "urea": 700,
+        "dap": 400,
+        "kcl": 3400
+      },
+      "bud": {
+        "urea": 300,
+        "dap": 100,
+        "kcl": 500
+      },
+      "fruit": {
+        "urea": 200,
+        "dap": 200,
+        "kcl": 1000
+      },
+      "quality": {
+        "urea": 200,
+        "dap": 100,
+        "kcl": 1000
+      }
+    },
+    "high_high_med": {
+      "nurture": {
+        "urea": 700,
+        "dap": 400,
+        "kcl": 1700
+      },
+      "bud": {
+        "urea": 300,
+        "dap": 100,
+        "kcl": 300
+      },
+      "fruit": {
+        "urea": 200,
+        "dap": 200,
+        "kcl": 500
+      },
+      "quality": {
+        "urea": 200,
+        "dap": 100,
+        "kcl": 500
+      }
+    },
+    "high_high_high": {
+      "nurture": {
+        "urea": 700,
+        "dap": 400,
+        "kcl": 800
+      },
+      "bud": {
+        "urea": 300,
+        "dap": 100,
+        "kcl": 100
+      },
+      "fruit": {
+        "urea": 200,
+        "dap": 200,
+        "kcl": 200
+      },
+      "quality": {
+        "urea": 200,
+        "dap": 100,
+        "kcl": 200
+      }
+    }
+  },
+  "rambutan": {
+    "low_low_low": {
+      "nurture": {
+        "urea": 3200,
+        "dap": 1200,
+        "kcl": 1700
+      },
+      "bud": {
+        "urea": 1600,
+        "dap": 400,
+        "kcl": 300
+      },
+      "fruit": {
+        "urea": 800,
+        "dap": 400,
+        "kcl": 500
+      },
+      "quality": {
+        "urea": 800,
+        "dap": 400,
+        "kcl": 500
+      }
+    },
+    "low_low_med": {
+      "nurture": {
+        "urea": 3200,
+        "dap": 1200,
+        "kcl": 900
+      },
+      "bud": {
+        "urea": 1600,
+        "dap": 400,
+        "kcl": 200
+      },
+      "fruit": {
+        "urea": 800,
+        "dap": 400,
+        "kcl": 200
+      },
+      "quality": {
+        "urea": 800,
+        "dap": 400,
+        "kcl": 300
+      }
+    },
+    "low_low_high": {
+      "nurture": {
+        "urea": 3200,
+        "dap": 1200,
+        "kcl": 500
+      },
+      "bud": {
+        "urea": 1600,
+        "dap": 400,
+        "kcl": 100
+      },
+      "fruit": {
+        "urea": 800,
+        "dap": 400,
+        "kcl": 100
+      },
+      "quality": {
+        "urea": 800,
+        "dap": 400,
+        "kcl": 200
+      }
+    },
+    "low_med_low": {
+      "nurture": {
+        "urea": 3500,
+        "dap": 600,
+        "kcl": 1700
+      },
+      "bud": {
+        "urea": 1700,
+        "dap": 200,
+        "kcl": 300
+      },
+      "fruit": {
+        "urea": 900,
+        "dap": 200,
+        "kcl": 500
+      },
+      "quality": {
+        "urea": 900,
+        "dap": 200,
+        "kcl": 500
+      }
+    },
+    "low_med_med": {
+      "nurture": {
+        "urea": 3500,
+        "dap": 600,
+        "kcl": 900
+      },
+      "bud": {
+        "urea": 1700,
+        "dap": 200,
+        "kcl": 200
+      },
+      "fruit": {
+        "urea": 900,
+        "dap": 200,
+        "kcl": 200
+      },
+      "quality": {
+        "urea": 900,
+        "dap": 200,
+        "kcl": 300
+      }
+    },
+    "low_med_high": {
+      "nurture": {
+        "urea": 3500,
+        "dap": 600,
+        "kcl": 500
+      },
+      "bud": {
+        "urea": 1700,
+        "dap": 200,
+        "kcl": 100
+      },
+      "fruit": {
+        "urea": 900,
+        "dap": 200,
+        "kcl": 100
+      },
+      "quality": {
+        "urea": 900,
+        "dap": 200,
+        "kcl": 200
+      }
+    },
+    "low_high_low": {
+      "nurture": {
+        "urea": 3600,
+        "dap": 300,
+        "kcl": 1700
+      },
+      "bud": {
+        "urea": 1800,
+        "dap": 100,
+        "kcl": 300
+      },
+      "fruit": {
+        "urea": 900,
+        "dap": 100,
+        "kcl": 500
+      },
+      "quality": {
+        "urea": 900,
+        "dap": 100,
+        "kcl": 500
+      }
+    },
+    "low_high_med": {
+      "nurture": {
+        "urea": 3600,
+        "dap": 300,
+        "kcl": 900
+      },
+      "bud": {
+        "urea": 1800,
+        "dap": 100,
+        "kcl": 200
+      },
+      "fruit": {
+        "urea": 900,
+        "dap": 100,
+        "kcl": 200
+      },
+      "quality": {
+        "urea": 900,
+        "dap": 100,
+        "kcl": 300
+      }
+    },
+    "low_high_high": {
+      "nurture": {
+        "urea": 3600,
+        "dap": 300,
+        "kcl": 500
+      },
+      "bud": {
+        "urea": 1800,
+        "dap": 100,
+        "kcl": 100
+      },
+      "fruit": {
+        "urea": 900,
+        "dap": 100,
+        "kcl": 100
+      },
+      "quality": {
+        "urea": 900,
+        "dap": 100,
+        "kcl": 200
+      }
+    },
+    "med_low_low": {
+      "nurture": {
+        "urea": 1300,
+        "dap": 1200,
+        "kcl": 1700
+      },
+      "bud": {
+        "urea": 700,
+        "dap": 400,
+        "kcl": 300
+      },
+      "fruit": {
+        "urea": 300,
+        "dap": 400,
+        "kcl": 500
+      },
+      "quality": {
+        "urea": 300,
+        "dap": 400,
+        "kcl": 500
+      }
+    },
+    "med_low_med": {
+      "nurture": {
+        "urea": 1300,
+        "dap": 1200,
+        "kcl": 900
+      },
+      "bud": {
+        "urea": 700,
+        "dap": 400,
+        "kcl": 200
+      },
+      "fruit": {
+        "urea": 300,
+        "dap": 400,
+        "kcl": 200
+      },
+      "quality": {
+        "urea": 300,
+        "dap": 400,
+        "kcl": 300
+      }
+    },
+    "med_low_high": {
+      "nurture": {
+        "urea": 1300,
+        "dap": 1200,
+        "kcl": 500
+      },
+      "bud": {
+        "urea": 700,
+        "dap": 400,
+        "kcl": 100
+      },
+      "fruit": {
+        "urea": 300,
+        "dap": 400,
+        "kcl": 100
+      },
+      "quality": {
+        "urea": 300,
+        "dap": 400,
+        "kcl": 200
+      }
+    },
+    "med_med_low": {
+      "nurture": {
+        "urea": 1600,
+        "dap": 600,
+        "kcl": 1700
+      },
+      "bud": {
+        "urea": 800,
+        "dap": 200,
+        "kcl": 300
+      },
+      "fruit": {
+        "urea": 400,
+        "dap": 200,
+        "kcl": 500
+      },
+      "quality": {
+        "urea": 400,
+        "dap": 200,
+        "kcl": 500
+      }
+    },
+    "med_med_med": {
+      "nurture": {
+        "urea": 1600,
+        "dap": 600,
+        "kcl": 900
+      },
+      "bud": {
+        "urea": 800,
+        "dap": 200,
+        "kcl": 200
+      },
+      "fruit": {
+        "urea": 400,
+        "dap": 200,
+        "kcl": 200
+      },
+      "quality": {
+        "urea": 400,
+        "dap": 200,
+        "kcl": 300
+      }
+    },
+    "med_med_high": {
+      "nurture": {
+        "urea": 1600,
+        "dap": 600,
+        "kcl": 500
+      },
+      "bud": {
+        "urea": 800,
+        "dap": 200,
+        "kcl": 100
+      },
+      "fruit": {
+        "urea": 400,
+        "dap": 200,
+        "kcl": 100
+      },
+      "quality": {
+        "urea": 400,
+        "dap": 200,
+        "kcl": 200
+      }
+    },
+    "med_high_low": {
+      "nurture": {
+        "urea": 1700,
+        "dap": 300,
+        "kcl": 1700
+      },
+      "bud": {
+        "urea": 900,
+        "dap": 100,
+        "kcl": 300
+      },
+      "fruit": {
+        "urea": 400,
+        "dap": 100,
+        "kcl": 500
+      },
+      "quality": {
+        "urea": 400,
+        "dap": 100,
+        "kcl": 500
+      }
+    },
+    "med_high_med": {
+      "nurture": {
+        "urea": 1700,
+        "dap": 300,
+        "kcl": 900
+      },
+      "bud": {
+        "urea": 900,
+        "dap": 100,
+        "kcl": 200
+      },
+      "fruit": {
+        "urea": 400,
+        "dap": 100,
+        "kcl": 200
+      },
+      "quality": {
+        "urea": 400,
+        "dap": 100,
+        "kcl": 300
+      }
+    },
+    "med_high_high": {
+      "nurture": {
+        "urea": 1700,
+        "dap": 300,
+        "kcl": 500
+      },
+      "bud": {
+        "urea": 900,
+        "dap": 100,
+        "kcl": 100
+      },
+      "fruit": {
+        "urea": 400,
+        "dap": 100,
+        "kcl": 100
+      },
+      "quality": {
+        "urea": 400,
+        "dap": 100,
+        "kcl": 200
+      }
+    },
+    "high_low_low": {
+      "nurture": {
+        "urea": 400,
+        "dap": 1200,
+        "kcl": 1700
+      },
+      "bud": {
+        "urea": 200,
+        "dap": 400,
+        "kcl": 300
+      },
+      "fruit": {
+        "urea": 100,
+        "dap": 400,
+        "kcl": 500
+      },
+      "quality": {
+        "urea": 100,
+        "dap": 400,
+        "kcl": 500
+      }
+    },
+    "high_low_med": {
+      "nurture": {
+        "urea": 400,
+        "dap": 1200,
+        "kcl": 900
+      },
+      "bud": {
+        "urea": 200,
+        "dap": 400,
+        "kcl": 200
+      },
+      "fruit": {
+        "urea": 100,
+        "dap": 400,
+        "kcl": 200
+      },
+      "quality": {
+        "urea": 100,
+        "dap": 400,
+        "kcl": 300
+      }
+    },
+    "high_low_high": {
+      "nurture": {
+        "urea": 400,
+        "dap": 1200,
+        "kcl": 500
+      },
+      "bud": {
+        "urea": 200,
+        "dap": 400,
+        "kcl": 100
+      },
+      "fruit": {
+        "urea": 100,
+        "dap": 400,
+        "kcl": 100
+      },
+      "quality": {
+        "urea": 100,
+        "dap": 400,
+        "kcl": 200
+      }
+    },
+    "high_med_low": {
+      "nurture": {
+        "urea": 700,
+        "dap": 600,
+        "kcl": 1700
+      },
+      "bud": {
+        "urea": 300,
+        "dap": 200,
+        "kcl": 300
+      },
+      "fruit": {
+        "urea": 200,
+        "dap": 200,
+        "kcl": 500
+      },
+      "quality": {
+        "urea": 200,
+        "dap": 200,
+        "kcl": 500
+      }
+    },
+    "high_med_med": {
+      "nurture": {
+        "urea": 700,
+        "dap": 600,
+        "kcl": 900
+      },
+      "bud": {
+        "urea": 300,
+        "dap": 200,
+        "kcl": 200
+      },
+      "fruit": {
+        "urea": 200,
+        "dap": 200,
+        "kcl": 200
+      },
+      "quality": {
+        "urea": 200,
+        "dap": 200,
+        "kcl": 300
+      }
+    },
+    "high_med_high": {
+      "nurture": {
+        "urea": 700,
+        "dap": 600,
+        "kcl": 500
+      },
+      "bud": {
+        "urea": 300,
+        "dap": 200,
+        "kcl": 100
+      },
+      "fruit": {
+        "urea": 200,
+        "dap": 200,
+        "kcl": 100
+      },
+      "quality": {
+        "urea": 200,
+        "dap": 200,
+        "kcl": 200
+      }
+    },
+    "high_high_low": {
+      "nurture": {
+        "urea": 800,
+        "dap": 300,
+        "kcl": 1700
+      },
+      "bud": {
+        "urea": 400,
+        "dap": 100,
+        "kcl": 300
+      },
+      "fruit": {
+        "urea": 200,
+        "dap": 100,
+        "kcl": 500
+      },
+      "quality": {
+        "urea": 200,
+        "dap": 100,
+        "kcl": 500
+      }
+    },
+    "high_high_med": {
+      "nurture": {
+        "urea": 800,
+        "dap": 300,
+        "kcl": 900
+      },
+      "bud": {
+        "urea": 400,
+        "dap": 100,
+        "kcl": 200
+      },
+      "fruit": {
+        "urea": 200,
+        "dap": 100,
+        "kcl": 200
+      },
+      "quality": {
+        "urea": 200,
+        "dap": 100,
+        "kcl": 300
+      }
+    },
+    "high_high_high": {
+      "nurture": {
+        "urea": 800,
+        "dap": 300,
+        "kcl": 500
+      },
+      "bud": {
+        "urea": 400,
+        "dap": 100,
+        "kcl": 100
+      },
+      "fruit": {
+        "urea": 200,
+        "dap": 100,
+        "kcl": 100
+      },
+      "quality": {
+        "urea": 200,
+        "dap": 100,
+        "kcl": 200
+      }
+    }
+  },
+  "mango": {
+    "low_low_low": {
+      "nurture": {
+        "urea": 2300,
+        "dap": 900,
+        "kcl": 2000
+      },
+      "bud": {
+        "urea": 1100,
+        "dap": 300,
+        "kcl": 300
+      },
+      "fruit": {
+        "urea": 600,
+        "dap": 300,
+        "kcl": 600
+      },
+      "quality": {
+        "urea": 600,
+        "dap": 300,
+        "kcl": 600
+      }
+    },
+    "low_low_med": {
+      "nurture": {
+        "urea": 2300,
+        "dap": 900,
+        "kcl": 1100
+      },
+      "bud": {
+        "urea": 1100,
+        "dap": 300,
+        "kcl": 200
+      },
+      "fruit": {
+        "urea": 600,
+        "dap": 300,
+        "kcl": 300
+      },
+      "quality": {
+        "urea": 600,
+        "dap": 300,
+        "kcl": 300
+      }
+    },
+    "low_low_high": {
+      "nurture": {
+        "urea": 2300,
+        "dap": 900,
+        "kcl": 600
+      },
+      "bud": {
+        "urea": 1100,
+        "dap": 300,
+        "kcl": 100
+      },
+      "fruit": {
+        "urea": 600,
+        "dap": 300,
+        "kcl": 200
+      },
+      "quality": {
+        "urea": 600,
+        "dap": 300,
+        "kcl": 200
+      }
+    },
+    "low_med_low": {
+      "nurture": {
+        "urea": 2400,
+        "dap": 600,
+        "kcl": 2000
+      },
+      "bud": {
+        "urea": 1200,
+        "dap": 200,
+        "kcl": 300
+      },
+      "fruit": {
+        "urea": 600,
+        "dap": 200,
+        "kcl": 600
+      },
+      "quality": {
+        "urea": 600,
+        "dap": 200,
+        "kcl": 600
+      }
+    },
+    "low_med_med": {
+      "nurture": {
+        "urea": 2400,
+        "dap": 600,
+        "kcl": 1100
+      },
+      "bud": {
+        "urea": 1200,
+        "dap": 200,
+        "kcl": 200
+      },
+      "fruit": {
+        "urea": 600,
+        "dap": 200,
+        "kcl": 300
+      },
+      "quality": {
+        "urea": 600,
+        "dap": 200,
+        "kcl": 300
+      }
+    },
+    "low_med_high": {
+      "nurture": {
+        "urea": 2400,
+        "dap": 600,
+        "kcl": 600
+      },
+      "bud": {
+        "urea": 1200,
+        "dap": 200,
+        "kcl": 100
+      },
+      "fruit": {
+        "urea": 600,
+        "dap": 200,
+        "kcl": 200
+      },
+      "quality": {
+        "urea": 600,
+        "dap": 200,
+        "kcl": 200
+      }
+    },
+    "low_high_low": {
+      "nurture": {
+        "urea": 2500,
+        "dap": 300,
+        "kcl": 2000
+      },
+      "bud": {
+        "urea": 1300,
+        "dap": 100,
+        "kcl": 300
+      },
+      "fruit": {
+        "urea": 600,
+        "dap": 100,
+        "kcl": 600
+      },
+      "quality": {
+        "urea": 600,
+        "dap": 100,
+        "kcl": 600
+      }
+    },
+    "low_high_med": {
+      "nurture": {
+        "urea": 2500,
+        "dap": 300,
+        "kcl": 1100
+      },
+      "bud": {
+        "urea": 1300,
+        "dap": 100,
+        "kcl": 200
+      },
+      "fruit": {
+        "urea": 600,
+        "dap": 100,
+        "kcl": 300
+      },
+      "quality": {
+        "urea": 600,
+        "dap": 100,
+        "kcl": 300
+      }
+    },
+    "low_high_high": {
+      "nurture": {
+        "urea": 2500,
+        "dap": 300,
+        "kcl": 600
+      },
+      "bud": {
+        "urea": 1300,
+        "dap": 100,
+        "kcl": 100
+      },
+      "fruit": {
+        "urea": 600,
+        "dap": 100,
+        "kcl": 200
+      },
+      "quality": {
+        "urea": 600,
+        "dap": 100,
+        "kcl": 200
+      }
+    },
+    "med_low_low": {
+      "nurture": {
+        "urea": 900,
+        "dap": 900,
+        "kcl": 2000
+      },
+      "bud": {
+        "urea": 500,
+        "dap": 300,
+        "kcl": 300
+      },
+      "fruit": {
+        "urea": 200,
+        "dap": 300,
+        "kcl": 600
+      },
+      "quality": {
+        "urea": 200,
+        "dap": 300,
+        "kcl": 600
+      }
+    },
+    "med_low_med": {
+      "nurture": {
+        "urea": 900,
+        "dap": 900,
+        "kcl": 1100
+      },
+      "bud": {
+        "urea": 500,
+        "dap": 300,
+        "kcl": 200
+      },
+      "fruit": {
+        "urea": 200,
+        "dap": 300,
+        "kcl": 300
+      },
+      "quality": {
+        "urea": 200,
+        "dap": 300,
+        "kcl": 300
+      }
+    },
+    "med_low_high": {
+      "nurture": {
+        "urea": 900,
+        "dap": 900,
+        "kcl": 600
+      },
+      "bud": {
+        "urea": 500,
+        "dap": 300,
+        "kcl": 100
+      },
+      "fruit": {
+        "urea": 200,
+        "dap": 300,
+        "kcl": 200
+      },
+      "quality": {
+        "urea": 200,
+        "dap": 300,
+        "kcl": 200
+      }
+    },
+    "med_med_low": {
+      "nurture": {
+        "urea": 1200,
+        "dap": 600,
+        "kcl": 2000
+      },
+      "bud": {
+        "urea": 600,
+        "dap": 200,
+        "kcl": 300
+      },
+      "fruit": {
+        "urea": 300,
+        "dap": 200,
+        "kcl": 600
+      },
+      "quality": {
+        "urea": 300,
+        "dap": 200,
+        "kcl": 600
+      }
+    },
+    "med_med_med": {
+      "nurture": {
+        "urea": 1200,
+        "dap": 600,
+        "kcl": 1100
+      },
+      "bud": {
+        "urea": 600,
+        "dap": 200,
+        "kcl": 200
+      },
+      "fruit": {
+        "urea": 300,
+        "dap": 200,
+        "kcl": 300
+      },
+      "quality": {
+        "urea": 300,
+        "dap": 200,
+        "kcl": 300
+      }
+    },
+    "med_med_high": {
+      "nurture": {
+        "urea": 1200,
+        "dap": 600,
+        "kcl": 600
+      },
+      "bud": {
+        "urea": 600,
+        "dap": 200,
+        "kcl": 100
+      },
+      "fruit": {
+        "urea": 300,
+        "dap": 200,
+        "kcl": 200
+      },
+      "quality": {
+        "urea": 300,
+        "dap": 200,
+        "kcl": 200
+      }
+    },
+    "med_high_low": {
+      "nurture": {
+        "urea": 1200,
+        "dap": 300,
+        "kcl": 2000
+      },
+      "bud": {
+        "urea": 600,
+        "dap": 100,
+        "kcl": 300
+      },
+      "fruit": {
+        "urea": 300,
+        "dap": 100,
+        "kcl": 600
+      },
+      "quality": {
+        "urea": 300,
+        "dap": 100,
+        "kcl": 600
+      }
+    },
+    "med_high_med": {
+      "nurture": {
+        "urea": 1200,
+        "dap": 300,
+        "kcl": 1100
+      },
+      "bud": {
+        "urea": 600,
+        "dap": 100,
+        "kcl": 200
+      },
+      "fruit": {
+        "urea": 300,
+        "dap": 100,
+        "kcl": 300
+      },
+      "quality": {
+        "urea": 300,
+        "dap": 100,
+        "kcl": 300
+      }
+    },
+    "med_high_high": {
+      "nurture": {
+        "urea": 1200,
+        "dap": 300,
+        "kcl": 600
+      },
+      "bud": {
+        "urea": 600,
+        "dap": 100,
+        "kcl": 100
+      },
+      "fruit": {
+        "urea": 300,
+        "dap": 100,
+        "kcl": 200
+      },
+      "quality": {
+        "urea": 300,
+        "dap": 100,
+        "kcl": 200
+      }
+    },
+    "high_low_low": {
+      "nurture": {
+        "urea": 400,
+        "dap": 900,
+        "kcl": 2000
+      },
+      "bud": {
+        "urea": 200,
+        "dap": 300,
+        "kcl": 300
+      },
+      "fruit": {
+        "urea": 100,
+        "dap": 300,
+        "kcl": 600
+      },
+      "quality": {
+        "urea": 100,
+        "dap": 300,
+        "kcl": 600
+      }
+    },
+    "high_low_med": {
+      "nurture": {
+        "urea": 400,
+        "dap": 900,
+        "kcl": 1100
+      },
+      "bud": {
+        "urea": 200,
+        "dap": 300,
+        "kcl": 200
+      },
+      "fruit": {
+        "urea": 100,
+        "dap": 300,
+        "kcl": 300
+      },
+      "quality": {
+        "urea": 100,
+        "dap": 300,
+        "kcl": 300
+      }
+    },
+    "high_low_high": {
+      "nurture": {
+        "urea": 400,
+        "dap": 900,
+        "kcl": 600
+      },
+      "bud": {
+        "urea": 200,
+        "dap": 300,
+        "kcl": 100
+      },
+      "fruit": {
+        "urea": 100,
+        "dap": 300,
+        "kcl": 200
+      },
+      "quality": {
+        "urea": 100,
+        "dap": 300,
+        "kcl": 200
+      }
+    },
+    "high_med_low": {
+      "nurture": {
+        "urea": 400,
+        "dap": 600,
+        "kcl": 2000
+      },
+      "bud": {
+        "urea": 200,
+        "dap": 200,
+        "kcl": 300
+      },
+      "fruit": {
+        "urea": 100,
+        "dap": 200,
+        "kcl": 600
+      },
+      "quality": {
+        "urea": 100,
+        "dap": 200,
+        "kcl": 600
+      }
+    },
+    "high_med_med": {
+      "nurture": {
+        "urea": 400,
+        "dap": 600,
+        "kcl": 1100
+      },
+      "bud": {
+        "urea": 200,
+        "dap": 200,
+        "kcl": 200
+      },
+      "fruit": {
+        "urea": 100,
+        "dap": 200,
+        "kcl": 300
+      },
+      "quality": {
+        "urea": 100,
+        "dap": 200,
+        "kcl": 300
+      }
+    },
+    "high_med_high": {
+      "nurture": {
+        "urea": 400,
+        "dap": 600,
+        "kcl": 600
+      },
+      "bud": {
+        "urea": 200,
+        "dap": 200,
+        "kcl": 100
+      },
+      "fruit": {
+        "urea": 100,
+        "dap": 200,
+        "kcl": 200
+      },
+      "quality": {
+        "urea": 100,
+        "dap": 200,
+        "kcl": 200
+      }
+    },
+    "high_high_low": {
+      "nurture": {
+        "urea": 500,
+        "dap": 300,
+        "kcl": 2000
+      },
+      "bud": {
+        "urea": 300,
+        "dap": 100,
+        "kcl": 300
+      },
+      "fruit": {
+        "urea": 100,
+        "dap": 100,
+        "kcl": 600
+      },
+      "quality": {
+        "urea": 100,
+        "dap": 100,
+        "kcl": 600
+      }
+    },
+    "high_high_med": {
+      "nurture": {
+        "urea": 500,
+        "dap": 300,
+        "kcl": 1100
+      },
+      "bud": {
+        "urea": 300,
+        "dap": 100,
+        "kcl": 200
+      },
+      "fruit": {
+        "urea": 100,
+        "dap": 100,
+        "kcl": 300
+      },
+      "quality": {
+        "urea": 100,
+        "dap": 100,
+        "kcl": 300
+      }
+    },
+    "high_high_high": {
+      "nurture": {
+        "urea": 500,
+        "dap": 300,
+        "kcl": 600
+      },
+      "bud": {
+        "urea": 300,
+        "dap": 100,
+        "kcl": 100
+      },
+      "fruit": {
+        "urea": 100,
+        "dap": 100,
+        "kcl": 200
+      },
+      "quality": {
+        "urea": 100,
+        "dap": 100,
+        "kcl": 200
+      }
+    }
+  },
+  "longan": {
+    "low_low_low": {
+      "nurture": {
+        "urea": 2500,
+        "dap": 1800,
+        "kcl": 2700
+      },
+      "bud": {
+        "urea": 1300,
+        "dap": 600,
+        "kcl": 400
+      },
+      "fruit": {
+        "urea": 600,
+        "dap": 600,
+        "kcl": 900
+      },
+      "quality": {
+        "urea": 600,
+        "dap": 600,
+        "kcl": 900
+      }
+    },
+    "low_low_med": {
+      "nurture": {
+        "urea": 2500,
+        "dap": 1800,
+        "kcl": 1300
+      },
+      "bud": {
+        "urea": 1300,
+        "dap": 600,
+        "kcl": 200
+      },
+      "fruit": {
+        "urea": 600,
+        "dap": 600,
+        "kcl": 400
+      },
+      "quality": {
+        "urea": 600,
+        "dap": 600,
+        "kcl": 400
+      }
+    },
+    "low_low_high": {
+      "nurture": {
+        "urea": 2500,
+        "dap": 1800,
+        "kcl": 700
+      },
+      "bud": {
+        "urea": 1300,
+        "dap": 600,
+        "kcl": 100
+      },
+      "fruit": {
+        "urea": 600,
+        "dap": 600,
+        "kcl": 200
+      },
+      "quality": {
+        "urea": 600,
+        "dap": 600,
+        "kcl": 200
+      }
+    },
+    "low_med_low": {
+      "nurture": {
+        "urea": 2800,
+        "dap": 900,
+        "kcl": 2700
+      },
+      "bud": {
+        "urea": 1400,
+        "dap": 300,
+        "kcl": 400
+      },
+      "fruit": {
+        "urea": 700,
+        "dap": 300,
+        "kcl": 900
+      },
+      "quality": {
+        "urea": 700,
+        "dap": 300,
+        "kcl": 900
+      }
+    },
+    "low_med_med": {
+      "nurture": {
+        "urea": 2800,
+        "dap": 900,
+        "kcl": 1300
+      },
+      "bud": {
+        "urea": 1400,
+        "dap": 300,
+        "kcl": 200
+      },
+      "fruit": {
+        "urea": 700,
+        "dap": 300,
+        "kcl": 400
+      },
+      "quality": {
+        "urea": 700,
+        "dap": 300,
+        "kcl": 400
+      }
+    },
+    "low_med_high": {
+      "nurture": {
+        "urea": 2800,
+        "dap": 900,
+        "kcl": 700
+      },
+      "bud": {
+        "urea": 1400,
+        "dap": 300,
+        "kcl": 100
+      },
+      "fruit": {
+        "urea": 700,
+        "dap": 300,
+        "kcl": 200
+      },
+      "quality": {
+        "urea": 700,
+        "dap": 300,
+        "kcl": 200
+      }
+    },
+    "low_high_low": {
+      "nurture": {
+        "urea": 2900,
+        "dap": 600,
+        "kcl": 2700
+      },
+      "bud": {
+        "urea": 1500,
+        "dap": 200,
+        "kcl": 400
+      },
+      "fruit": {
+        "urea": 700,
+        "dap": 200,
+        "kcl": 900
+      },
+      "quality": {
+        "urea": 700,
+        "dap": 200,
+        "kcl": 900
+      }
+    },
+    "low_high_med": {
+      "nurture": {
+        "urea": 2900,
+        "dap": 600,
+        "kcl": 1300
+      },
+      "bud": {
+        "urea": 1500,
+        "dap": 200,
+        "kcl": 200
+      },
+      "fruit": {
+        "urea": 700,
+        "dap": 200,
+        "kcl": 400
+      },
+      "quality": {
+        "urea": 700,
+        "dap": 200,
+        "kcl": 400
+      }
+    },
+    "low_high_high": {
+      "nurture": {
+        "urea": 2900,
+        "dap": 600,
+        "kcl": 700
+      },
+      "bud": {
+        "urea": 1500,
+        "dap": 200,
+        "kcl": 100
+      },
+      "fruit": {
+        "urea": 700,
+        "dap": 200,
+        "kcl": 200
+      },
+      "quality": {
+        "urea": 700,
+        "dap": 200,
+        "kcl": 200
+      }
+    },
+    "med_low_low": {
+      "nurture": {
+        "urea": 900,
+        "dap": 1800,
+        "kcl": 2700
+      },
+      "bud": {
+        "urea": 500,
+        "dap": 600,
+        "kcl": 400
+      },
+      "fruit": {
+        "urea": 200,
+        "dap": 600,
+        "kcl": 900
+      },
+      "quality": {
+        "urea": 200,
+        "dap": 600,
+        "kcl": 900
+      }
+    },
+    "med_low_med": {
+      "nurture": {
+        "urea": 900,
+        "dap": 1800,
+        "kcl": 1300
+      },
+      "bud": {
+        "urea": 500,
+        "dap": 600,
+        "kcl": 200
+      },
+      "fruit": {
+        "urea": 200,
+        "dap": 600,
+        "kcl": 400
+      },
+      "quality": {
+        "urea": 200,
+        "dap": 600,
+        "kcl": 400
+      }
+    },
+    "med_low_high": {
+      "nurture": {
+        "urea": 900,
+        "dap": 1800,
+        "kcl": 700
+      },
+      "bud": {
+        "urea": 500,
+        "dap": 600,
+        "kcl": 100
+      },
+      "fruit": {
+        "urea": 200,
+        "dap": 600,
+        "kcl": 200
+      },
+      "quality": {
+        "urea": 200,
+        "dap": 600,
+        "kcl": 200
+      }
+    },
+    "med_med_low": {
+      "nurture": {
+        "urea": 1200,
+        "dap": 900,
+        "kcl": 2700
+      },
+      "bud": {
+        "urea": 600,
+        "dap": 300,
+        "kcl": 400
+      },
+      "fruit": {
+        "urea": 300,
+        "dap": 300,
+        "kcl": 900
+      },
+      "quality": {
+        "urea": 300,
+        "dap": 300,
+        "kcl": 900
+      }
+    },
+    "med_med_med": {
+      "nurture": {
+        "urea": 1200,
+        "dap": 900,
+        "kcl": 1300
+      },
+      "bud": {
+        "urea": 600,
+        "dap": 300,
+        "kcl": 200
+      },
+      "fruit": {
+        "urea": 300,
+        "dap": 300,
+        "kcl": 400
+      },
+      "quality": {
+        "urea": 300,
+        "dap": 300,
+        "kcl": 400
+      }
+    },
+    "med_med_high": {
+      "nurture": {
+        "urea": 1200,
+        "dap": 900,
+        "kcl": 700
+      },
+      "bud": {
+        "urea": 600,
+        "dap": 300,
+        "kcl": 100
+      },
+      "fruit": {
+        "urea": 300,
+        "dap": 300,
+        "kcl": 200
+      },
+      "quality": {
+        "urea": 300,
+        "dap": 300,
+        "kcl": 200
+      }
+    },
+    "med_high_low": {
+      "nurture": {
+        "urea": 1500,
+        "dap": 600,
+        "kcl": 2700
+      },
+      "bud": {
+        "urea": 700,
+        "dap": 200,
+        "kcl": 400
+      },
+      "fruit": {
+        "urea": 400,
+        "dap": 200,
+        "kcl": 900
+      },
+      "quality": {
+        "urea": 400,
+        "dap": 200,
+        "kcl": 900
+      }
+    },
+    "med_high_med": {
+      "nurture": {
+        "urea": 1500,
+        "dap": 600,
+        "kcl": 1300
+      },
+      "bud": {
+        "urea": 700,
+        "dap": 200,
+        "kcl": 200
+      },
+      "fruit": {
+        "urea": 400,
+        "dap": 200,
+        "kcl": 400
+      },
+      "quality": {
+        "urea": 400,
+        "dap": 200,
+        "kcl": 400
+      }
+    },
+    "med_high_high": {
+      "nurture": {
+        "urea": 1500,
+        "dap": 600,
+        "kcl": 700
+      },
+      "bud": {
+        "urea": 700,
+        "dap": 200,
+        "kcl": 100
+      },
+      "fruit": {
+        "urea": 400,
+        "dap": 200,
+        "kcl": 200
+      },
+      "quality": {
+        "urea": 400,
+        "dap": 200,
+        "kcl": 200
+      }
+    },
+    "high_low_low": {
+      "nurture": {
+        "urea": 100,
+        "dap": 1800,
+        "kcl": 2700
+      },
+      "bud": {
+        "urea": 100,
+        "dap": 600,
+        "kcl": 400
+      },
+      "fruit": {
+        "urea": 0,
+        "dap": 600,
+        "kcl": 900
+      },
+      "quality": {
+        "urea": 0,
+        "dap": 600,
+        "kcl": 900
+      }
+    },
+    "high_low_med": {
+      "nurture": {
+        "urea": 100,
+        "dap": 1800,
+        "kcl": 1300
+      },
+      "bud": {
+        "urea": 100,
+        "dap": 600,
+        "kcl": 200
+      },
+      "fruit": {
+        "urea": 0,
+        "dap": 600,
+        "kcl": 400
+      },
+      "quality": {
+        "urea": 0,
+        "dap": 600,
+        "kcl": 400
+      }
+    },
+    "high_low_high": {
+      "nurture": {
+        "urea": 100,
+        "dap": 1800,
+        "kcl": 700
+      },
+      "bud": {
+        "urea": 100,
+        "dap": 600,
+        "kcl": 100
+      },
+      "fruit": {
+        "urea": 0,
+        "dap": 600,
+        "kcl": 200
+      },
+      "quality": {
+        "urea": 0,
+        "dap": 600,
+        "kcl": 200
+      }
+    },
+    "high_med_low": {
+      "nurture": {
+        "urea": 400,
+        "dap": 900,
+        "kcl": 2700
+      },
+      "bud": {
+        "urea": 200,
+        "dap": 300,
+        "kcl": 400
+      },
+      "fruit": {
+        "urea": 100,
+        "dap": 300,
+        "kcl": 900
+      },
+      "quality": {
+        "urea": 100,
+        "dap": 300,
+        "kcl": 900
+      }
+    },
+    "high_med_med": {
+      "nurture": {
+        "urea": 400,
+        "dap": 900,
+        "kcl": 1300
+      },
+      "bud": {
+        "urea": 200,
+        "dap": 300,
+        "kcl": 200
+      },
+      "fruit": {
+        "urea": 100,
+        "dap": 300,
+        "kcl": 400
+      },
+      "quality": {
+        "urea": 100,
+        "dap": 300,
+        "kcl": 400
+      }
+    },
+    "high_med_high": {
+      "nurture": {
+        "urea": 400,
+        "dap": 900,
+        "kcl": 700
+      },
+      "bud": {
+        "urea": 200,
+        "dap": 300,
+        "kcl": 100
+      },
+      "fruit": {
+        "urea": 100,
+        "dap": 300,
+        "kcl": 200
+      },
+      "quality": {
+        "urea": 100,
+        "dap": 300,
+        "kcl": 200
+      }
+    },
+    "high_high_low": {
+      "nurture": {
+        "urea": 700,
+        "dap": 600,
+        "kcl": 2700
+      },
+      "bud": {
+        "urea": 300,
+        "dap": 200,
+        "kcl": 400
+      },
+      "fruit": {
+        "urea": 200,
+        "dap": 200,
+        "kcl": 900
+      },
+      "quality": {
+        "urea": 200,
+        "dap": 200,
+        "kcl": 900
+      }
+    },
+    "high_high_med": {
+      "nurture": {
+        "urea": 700,
+        "dap": 600,
+        "kcl": 1300
+      },
+      "bud": {
+        "urea": 300,
+        "dap": 200,
+        "kcl": 200
+      },
+      "fruit": {
+        "urea": 200,
+        "dap": 200,
+        "kcl": 400
+      },
+      "quality": {
+        "urea": 200,
+        "dap": 200,
+        "kcl": 400
+      }
+    },
+    "high_high_high": {
+      "nurture": {
+        "urea": 700,
+        "dap": 600,
+        "kcl": 700
+      },
+      "bud": {
+        "urea": 300,
+        "dap": 200,
+        "kcl": 100
+      },
+      "fruit": {
+        "urea": 200,
+        "dap": 200,
+        "kcl": 200
+      },
+      "quality": {
+        "urea": 200,
+        "dap": 200,
+        "kcl": 200
+      }
+    }
+  },
+  "lychee": {
+    "low_low_low": {
+      "nurture": {
+        "urea": 2000,
+        "dap": 1200,
+        "kcl": 2300
+      },
+      "bud": {
+        "urea": 1000,
+        "dap": 400,
+        "kcl": 400
+      },
+      "fruit": {
+        "urea": 500,
+        "dap": 400,
+        "kcl": 700
+      },
+      "quality": {
+        "urea": 500,
+        "dap": 400,
+        "kcl": 700
+      }
+    },
+    "low_low_med": {
+      "nurture": {
+        "urea": 2000,
+        "dap": 1200,
+        "kcl": 1200
+      },
+      "bud": {
+        "urea": 1000,
+        "dap": 400,
+        "kcl": 200
+      },
+      "fruit": {
+        "urea": 500,
+        "dap": 400,
+        "kcl": 400
+      },
+      "quality": {
+        "urea": 500,
+        "dap": 400,
+        "kcl": 400
+      }
+    },
+    "low_low_high": {
+      "nurture": {
+        "urea": 2000,
+        "dap": 1200,
+        "kcl": 600
+      },
+      "bud": {
+        "urea": 1000,
+        "dap": 400,
+        "kcl": 100
+      },
+      "fruit": {
+        "urea": 500,
+        "dap": 400,
+        "kcl": 200
+      },
+      "quality": {
+        "urea": 500,
+        "dap": 400,
+        "kcl": 200
+      }
+    },
+    "low_med_low": {
+      "nurture": {
+        "urea": 2200,
+        "dap": 600,
+        "kcl": 2300
+      },
+      "bud": {
+        "urea": 1100,
+        "dap": 200,
+        "kcl": 400
+      },
+      "fruit": {
+        "urea": 600,
+        "dap": 200,
+        "kcl": 700
+      },
+      "quality": {
+        "urea": 500,
+        "dap": 200,
+        "kcl": 700
+      }
+    },
+    "low_med_med": {
+      "nurture": {
+        "urea": 2200,
+        "dap": 600,
+        "kcl": 1200
+      },
+      "bud": {
+        "urea": 1100,
+        "dap": 200,
+        "kcl": 200
+      },
+      "fruit": {
+        "urea": 600,
+        "dap": 200,
+        "kcl": 400
+      },
+      "quality": {
+        "urea": 500,
+        "dap": 200,
+        "kcl": 400
+      }
+    },
+    "low_med_high": {
+      "nurture": {
+        "urea": 2200,
+        "dap": 600,
+        "kcl": 600
+      },
+      "bud": {
+        "urea": 1100,
+        "dap": 200,
+        "kcl": 100
+      },
+      "fruit": {
+        "urea": 600,
+        "dap": 200,
+        "kcl": 200
+      },
+      "quality": {
+        "urea": 500,
+        "dap": 200,
+        "kcl": 200
+      }
+    },
+    "low_high_low": {
+      "nurture": {
+        "urea": 2400,
+        "dap": 300,
+        "kcl": 2300
+      },
+      "bud": {
+        "urea": 1200,
+        "dap": 100,
+        "kcl": 400
+      },
+      "fruit": {
+        "urea": 600,
+        "dap": 100,
+        "kcl": 700
+      },
+      "quality": {
+        "urea": 600,
+        "dap": 100,
+        "kcl": 700
+      }
+    },
+    "low_high_med": {
+      "nurture": {
+        "urea": 2400,
+        "dap": 300,
+        "kcl": 1200
+      },
+      "bud": {
+        "urea": 1200,
+        "dap": 100,
+        "kcl": 200
+      },
+      "fruit": {
+        "urea": 600,
+        "dap": 100,
+        "kcl": 400
+      },
+      "quality": {
+        "urea": 600,
+        "dap": 100,
+        "kcl": 400
+      }
+    },
+    "low_high_high": {
+      "nurture": {
+        "urea": 2400,
+        "dap": 300,
+        "kcl": 600
+      },
+      "bud": {
+        "urea": 1200,
+        "dap": 100,
+        "kcl": 100
+      },
+      "fruit": {
+        "urea": 600,
+        "dap": 100,
+        "kcl": 200
+      },
+      "quality": {
+        "urea": 600,
+        "dap": 100,
+        "kcl": 200
+      }
+    },
+    "med_low_low": {
+      "nurture": {
+        "urea": 800,
+        "dap": 1200,
+        "kcl": 2300
+      },
+      "bud": {
+        "urea": 400,
+        "dap": 400,
+        "kcl": 400
+      },
+      "fruit": {
+        "urea": 200,
+        "dap": 400,
+        "kcl": 700
+      },
+      "quality": {
+        "urea": 200,
+        "dap": 400,
+        "kcl": 700
+      }
+    },
+    "med_low_med": {
+      "nurture": {
+        "urea": 800,
+        "dap": 1200,
+        "kcl": 1200
+      },
+      "bud": {
+        "urea": 400,
+        "dap": 400,
+        "kcl": 200
+      },
+      "fruit": {
+        "urea": 200,
+        "dap": 400,
+        "kcl": 400
+      },
+      "quality": {
+        "urea": 200,
+        "dap": 400,
+        "kcl": 400
+      }
+    },
+    "med_low_high": {
+      "nurture": {
+        "urea": 800,
+        "dap": 1200,
+        "kcl": 600
+      },
+      "bud": {
+        "urea": 400,
+        "dap": 400,
+        "kcl": 100
+      },
+      "fruit": {
+        "urea": 200,
+        "dap": 400,
+        "kcl": 200
+      },
+      "quality": {
+        "urea": 200,
+        "dap": 400,
+        "kcl": 200
+      }
+    },
+    "med_med_low": {
+      "nurture": {
+        "urea": 1000,
+        "dap": 600,
+        "kcl": 2300
+      },
+      "bud": {
+        "urea": 500,
+        "dap": 200,
+        "kcl": 400
+      },
+      "fruit": {
+        "urea": 300,
+        "dap": 200,
+        "kcl": 700
+      },
+      "quality": {
+        "urea": 200,
+        "dap": 200,
+        "kcl": 700
+      }
+    },
+    "med_med_med": {
+      "nurture": {
+        "urea": 1000,
+        "dap": 600,
+        "kcl": 1200
+      },
+      "bud": {
+        "urea": 500,
+        "dap": 200,
+        "kcl": 200
+      },
+      "fruit": {
+        "urea": 300,
+        "dap": 200,
+        "kcl": 400
+      },
+      "quality": {
+        "urea": 200,
+        "dap": 200,
+        "kcl": 400
+      }
+    },
+    "med_med_high": {
+      "nurture": {
+        "urea": 1000,
+        "dap": 600,
+        "kcl": 600
+      },
+      "bud": {
+        "urea": 500,
+        "dap": 200,
+        "kcl": 100
+      },
+      "fruit": {
+        "urea": 300,
+        "dap": 200,
+        "kcl": 200
+      },
+      "quality": {
+        "urea": 200,
+        "dap": 200,
+        "kcl": 200
+      }
+    },
+    "med_high_low": {
+      "nurture": {
+        "urea": 1200,
+        "dap": 300,
+        "kcl": 2300
+      },
+      "bud": {
+        "urea": 600,
+        "dap": 100,
+        "kcl": 400
+      },
+      "fruit": {
+        "urea": 300,
+        "dap": 100,
+        "kcl": 700
+      },
+      "quality": {
+        "urea": 300,
+        "dap": 100,
+        "kcl": 700
+      }
+    },
+    "med_high_med": {
+      "nurture": {
+        "urea": 1200,
+        "dap": 300,
+        "kcl": 1200
+      },
+      "bud": {
+        "urea": 600,
+        "dap": 100,
+        "kcl": 200
+      },
+      "fruit": {
+        "urea": 300,
+        "dap": 100,
+        "kcl": 400
+      },
+      "quality": {
+        "urea": 300,
+        "dap": 100,
+        "kcl": 400
+      }
+    },
+    "med_high_high": {
+      "nurture": {
+        "urea": 1200,
+        "dap": 300,
+        "kcl": 600
+      },
+      "bud": {
+        "urea": 600,
+        "dap": 100,
+        "kcl": 100
+      },
+      "fruit": {
+        "urea": 300,
+        "dap": 100,
+        "kcl": 200
+      },
+      "quality": {
+        "urea": 300,
+        "dap": 100,
+        "kcl": 200
+      }
+    },
+    "high_low_low": {
+      "nurture": {
+        "urea": 100,
+        "dap": 1200,
+        "kcl": 2300
+      },
+      "bud": {
+        "urea": 100,
+        "dap": 400,
+        "kcl": 400
+      },
+      "fruit": {
+        "urea": 0,
+        "dap": 400,
+        "kcl": 700
+      },
+      "quality": {
+        "urea": 0,
+        "dap": 400,
+        "kcl": 700
+      }
+    },
+    "high_low_med": {
+      "nurture": {
+        "urea": 100,
+        "dap": 1200,
+        "kcl": 1200
+      },
+      "bud": {
+        "urea": 100,
+        "dap": 400,
+        "kcl": 200
+      },
+      "fruit": {
+        "urea": 0,
+        "dap": 400,
+        "kcl": 400
+      },
+      "quality": {
+        "urea": 0,
+        "dap": 400,
+        "kcl": 400
+      }
+    },
+    "high_low_high": {
+      "nurture": {
+        "urea": 100,
+        "dap": 1200,
+        "kcl": 600
+      },
+      "bud": {
+        "urea": 100,
+        "dap": 400,
+        "kcl": 100
+      },
+      "fruit": {
+        "urea": 0,
+        "dap": 400,
+        "kcl": 200
+      },
+      "quality": {
+        "urea": 0,
+        "dap": 400,
+        "kcl": 200
+      }
+    },
+    "high_med_low": {
+      "nurture": {
+        "urea": 400,
+        "dap": 600,
+        "kcl": 2300
+      },
+      "bud": {
+        "urea": 200,
+        "dap": 200,
+        "kcl": 400
+      },
+      "fruit": {
+        "urea": 100,
+        "dap": 200,
+        "kcl": 700
+      },
+      "quality": {
+        "urea": 100,
+        "dap": 200,
+        "kcl": 700
+      }
+    },
+    "high_med_med": {
+      "nurture": {
+        "urea": 400,
+        "dap": 600,
+        "kcl": 1200
+      },
+      "bud": {
+        "urea": 200,
+        "dap": 200,
+        "kcl": 200
+      },
+      "fruit": {
+        "urea": 100,
+        "dap": 200,
+        "kcl": 400
+      },
+      "quality": {
+        "urea": 100,
+        "dap": 200,
+        "kcl": 400
+      }
+    },
+    "high_med_high": {
+      "nurture": {
+        "urea": 400,
+        "dap": 600,
+        "kcl": 600
+      },
+      "bud": {
+        "urea": 200,
+        "dap": 200,
+        "kcl": 100
+      },
+      "fruit": {
+        "urea": 100,
+        "dap": 200,
+        "kcl": 200
+      },
+      "quality": {
+        "urea": 100,
+        "dap": 200,
+        "kcl": 200
+      }
+    },
+    "high_high_low": {
+      "nurture": {
+        "urea": 500,
+        "dap": 300,
+        "kcl": 2300
+      },
+      "bud": {
+        "urea": 300,
+        "dap": 100,
+        "kcl": 400
+      },
+      "fruit": {
+        "urea": 100,
+        "dap": 100,
+        "kcl": 700
+      },
+      "quality": {
+        "urea": 100,
+        "dap": 100,
+        "kcl": 700
+      }
+    },
+    "high_high_med": {
+      "nurture": {
+        "urea": 500,
+        "dap": 300,
+        "kcl": 1200
+      },
+      "bud": {
+        "urea": 300,
+        "dap": 100,
+        "kcl": 200
+      },
+      "fruit": {
+        "urea": 100,
+        "dap": 100,
+        "kcl": 400
+      },
+      "quality": {
+        "urea": 100,
+        "dap": 100,
+        "kcl": 400
+      }
+    },
+    "high_high_high": {
+      "nurture": {
+        "urea": 500,
+        "dap": 300,
+        "kcl": 600
+      },
+      "bud": {
+        "urea": 300,
+        "dap": 100,
+        "kcl": 100
+      },
+      "fruit": {
+        "urea": 100,
+        "dap": 100,
+        "kcl": 200
+      },
+      "quality": {
+        "urea": 100,
+        "dap": 100,
+        "kcl": 200
+      }
+    }
+  },
+  "orange": {
+    "low_low_low": {
+      "nurture": {
+        "urea": 1300,
+        "dap": 1100,
+        "kcl": 1400
+      },
+      "bud": {
+        "urea": 700,
+        "dap": 300,
+        "kcl": 300
+      },
+      "fruit": {
+        "urea": 300,
+        "dap": 400,
+        "kcl": 400
+      },
+      "quality": {
+        "urea": 300,
+        "dap": 400,
+        "kcl": 400
+      }
+    },
+    "low_low_med": {
+      "nurture": {
+        "urea": 1300,
+        "dap": 1100,
+        "kcl": 800
+      },
+      "bud": {
+        "urea": 700,
+        "dap": 300,
+        "kcl": 200
+      },
+      "fruit": {
+        "urea": 300,
+        "dap": 400,
+        "kcl": 200
+      },
+      "quality": {
+        "urea": 300,
+        "dap": 400,
+        "kcl": 200
+      }
+    },
+    "low_low_high": {
+      "nurture": {
+        "urea": 1300,
+        "dap": 1100,
+        "kcl": 400
+      },
+      "bud": {
+        "urea": 700,
+        "dap": 300,
+        "kcl": 100
+      },
+      "fruit": {
+        "urea": 300,
+        "dap": 400,
+        "kcl": 100
+      },
+      "quality": {
+        "urea": 300,
+        "dap": 400,
+        "kcl": 100
+      }
+    },
+    "low_med_low": {
+      "nurture": {
+        "urea": 1600,
+        "dap": 600,
+        "kcl": 1400
+      },
+      "bud": {
+        "urea": 800,
+        "dap": 200,
+        "kcl": 300
+      },
+      "fruit": {
+        "urea": 400,
+        "dap": 200,
+        "kcl": 400
+      },
+      "quality": {
+        "urea": 400,
+        "dap": 200,
+        "kcl": 400
+      }
+    },
+    "low_med_med": {
+      "nurture": {
+        "urea": 1600,
+        "dap": 600,
+        "kcl": 800
+      },
+      "bud": {
+        "urea": 800,
+        "dap": 200,
+        "kcl": 200
+      },
+      "fruit": {
+        "urea": 400,
+        "dap": 200,
+        "kcl": 200
+      },
+      "quality": {
+        "urea": 400,
+        "dap": 200,
+        "kcl": 200
+      }
+    },
+    "low_med_high": {
+      "nurture": {
+        "urea": 1600,
+        "dap": 600,
+        "kcl": 400
+      },
+      "bud": {
+        "urea": 800,
+        "dap": 200,
+        "kcl": 100
+      },
+      "fruit": {
+        "urea": 400,
+        "dap": 200,
+        "kcl": 100
+      },
+      "quality": {
+        "urea": 400,
+        "dap": 200,
+        "kcl": 100
+      }
+    },
+    "low_high_low": {
+      "nurture": {
+        "urea": 1600,
+        "dap": 300,
+        "kcl": 1400
+      },
+      "bud": {
+        "urea": 800,
+        "dap": 100,
+        "kcl": 300
+      },
+      "fruit": {
+        "urea": 400,
+        "dap": 100,
+        "kcl": 400
+      },
+      "quality": {
+        "urea": 400,
+        "dap": 100,
+        "kcl": 400
+      }
+    },
+    "low_high_med": {
+      "nurture": {
+        "urea": 1600,
+        "dap": 300,
+        "kcl": 800
+      },
+      "bud": {
+        "urea": 800,
+        "dap": 100,
+        "kcl": 200
+      },
+      "fruit": {
+        "urea": 400,
+        "dap": 100,
+        "kcl": 200
+      },
+      "quality": {
+        "urea": 400,
+        "dap": 100,
+        "kcl": 200
+      }
+    },
+    "low_high_high": {
+      "nurture": {
+        "urea": 1600,
+        "dap": 300,
+        "kcl": 400
+      },
+      "bud": {
+        "urea": 800,
+        "dap": 100,
+        "kcl": 100
+      },
+      "fruit": {
+        "urea": 400,
+        "dap": 100,
+        "kcl": 100
+      },
+      "quality": {
+        "urea": 400,
+        "dap": 100,
+        "kcl": 100
+      }
+    },
+    "med_low_low": {
+      "nurture": {
+        "urea": 400,
+        "dap": 1100,
+        "kcl": 1400
+      },
+      "bud": {
+        "urea": 200,
+        "dap": 300,
+        "kcl": 300
+      },
+      "fruit": {
+        "urea": 100,
+        "dap": 400,
+        "kcl": 400
+      },
+      "quality": {
+        "urea": 100,
+        "dap": 400,
+        "kcl": 400
+      }
+    },
+    "med_low_med": {
+      "nurture": {
+        "urea": 400,
+        "dap": 1100,
+        "kcl": 800
+      },
+      "bud": {
+        "urea": 200,
+        "dap": 300,
+        "kcl": 200
+      },
+      "fruit": {
+        "urea": 100,
+        "dap": 400,
+        "kcl": 200
+      },
+      "quality": {
+        "urea": 100,
+        "dap": 400,
+        "kcl": 200
+      }
+    },
+    "med_low_high": {
+      "nurture": {
+        "urea": 400,
+        "dap": 1100,
+        "kcl": 400
+      },
+      "bud": {
+        "urea": 200,
+        "dap": 300,
+        "kcl": 100
+      },
+      "fruit": {
+        "urea": 100,
+        "dap": 400,
+        "kcl": 100
+      },
+      "quality": {
+        "urea": 100,
+        "dap": 400,
+        "kcl": 100
+      }
+    },
+    "med_med_low": {
+      "nurture": {
+        "urea": 700,
+        "dap": 600,
+        "kcl": 1400
+      },
+      "bud": {
+        "urea": 300,
+        "dap": 200,
+        "kcl": 300
+      },
+      "fruit": {
+        "urea": 200,
+        "dap": 200,
+        "kcl": 400
+      },
+      "quality": {
+        "urea": 200,
+        "dap": 200,
+        "kcl": 400
+      }
+    },
+    "med_med_med": {
+      "nurture": {
+        "urea": 700,
+        "dap": 600,
+        "kcl": 800
+      },
+      "bud": {
+        "urea": 300,
+        "dap": 200,
+        "kcl": 200
+      },
+      "fruit": {
+        "urea": 200,
+        "dap": 200,
+        "kcl": 200
+      },
+      "quality": {
+        "urea": 200,
+        "dap": 200,
+        "kcl": 200
+      }
+    },
+    "med_med_high": {
+      "nurture": {
+        "urea": 700,
+        "dap": 600,
+        "kcl": 400
+      },
+      "bud": {
+        "urea": 300,
+        "dap": 200,
+        "kcl": 100
+      },
+      "fruit": {
+        "urea": 200,
+        "dap": 200,
+        "kcl": 100
+      },
+      "quality": {
+        "urea": 200,
+        "dap": 200,
+        "kcl": 100
+      }
+    },
+    "med_high_low": {
+      "nurture": {
+        "urea": 800,
+        "dap": 300,
+        "kcl": 1400
+      },
+      "bud": {
+        "urea": 400,
+        "dap": 100,
+        "kcl": 300
+      },
+      "fruit": {
+        "urea": 200,
+        "dap": 100,
+        "kcl": 400
+      },
+      "quality": {
+        "urea": 200,
+        "dap": 100,
+        "kcl": 400
+      }
+    },
+    "med_high_med": {
+      "nurture": {
+        "urea": 800,
+        "dap": 300,
+        "kcl": 800
+      },
+      "bud": {
+        "urea": 400,
+        "dap": 100,
+        "kcl": 200
+      },
+      "fruit": {
+        "urea": 200,
+        "dap": 100,
+        "kcl": 200
+      },
+      "quality": {
+        "urea": 200,
+        "dap": 100,
+        "kcl": 200
+      }
+    },
+    "med_high_high": {
+      "nurture": {
+        "urea": 800,
+        "dap": 300,
+        "kcl": 400
+      },
+      "bud": {
+        "urea": 400,
+        "dap": 100,
+        "kcl": 100
+      },
+      "fruit": {
+        "urea": 200,
+        "dap": 100,
+        "kcl": 100
+      },
+      "quality": {
+        "urea": 200,
+        "dap": 100,
+        "kcl": 100
+      }
+    },
+    "high_low_low": {
+      "nurture": {
+        "urea": 0,
+        "dap": 1100,
+        "kcl": 1400
+      },
+      "bud": {
+        "urea": 0,
+        "dap": 300,
+        "kcl": 300
+      },
+      "fruit": {
+        "urea": 0,
+        "dap": 400,
+        "kcl": 400
+      },
+      "quality": {
+        "urea": 0,
+        "dap": 400,
+        "kcl": 400
+      }
+    },
+    "high_low_med": {
+      "nurture": {
+        "urea": 0,
+        "dap": 1100,
+        "kcl": 800
+      },
+      "bud": {
+        "urea": 0,
+        "dap": 300,
+        "kcl": 200
+      },
+      "fruit": {
+        "urea": 0,
+        "dap": 400,
+        "kcl": 200
+      },
+      "quality": {
+        "urea": 0,
+        "dap": 400,
+        "kcl": 200
+      }
+    },
+    "high_low_high": {
+      "nurture": {
+        "urea": 0,
+        "dap": 1100,
+        "kcl": 400
+      },
+      "bud": {
+        "urea": 0,
+        "dap": 300,
+        "kcl": 100
+      },
+      "fruit": {
+        "urea": 0,
+        "dap": 400,
+        "kcl": 100
+      },
+      "quality": {
+        "urea": 0,
+        "dap": 400,
+        "kcl": 100
+      }
+    },
+    "high_med_low": {
+      "nurture": {
+        "urea": 300,
+        "dap": 600,
+        "kcl": 1400
+      },
+      "bud": {
+        "urea": 100,
+        "dap": 200,
+        "kcl": 300
+      },
+      "fruit": {
+        "urea": 100,
+        "dap": 200,
+        "kcl": 400
+      },
+      "quality": {
+        "urea": 100,
+        "dap": 200,
+        "kcl": 400
+      }
+    },
+    "high_med_med": {
+      "nurture": {
+        "urea": 300,
+        "dap": 600,
+        "kcl": 800
+      },
+      "bud": {
+        "urea": 100,
+        "dap": 200,
+        "kcl": 200
+      },
+      "fruit": {
+        "urea": 100,
+        "dap": 200,
+        "kcl": 200
+      },
+      "quality": {
+        "urea": 100,
+        "dap": 200,
+        "kcl": 200
+      }
+    },
+    "high_med_high": {
+      "nurture": {
+        "urea": 300,
+        "dap": 600,
+        "kcl": 400
+      },
+      "bud": {
+        "urea": 100,
+        "dap": 200,
+        "kcl": 100
+      },
+      "fruit": {
+        "urea": 100,
+        "dap": 200,
+        "kcl": 100
+      },
+      "quality": {
+        "urea": 100,
+        "dap": 200,
+        "kcl": 100
+      }
+    },
+    "high_high_low": {
+      "nurture": {
+        "urea": 400,
+        "dap": 300,
+        "kcl": 1400
+      },
+      "bud": {
+        "urea": 200,
+        "dap": 100,
+        "kcl": 300
+      },
+      "fruit": {
+        "urea": 100,
+        "dap": 100,
+        "kcl": 400
+      },
+      "quality": {
+        "urea": 100,
+        "dap": 100,
+        "kcl": 400
+      }
+    },
+    "high_high_med": {
+      "nurture": {
+        "urea": 400,
+        "dap": 300,
+        "kcl": 800
+      },
+      "bud": {
+        "urea": 200,
+        "dap": 100,
+        "kcl": 200
+      },
+      "fruit": {
+        "urea": 100,
+        "dap": 100,
+        "kcl": 200
+      },
+      "quality": {
+        "urea": 100,
+        "dap": 100,
+        "kcl": 200
+      }
+    },
+    "high_high_high": {
+      "nurture": {
+        "urea": 400,
+        "dap": 300,
+        "kcl": 400
+      },
+      "bud": {
+        "urea": 200,
+        "dap": 100,
+        "kcl": 100
+      },
+      "fruit": {
+        "urea": 100,
+        "dap": 100,
+        "kcl": 100
+      },
+      "quality": {
+        "urea": 100,
+        "dap": 100,
+        "kcl": 100
+      }
+    }
+  },
+  "coconut": {
+    "low_low_low": {
+      "nurture": {
+        "urea": 1100,
+        "dap": 600,
+        "kcl": 800
+      },
+      "bud": {
+        "urea": 0,
+        "dap": 0,
+        "kcl": 0
+      },
+      "fruit": {
+        "urea": 0,
+        "dap": 0,
+        "kcl": 0
+      },
+      "quality": {
+        "urea": 0,
+        "dap": 0,
+        "kcl": 0
+      }
+    },
+    "low_low_med": {
+      "nurture": {
+        "urea": 1100,
+        "dap": 600,
+        "kcl": 400
+      },
+      "bud": {
+        "urea": 0,
+        "dap": 0,
+        "kcl": 0
+      },
+      "fruit": {
+        "urea": 0,
+        "dap": 0,
+        "kcl": 0
+      },
+      "quality": {
+        "urea": 0,
+        "dap": 0,
+        "kcl": 0
+      }
+    },
+    "low_low_high": {
+      "nurture": {
+        "urea": 1100,
+        "dap": 600,
+        "kcl": 200
+      },
+      "bud": {
+        "urea": 0,
+        "dap": 0,
+        "kcl": 0
+      },
+      "fruit": {
+        "urea": 0,
+        "dap": 0,
+        "kcl": 0
+      },
+      "quality": {
+        "urea": 0,
+        "dap": 0,
+        "kcl": 0
+      }
+    },
+    "low_med_low": {
+      "nurture": {
+        "urea": 1200,
+        "dap": 300,
+        "kcl": 800
+      },
+      "bud": {
+        "urea": 0,
+        "dap": 0,
+        "kcl": 0
+      },
+      "fruit": {
+        "urea": 0,
+        "dap": 0,
+        "kcl": 0
+      },
+      "quality": {
+        "urea": 0,
+        "dap": 0,
+        "kcl": 0
+      }
+    },
+    "low_med_med": {
+      "nurture": {
+        "urea": 1200,
+        "dap": 300,
+        "kcl": 400
+      },
+      "bud": {
+        "urea": 0,
+        "dap": 0,
+        "kcl": 0
+      },
+      "fruit": {
+        "urea": 0,
+        "dap": 0,
+        "kcl": 0
+      },
+      "quality": {
+        "urea": 0,
+        "dap": 0,
+        "kcl": 0
+      }
+    },
+    "low_med_high": {
+      "nurture": {
+        "urea": 1200,
+        "dap": 300,
+        "kcl": 200
+      },
+      "bud": {
+        "urea": 0,
+        "dap": 0,
+        "kcl": 0
+      },
+      "fruit": {
+        "urea": 0,
+        "dap": 0,
+        "kcl": 0
+      },
+      "quality": {
+        "urea": 0,
+        "dap": 0,
+        "kcl": 0
+      }
+    },
+    "low_high_low": {
+      "nurture": {
+        "urea": 1200,
+        "dap": 200,
+        "kcl": 800
+      },
+      "bud": {
+        "urea": 0,
+        "dap": 0,
+        "kcl": 0
+      },
+      "fruit": {
+        "urea": 0,
+        "dap": 0,
+        "kcl": 0
+      },
+      "quality": {
+        "urea": 0,
+        "dap": 0,
+        "kcl": 0
+      }
+    },
+    "low_high_med": {
+      "nurture": {
+        "urea": 1200,
+        "dap": 200,
+        "kcl": 400
+      },
+      "bud": {
+        "urea": 0,
+        "dap": 0,
+        "kcl": 0
+      },
+      "fruit": {
+        "urea": 0,
+        "dap": 0,
+        "kcl": 0
+      },
+      "quality": {
+        "urea": 0,
+        "dap": 0,
+        "kcl": 0
+      }
+    },
+    "low_high_high": {
+      "nurture": {
+        "urea": 1200,
+        "dap": 200,
+        "kcl": 200
+      },
+      "bud": {
+        "urea": 0,
+        "dap": 0,
+        "kcl": 0
+      },
+      "fruit": {
+        "urea": 0,
+        "dap": 0,
+        "kcl": 0
+      },
+      "quality": {
+        "urea": 0,
+        "dap": 0,
+        "kcl": 0
+      }
+    },
+    "med_low_low": {
+      "nurture": {
+        "urea": 400,
+        "dap": 600,
+        "kcl": 800
+      },
+      "bud": {
+        "urea": 0,
+        "dap": 0,
+        "kcl": 0
+      },
+      "fruit": {
+        "urea": 0,
+        "dap": 0,
+        "kcl": 0
+      },
+      "quality": {
+        "urea": 0,
+        "dap": 0,
+        "kcl": 0
+      }
+    },
+    "med_low_med": {
+      "nurture": {
+        "urea": 400,
+        "dap": 600,
+        "kcl": 400
+      },
+      "bud": {
+        "urea": 0,
+        "dap": 0,
+        "kcl": 0
+      },
+      "fruit": {
+        "urea": 0,
+        "dap": 0,
+        "kcl": 0
+      },
+      "quality": {
+        "urea": 0,
+        "dap": 0,
+        "kcl": 0
+      }
+    },
+    "med_low_high": {
+      "nurture": {
+        "urea": 400,
+        "dap": 600,
+        "kcl": 200
+      },
+      "bud": {
+        "urea": 0,
+        "dap": 0,
+        "kcl": 0
+      },
+      "fruit": {
+        "urea": 0,
+        "dap": 0,
+        "kcl": 0
+      },
+      "quality": {
+        "urea": 0,
+        "dap": 0,
+        "kcl": 0
+      }
+    },
+    "med_med_low": {
+      "nurture": {
+        "urea": 500,
+        "dap": 300,
+        "kcl": 800
+      },
+      "bud": {
+        "urea": 0,
+        "dap": 0,
+        "kcl": 0
+      },
+      "fruit": {
+        "urea": 0,
+        "dap": 0,
+        "kcl": 0
+      },
+      "quality": {
+        "urea": 0,
+        "dap": 0,
+        "kcl": 0
+      }
+    },
+    "med_med_med": {
+      "nurture": {
+        "urea": 500,
+        "dap": 300,
+        "kcl": 400
+      },
+      "bud": {
+        "urea": 0,
+        "dap": 0,
+        "kcl": 0
+      },
+      "fruit": {
+        "urea": 0,
+        "dap": 0,
+        "kcl": 0
+      },
+      "quality": {
+        "urea": 0,
+        "dap": 0,
+        "kcl": 0
+      }
+    },
+    "med_med_high": {
+      "nurture": {
+        "urea": 500,
+        "dap": 300,
+        "kcl": 200
+      },
+      "bud": {
+        "urea": 0,
+        "dap": 0,
+        "kcl": 0
+      },
+      "fruit": {
+        "urea": 0,
+        "dap": 0,
+        "kcl": 0
+      },
+      "quality": {
+        "urea": 0,
+        "dap": 0,
+        "kcl": 0
+      }
+    },
+    "med_high_low": {
+      "nurture": {
+        "urea": 600,
+        "dap": 200,
+        "kcl": 800
+      },
+      "bud": {
+        "urea": 0,
+        "dap": 0,
+        "kcl": 0
+      },
+      "fruit": {
+        "urea": 0,
+        "dap": 0,
+        "kcl": 0
+      },
+      "quality": {
+        "urea": 0,
+        "dap": 0,
+        "kcl": 0
+      }
+    },
+    "med_high_med": {
+      "nurture": {
+        "urea": 600,
+        "dap": 200,
+        "kcl": 400
+      },
+      "bud": {
+        "urea": 0,
+        "dap": 0,
+        "kcl": 0
+      },
+      "fruit": {
+        "urea": 0,
+        "dap": 0,
+        "kcl": 0
+      },
+      "quality": {
+        "urea": 0,
+        "dap": 0,
+        "kcl": 0
+      }
+    },
+    "med_high_high": {
+      "nurture": {
+        "urea": 600,
+        "dap": 200,
+        "kcl": 200
+      },
+      "bud": {
+        "urea": 0,
+        "dap": 0,
+        "kcl": 0
+      },
+      "fruit": {
+        "urea": 0,
+        "dap": 0,
+        "kcl": 0
+      },
+      "quality": {
+        "urea": 0,
+        "dap": 0,
+        "kcl": 0
+      }
+    },
+    "high_low_low": {
+      "nurture": {
+        "urea": 100,
+        "dap": 600,
+        "kcl": 800
+      },
+      "bud": {
+        "urea": 0,
+        "dap": 0,
+        "kcl": 0
+      },
+      "fruit": {
+        "urea": 0,
+        "dap": 0,
+        "kcl": 0
+      },
+      "quality": {
+        "urea": 0,
+        "dap": 0,
+        "kcl": 0
+      }
+    },
+    "high_low_med": {
+      "nurture": {
+        "urea": 100,
+        "dap": 600,
+        "kcl": 400
+      },
+      "bud": {
+        "urea": 0,
+        "dap": 0,
+        "kcl": 0
+      },
+      "fruit": {
+        "urea": 0,
+        "dap": 0,
+        "kcl": 0
+      },
+      "quality": {
+        "urea": 0,
+        "dap": 0,
+        "kcl": 0
+      }
+    },
+    "high_low_high": {
+      "nurture": {
+        "urea": 100,
+        "dap": 600,
+        "kcl": 200
+      },
+      "bud": {
+        "urea": 0,
+        "dap": 0,
+        "kcl": 0
+      },
+      "fruit": {
+        "urea": 0,
+        "dap": 0,
+        "kcl": 0
+      },
+      "quality": {
+        "urea": 0,
+        "dap": 0,
+        "kcl": 0
+      }
+    },
+    "high_med_low": {
+      "nurture": {
+        "urea": 200,
+        "dap": 300,
+        "kcl": 800
+      },
+      "bud": {
+        "urea": 0,
+        "dap": 0,
+        "kcl": 0
+      },
+      "fruit": {
+        "urea": 0,
+        "dap": 0,
+        "kcl": 0
+      },
+      "quality": {
+        "urea": 0,
+        "dap": 0,
+        "kcl": 0
+      }
+    },
+    "high_med_med": {
+      "nurture": {
+        "urea": 200,
+        "dap": 300,
+        "kcl": 400
+      },
+      "bud": {
+        "urea": 0,
+        "dap": 0,
+        "kcl": 0
+      },
+      "fruit": {
+        "urea": 0,
+        "dap": 0,
+        "kcl": 0
+      },
+      "quality": {
+        "urea": 0,
+        "dap": 0,
+        "kcl": 0
+      }
+    },
+    "high_med_high": {
+      "nurture": {
+        "urea": 200,
+        "dap": 300,
+        "kcl": 200
+      },
+      "bud": {
+        "urea": 0,
+        "dap": 0,
+        "kcl": 0
+      },
+      "fruit": {
+        "urea": 0,
+        "dap": 0,
+        "kcl": 0
+      },
+      "quality": {
+        "urea": 0,
+        "dap": 0,
+        "kcl": 0
+      }
+    },
+    "high_high_low": {
+      "nurture": {
+        "urea": 300,
+        "dap": 200,
+        "kcl": 800
+      },
+      "bud": {
+        "urea": 0,
+        "dap": 0,
+        "kcl": 0
+      },
+      "fruit": {
+        "urea": 0,
+        "dap": 0,
+        "kcl": 0
+      },
+      "quality": {
+        "urea": 0,
+        "dap": 0,
+        "kcl": 0
+      }
+    },
+    "high_high_med": {
+      "nurture": {
+        "urea": 300,
+        "dap": 200,
+        "kcl": 400
+      },
+      "bud": {
+        "urea": 0,
+        "dap": 0,
+        "kcl": 0
+      },
+      "fruit": {
+        "urea": 0,
+        "dap": 0,
+        "kcl": 0
+      },
+      "quality": {
+        "urea": 0,
+        "dap": 0,
+        "kcl": 0
+      }
+    },
+    "high_high_high": {
+      "nurture": {
+        "urea": 300,
+        "dap": 200,
+        "kcl": 200
+      },
+      "bud": {
+        "urea": 0,
+        "dap": 0,
+        "kcl": 0
+      },
+      "fruit": {
+        "urea": 0,
+        "dap": 0,
+        "kcl": 0
+      },
+      "quality": {
+        "urea": 0,
+        "dap": 0,
+        "kcl": 0
+      }
+    }
+  },
+  "pineapple": {
+    "low_low_low": {
+      "nurture": {
+        "urea": 200,
+        "dap": 0,
+        "kcl": 100
+      },
+      "bud": {
+        "urea": 0,
+        "dap": 0,
+        "kcl": 0
+      },
+      "fruit": {
+        "urea": 0,
+        "dap": 0,
+        "kcl": 0
+      },
+      "quality": {
+        "urea": 0,
+        "dap": 0,
+        "kcl": 0
+      }
+    },
+    "low_low_med": {
+      "nurture": {
+        "urea": 200,
+        "dap": 0,
+        "kcl": 100
+      },
+      "bud": {
+        "urea": 0,
+        "dap": 0,
+        "kcl": 0
+      },
+      "fruit": {
+        "urea": 0,
+        "dap": 0,
+        "kcl": 0
+      },
+      "quality": {
+        "urea": 0,
+        "dap": 0,
+        "kcl": 0
+      }
+    },
+    "low_low_high": {
+      "nurture": {
+        "urea": 200,
+        "dap": 0,
+        "kcl": 100
+      },
+      "bud": {
+        "urea": 0,
+        "dap": 0,
+        "kcl": 0
+      },
+      "fruit": {
+        "urea": 0,
+        "dap": 0,
+        "kcl": 0
+      },
+      "quality": {
+        "urea": 0,
+        "dap": 0,
+        "kcl": 0
+      }
+    },
+    "low_med_low": {
+      "nurture": {
+        "urea": 200,
+        "dap": 0,
+        "kcl": 100
+      },
+      "bud": {
+        "urea": 0,
+        "dap": 0,
+        "kcl": 0
+      },
+      "fruit": {
+        "urea": 0,
+        "dap": 0,
+        "kcl": 0
+      },
+      "quality": {
+        "urea": 0,
+        "dap": 0,
+        "kcl": 0
+      }
+    },
+    "low_med_med": {
+      "nurture": {
+        "urea": 200,
+        "dap": 0,
+        "kcl": 100
+      },
+      "bud": {
+        "urea": 0,
+        "dap": 0,
+        "kcl": 0
+      },
+      "fruit": {
+        "urea": 0,
+        "dap": 0,
+        "kcl": 0
+      },
+      "quality": {
+        "urea": 0,
+        "dap": 0,
+        "kcl": 0
+      }
+    },
+    "low_med_high": {
+      "nurture": {
+        "urea": 200,
+        "dap": 0,
+        "kcl": 100
+      },
+      "bud": {
+        "urea": 0,
+        "dap": 0,
+        "kcl": 0
+      },
+      "fruit": {
+        "urea": 0,
+        "dap": 0,
+        "kcl": 0
+      },
+      "quality": {
+        "urea": 0,
+        "dap": 0,
+        "kcl": 0
+      }
+    },
+    "low_high_low": {
+      "nurture": {
+        "urea": 200,
+        "dap": 0,
+        "kcl": 100
+      },
+      "bud": {
+        "urea": 0,
+        "dap": 0,
+        "kcl": 0
+      },
+      "fruit": {
+        "urea": 0,
+        "dap": 0,
+        "kcl": 0
+      },
+      "quality": {
+        "urea": 0,
+        "dap": 0,
+        "kcl": 0
+      }
+    },
+    "low_high_med": {
+      "nurture": {
+        "urea": 200,
+        "dap": 0,
+        "kcl": 100
+      },
+      "bud": {
+        "urea": 0,
+        "dap": 0,
+        "kcl": 0
+      },
+      "fruit": {
+        "urea": 0,
+        "dap": 0,
+        "kcl": 0
+      },
+      "quality": {
+        "urea": 0,
+        "dap": 0,
+        "kcl": 0
+      }
+    },
+    "low_high_high": {
+      "nurture": {
+        "urea": 200,
+        "dap": 0,
+        "kcl": 100
+      },
+      "bud": {
+        "urea": 0,
+        "dap": 0,
+        "kcl": 0
+      },
+      "fruit": {
+        "urea": 0,
+        "dap": 0,
+        "kcl": 0
+      },
+      "quality": {
+        "urea": 0,
+        "dap": 0,
+        "kcl": 0
+      }
+    },
+    "med_low_low": {
+      "nurture": {
+        "urea": 100,
+        "dap": 0,
+        "kcl": 100
+      },
+      "bud": {
+        "urea": 0,
+        "dap": 0,
+        "kcl": 0
+      },
+      "fruit": {
+        "urea": 0,
+        "dap": 0,
+        "kcl": 0
+      },
+      "quality": {
+        "urea": 0,
+        "dap": 0,
+        "kcl": 0
+      }
+    },
+    "med_low_med": {
+      "nurture": {
+        "urea": 100,
+        "dap": 0,
+        "kcl": 100
+      },
+      "bud": {
+        "urea": 0,
+        "dap": 0,
+        "kcl": 0
+      },
+      "fruit": {
+        "urea": 0,
+        "dap": 0,
+        "kcl": 0
+      },
+      "quality": {
+        "urea": 0,
+        "dap": 0,
+        "kcl": 0
+      }
+    },
+    "med_low_high": {
+      "nurture": {
+        "urea": 100,
+        "dap": 0,
+        "kcl": 100
+      },
+      "bud": {
+        "urea": 0,
+        "dap": 0,
+        "kcl": 0
+      },
+      "fruit": {
+        "urea": 0,
+        "dap": 0,
+        "kcl": 0
+      },
+      "quality": {
+        "urea": 0,
+        "dap": 0,
+        "kcl": 0
+      }
+    },
+    "med_med_low": {
+      "nurture": {
+        "urea": 100,
+        "dap": 0,
+        "kcl": 100
+      },
+      "bud": {
+        "urea": 0,
+        "dap": 0,
+        "kcl": 0
+      },
+      "fruit": {
+        "urea": 0,
+        "dap": 0,
+        "kcl": 0
+      },
+      "quality": {
+        "urea": 0,
+        "dap": 0,
+        "kcl": 0
+      }
+    },
+    "med_med_med": {
+      "nurture": {
+        "urea": 100,
+        "dap": 0,
+        "kcl": 100
+      },
+      "bud": {
+        "urea": 0,
+        "dap": 0,
+        "kcl": 0
+      },
+      "fruit": {
+        "urea": 0,
+        "dap": 0,
+        "kcl": 0
+      },
+      "quality": {
+        "urea": 0,
+        "dap": 0,
+        "kcl": 0
+      }
+    },
+    "med_med_high": {
+      "nurture": {
+        "urea": 100,
+        "dap": 0,
+        "kcl": 100
+      },
+      "bud": {
+        "urea": 0,
+        "dap": 0,
+        "kcl": 0
+      },
+      "fruit": {
+        "urea": 0,
+        "dap": 0,
+        "kcl": 0
+      },
+      "quality": {
+        "urea": 0,
+        "dap": 0,
+        "kcl": 0
+      }
+    },
+    "med_high_low": {
+      "nurture": {
+        "urea": 100,
+        "dap": 0,
+        "kcl": 100
+      },
+      "bud": {
+        "urea": 0,
+        "dap": 0,
+        "kcl": 0
+      },
+      "fruit": {
+        "urea": 0,
+        "dap": 0,
+        "kcl": 0
+      },
+      "quality": {
+        "urea": 0,
+        "dap": 0,
+        "kcl": 0
+      }
+    },
+    "med_high_med": {
+      "nurture": {
+        "urea": 100,
+        "dap": 0,
+        "kcl": 100
+      },
+      "bud": {
+        "urea": 0,
+        "dap": 0,
+        "kcl": 0
+      },
+      "fruit": {
+        "urea": 0,
+        "dap": 0,
+        "kcl": 0
+      },
+      "quality": {
+        "urea": 0,
+        "dap": 0,
+        "kcl": 0
+      }
+    },
+    "med_high_high": {
+      "nurture": {
+        "urea": 100,
+        "dap": 0,
+        "kcl": 100
+      },
+      "bud": {
+        "urea": 0,
+        "dap": 0,
+        "kcl": 0
+      },
+      "fruit": {
+        "urea": 0,
+        "dap": 0,
+        "kcl": 0
+      },
+      "quality": {
+        "urea": 0,
+        "dap": 0,
+        "kcl": 0
+      }
+    },
+    "high_low_low": {
+      "nurture": {
+        "urea": 100,
+        "dap": 0,
+        "kcl": 100
+      },
+      "bud": {
+        "urea": 0,
+        "dap": 0,
+        "kcl": 0
+      },
+      "fruit": {
+        "urea": 0,
+        "dap": 0,
+        "kcl": 0
+      },
+      "quality": {
+        "urea": 0,
+        "dap": 0,
+        "kcl": 0
+      }
+    },
+    "high_low_med": {
+      "nurture": {
+        "urea": 100,
+        "dap": 0,
+        "kcl": 100
+      },
+      "bud": {
+        "urea": 0,
+        "dap": 0,
+        "kcl": 0
+      },
+      "fruit": {
+        "urea": 0,
+        "dap": 0,
+        "kcl": 0
+      },
+      "quality": {
+        "urea": 0,
+        "dap": 0,
+        "kcl": 0
+      }
+    },
+    "high_low_high": {
+      "nurture": {
+        "urea": 100,
+        "dap": 0,
+        "kcl": 100
+      },
+      "bud": {
+        "urea": 0,
+        "dap": 0,
+        "kcl": 0
+      },
+      "fruit": {
+        "urea": 0,
+        "dap": 0,
+        "kcl": 0
+      },
+      "quality": {
+        "urea": 0,
+        "dap": 0,
+        "kcl": 0
+      }
+    },
+    "high_med_low": {
+      "nurture": {
+        "urea": 100,
+        "dap": 0,
+        "kcl": 100
+      },
+      "bud": {
+        "urea": 0,
+        "dap": 0,
+        "kcl": 0
+      },
+      "fruit": {
+        "urea": 0,
+        "dap": 0,
+        "kcl": 0
+      },
+      "quality": {
+        "urea": 0,
+        "dap": 0,
+        "kcl": 0
+      }
+    },
+    "high_med_med": {
+      "nurture": {
+        "urea": 100,
+        "dap": 0,
+        "kcl": 100
+      },
+      "bud": {
+        "urea": 0,
+        "dap": 0,
+        "kcl": 0
+      },
+      "fruit": {
+        "urea": 0,
+        "dap": 0,
+        "kcl": 0
+      },
+      "quality": {
+        "urea": 0,
+        "dap": 0,
+        "kcl": 0
+      }
+    },
+    "high_med_high": {
+      "nurture": {
+        "urea": 100,
+        "dap": 0,
+        "kcl": 100
+      },
+      "bud": {
+        "urea": 0,
+        "dap": 0,
+        "kcl": 0
+      },
+      "fruit": {
+        "urea": 0,
+        "dap": 0,
+        "kcl": 0
+      },
+      "quality": {
+        "urea": 0,
+        "dap": 0,
+        "kcl": 0
+      }
+    },
+    "high_high_low": {
+      "nurture": {
+        "urea": 100,
+        "dap": 0,
+        "kcl": 100
+      },
+      "bud": {
+        "urea": 0,
+        "dap": 0,
+        "kcl": 0
+      },
+      "fruit": {
+        "urea": 0,
+        "dap": 0,
+        "kcl": 0
+      },
+      "quality": {
+        "urea": 0,
+        "dap": 0,
+        "kcl": 0
+      }
+    },
+    "high_high_med": {
+      "nurture": {
+        "urea": 100,
+        "dap": 0,
+        "kcl": 100
+      },
+      "bud": {
+        "urea": 0,
+        "dap": 0,
+        "kcl": 0
+      },
+      "fruit": {
+        "urea": 0,
+        "dap": 0,
+        "kcl": 0
+      },
+      "quality": {
+        "urea": 0,
+        "dap": 0,
+        "kcl": 0
+      }
+    },
+    "high_high_high": {
+      "nurture": {
+        "urea": 100,
+        "dap": 0,
+        "kcl": 100
+      },
+      "bud": {
+        "urea": 0,
+        "dap": 0,
+        "kcl": 0
+      },
+      "fruit": {
+        "urea": 0,
+        "dap": 0,
+        "kcl": 0
+      },
+      "quality": {
+        "urea": 0,
+        "dap": 0,
+        "kcl": 0
+      }
+    }
+  }
+}
