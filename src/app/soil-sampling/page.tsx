@@ -11,7 +11,7 @@ export default function SoilSamplingPage() {
       {/* Header */}
       <header className="bg-white px-4 h-14 flex items-center shadow-sm sticky top-0 z-10 justify-between">
         <Link href="/" className="w-10 h-10 flex items-center justify-center -ml-2 text-gray-600 shrink-0 invisible lg:visible">
-          <ArrowLeft className="w-6 h-6" />
+          <ArrowLeft className="w-4 h-4" strokeWidth={1.5} />
         </Link>
         
         <div className="relative">

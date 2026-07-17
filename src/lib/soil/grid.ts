@@ -58,7 +58,7 @@ export function classify(
 
 export const NUTRIENT_META: Record<
   Layer,
-  { key: Layer; label: string; short: string; unit: string; overlay: string }
+  { key: Layer; label: string; short: string; unit: string; overlay: string; preview: string }
 > = {
   om: {
     key: "om",
@@ -66,6 +66,7 @@ export const NUTRIENT_META: Record<
     short: "OM",
     unit: "%",
     overlay: "/soil-maps/om_level.png",
+    preview: "/img/OM.png",
   },
   p: {
     key: "p",
@@ -73,6 +74,7 @@ export const NUTRIENT_META: Record<
     short: "P",
     unit: "mg/kg",
     overlay: "/soil-maps/p_level.png",
+    preview: "/img/P.png",
   },
   k: {
     key: "k",
@@ -80,6 +82,7 @@ export const NUTRIENT_META: Record<
     short: "K",
     unit: "mg/kg",
     overlay: "/soil-maps/k_level.png",
+    preview: "/img/K.png",
   },
   sum: {
     key: "sum",
@@ -87,6 +90,7 @@ export const NUTRIENT_META: Record<
     short: "รวม",
     unit: "คะแนน",
     overlay: "/soil-maps/sum_level.png",
+    preview: "/img/sum.png",
   },
 }
 

@@ -106,7 +106,7 @@ export default function PhoneLoginPage() {
         {/* Header */}
         <div className="flex items-center justify-center relative">
           <button onClick={goBack} className="absolute left-0 text-gray-400 hover:text-gray-700 transition-colors">
-            <ArrowLeft className="w-5 h-5" />
+            <ArrowLeft className="w-4 h-4" strokeWidth={1.5} />
           </button>
           <h1 className="text-lg font-medium text-gray-900">
             {step === "phone" ? "เข้าสู่ระบบด้วยเบอร์โทร" : "กรอกรหัส OTP"}

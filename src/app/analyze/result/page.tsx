@@ -282,16 +282,21 @@ function ResultContent() {
       </div>
 
       {/* Action Buttons */}
-      <div className="mt-8 flex items-center gap-3">
-        <button onClick={() => router.push("/analyze")} className="text-sm font-medium text-text-secondary px-2 hover:text-primary transition-colors whitespace-nowrap">
-          วิเคราะห์ใหม่
-        </button>
-        <Button variant="outline" className="flex-1 rounded-full border-gray-200 font-medium h-12 text-text-primary bg-white hover:bg-gray-50 flex items-center gap-2">
-          <Share2 className="w-4 h-4" /> แชร์ผล
+      <div className="mt-8 flex flex-col gap-3">
+        <Button onClick={() => router.push("/analyze/fertilizer")} className="w-full rounded-full bg-[#1A4D2E] hover:bg-[#143a22] text-white font-medium h-12">
+          คำนวณสูตรปุ๋ย
         </Button>
-        <Button onClick={() => router.push("/history")} className="flex-1 rounded-full bg-primary hover:bg-primary/90 text-white font-medium h-12">
-          ดูประวัติ
-        </Button>
+        <div className="flex items-center gap-3">
+          <button onClick={() => router.push("/analyze")} className="text-sm font-medium text-text-secondary px-2 hover:text-primary transition-colors whitespace-nowrap">
+            วิเคราะห์ใหม่
+          </button>
+          <Button variant="outline" className="flex-1 rounded-full border-gray-200 font-medium h-12 text-text-primary bg-white hover:bg-gray-50 flex items-center gap-2">
+            <Share2 className="w-4 h-4" /> แชร์ผล
+          </Button>
+          <Button onClick={() => router.push("/history")} className="flex-1 rounded-full bg-primary hover:bg-primary/90 text-white font-medium h-12">
+            ดูประวัติ
+          </Button>
+        </div>
       </div>
     </div>
   )

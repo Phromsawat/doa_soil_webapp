@@ -98,7 +98,7 @@ export default function ProfilePage() {
 
         <div className="flex items-center justify-center relative">
           <Link href="/" className="absolute left-0 text-gray-400 hover:text-gray-700 transition-colors">
-            <ArrowLeft className="w-5 h-5" />
+            <ArrowLeft className="w-4 h-4" strokeWidth={1.5} />
           </Link>
           <h1 className="text-lg font-medium text-gray-900">แก้ไขโปรไฟล์</h1>
         </div>

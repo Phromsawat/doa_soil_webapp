@@ -129,7 +129,7 @@ export default function Bar() {
             <div className="flex items-center gap-3 relative z-10">
               {showBack && pathname !== '/analyze/map' && (
                 <button onClick={() => router.push('/')} className="hidden lg:flex items-center gap-1 p-1 -ml-1 pr-2 text-text-primary hover:bg-gray-100 rounded-full transition-colors">
-                  <ArrowLeft className="w-6 h-6" />
+                  <ArrowLeft className="w-4 h-4" strokeWidth={1.5} />
                   <span className="font-thai font-medium text-[15px]">หน้าหลัก</span>
                 </button>
               )}

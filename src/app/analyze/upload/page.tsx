@@ -36,9 +36,7 @@ export default function AnalyzeUpload() {
   })
   const [sampleCode, setSampleCode] = useState("")
   const [phone, setPhone] = useState("")
-  const [district, setDistrict] = useState("")
-  const [amphur, setAmphur] = useState("")
-  const [province, setProvince] = useState("")
+  const [postalCode, setPostalCode] = useState("")
   const [lat, setLat] = useState("")
   const [lng, setLng] = useState("")
   const [submitting, setSubmitting] = useState(false)
@@ -87,9 +85,9 @@ export default function AnalyzeUpload() {
         p_value: null,
         k_value: null,
         ph_value: null,
-        province: province || null,
-        amphur: amphur || null,
-        district: district || null,
+        province: null,
+        amphur: null,
+        district: postalCode || null,
         latitude: lat ? Number(lat) : null,
         longitude: lng ? Number(lng) : null,
         notes: sampleCode ? `รหัสตัวอย่าง: ${sampleCode}${phone ? ` · ${phone}` : ""}` : null,
@@ -199,37 +197,17 @@ export default function AnalyzeUpload() {
             <span>สถานที่เก็บตัวอย่าง</span>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="space-y-2">
-              <label className="text-sm font-semibold text-gray-700">ตำบล</label>
-              <input
-                type="text"
-                placeholder="ระบุตำบล"
-                value={district}
-                onChange={(e) => setDistrict(e.target.value)}
-                className="w-full bg-gray-50 border border-gray-100 rounded-full px-4 h-10 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#1A4D2E]/20 focus:border-[#1A4D2E] transition-all"
-              />
-            </div>
-            <div className="space-y-2">
-              <label className="text-sm font-semibold text-gray-700">อำเภอ</label>
-              <input
-                type="text"
-                placeholder="ระบุอำเภอ"
-                value={amphur}
-                onChange={(e) => setAmphur(e.target.value)}
-                className="w-full bg-gray-50 border border-gray-100 rounded-full px-4 h-10 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#1A4D2E]/20 focus:border-[#1A4D2E] transition-all"
-              />
-            </div>
-            <div className="space-y-2">
-              <label className="text-sm font-semibold text-gray-700">จังหวัด</label>
-              <input
-                type="text"
-                placeholder="ระบุจังหวัด"
-                value={province}
-                onChange={(e) => setProvince(e.target.value)}
-                className="w-full bg-gray-50 border border-gray-100 rounded-full px-4 h-10 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#1A4D2E]/20 focus:border-[#1A4D2E] transition-all"
-              />
-            </div>
+          <div className="space-y-2">
+            <label className="block text-sm font-semibold text-gray-700">รหัสไปรษณีย์</label>
+            <input
+              type="text"
+              inputMode="numeric"
+              maxLength={5}
+              placeholder="เช่น 10900"
+              value={postalCode}
+              onChange={(e) => setPostalCode(e.target.value.replace(/\D/g, ""))}
+              className="w-32 bg-gray-50 border border-gray-100 rounded-full px-4 h-10 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#1A4D2E]/20 focus:border-[#1A4D2E] transition-all"
+            />
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">

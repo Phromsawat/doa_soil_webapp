@@ -57,7 +57,7 @@ export default function ForgotPasswordPage() {
           href="/login"
           className="absolute top-6 left-6 text-gray-400 hover:text-gray-700 transition-colors"
         >
-          <ArrowLeft className="w-6 h-6" />
+          <ArrowLeft className="w-4 h-4" strokeWidth={1.5} />
         </Link>
 
         <div className="text-center space-y-3 pt-2">
