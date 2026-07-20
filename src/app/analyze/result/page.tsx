@@ -6,6 +6,7 @@ import { Share2, Loader2, MapPin, Droplets, Sprout, ChevronDown } from "lucide-r
 import { Button } from "@/components/ui/Button"
 import { getAnalysis } from "@/lib/supabase/analyses"
 import { listCrops, calculateAndSave, type CropOption, type FertilizerResult } from "@/lib/supabase/fertilizer"
+import FertilizerBlend from "./FertilizerBlend"
 
 type AnalysisRecord = Awaited<ReturnType<typeof getAnalysis>>
 
@@ -274,18 +275,27 @@ function ResultContent() {
                 </div>
               )}
               <p className="text-[10px] text-white/50 italic pt-2 border-t border-white/10">
-                * ปริมาณข้างต้นคือธาตุอาหารบริสุทธิ์ ใช้เป็นเกณฑ์เลือกสูตรปุ๋ยที่เหมาะสม
+                * ปริมาณข้างต้นคือธาตุอาหารบริสุทธิ์ที่พืชต้องการ (ขั้นที่ 1)
               </p>
             </div>
           )}
         </div>
+
+        {/* ขั้นที่ 2 — เลือกปุ๋ยจริง แล้วคำนวณปริมาณ */}
+        {calculation && (
+          <FertilizerBlend
+            target={{
+              n: calculation.target_n,
+              p2o5: calculation.target_p2o5,
+              k2o: calculation.target_k2o,
+            }}
+            unit={calculation.unit}
+          />
+        )}
       </div>
 
       {/* Action Buttons */}
       <div className="mt-8 flex flex-col gap-3">
-        <Button onClick={() => router.push("/analyze/fertilizer")} className="w-full rounded-full bg-[#1A4D2E] hover:bg-[#143a22] text-white font-medium h-12">
-          คำนวณสูตรปุ๋ย
-        </Button>
         <div className="flex items-center gap-3">
           <button onClick={() => router.push("/analyze")} className="text-sm font-medium text-text-secondary px-2 hover:text-primary transition-colors whitespace-nowrap">
             วิเคราะห์ใหม่
