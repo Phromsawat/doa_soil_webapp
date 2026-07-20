@@ -1,13 +1,21 @@
 import { Settings } from "lucide-react"
+import { getShowSoilMap } from "@/lib/supabase/settings"
+import MapVisibilityToggle from "./MapVisibilityToggle"
 
-export default function AdminSettingsPage() {
+export default async function AdminSettingsPage() {
+  const showMap = await getShowSoilMap()
+
   return (
-    <div className="max-w-6xl mx-auto">
-      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-12 text-center space-y-3">
-        <Settings className="w-12 h-12 text-gray-300 mx-auto" />
-        <h1 className="text-xl font-bold text-gray-800">ตั้งค่าระบบ</h1>
-        <p className="text-sm text-gray-500">กำลังพัฒนา</p>
+    <div className="mx-auto max-w-3xl space-y-5">
+      <div className="flex items-center gap-3">
+        <Settings className="h-6 w-6 text-[#1A4D2E]" />
+        <div>
+          <h1 className="text-xl font-bold text-gray-800">ตั้งค่าระบบ</h1>
+          <p className="text-sm text-gray-500">เปิด/ปิดฟีเจอร์ที่แสดงให้ผู้ใช้ทั่วไป</p>
+        </div>
       </div>
+
+      <MapVisibilityToggle initial={showMap} />
     </div>
   )
 }

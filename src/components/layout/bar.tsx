@@ -5,6 +5,7 @@ import { usePathname, useRouter } from "next/navigation"
 import Link from "next/link"
 import { useLanguage } from "@/components/providers/LanguageProvider"
 import { useUser, useIsAdmin } from "@/lib/supabase/useUser"
+import { useShowSoilMap } from "@/lib/supabase/useSettings"
 import { signOut } from "@/lib/supabase/auth"
 import { useState, useEffect } from "react"
 
@@ -15,6 +16,8 @@ export default function Bar() {
   // สถานะล็อกอิน — ใช้ตัดสินใจว่าจะโชว์ปุ่ม "เข้าสู่ระบบ" หรือโปรไฟล์ผู้ใช้
   const { user, displayName, isAnonymous, initial } = useUser()
   const { isAdmin } = useIsAdmin()
+  // แผนที่ดิน: default ซ่อน — โชว์ในเมนูต่อเมื่อ admin เปิดไว้ที่ /admin/settings
+  const showSoilMap = useShowSoilMap()
   // useIsAdmin อ่าน localStorage ตอน init -> ค่า render แรกฝั่ง client อาจต่างจาก server
   // ทำให้ hydration mismatch จนหน้าเว็บกดไม่ได้ จึงรอ mount ก่อนค่อยใช้ค่านี้
   const [mounted, setMounted] = useState(false)
@@ -94,7 +97,7 @@ export default function Bar() {
 
   const navLinks = [
     { href: "/", label: t('homeMenu'), icon: Home },
-    { href: "/map", label: t('mapMenu'), icon: MapIcon },
+    ...(showSoilMap ? [{ href: "/map", label: t('mapMenu'), icon: MapIcon }] : []),
     { href: "/#about", label: t('aboutMenu'), icon: Info },
     { href: "/#terms", label: t('termsMenu'), icon: Info },
     { href: "/#contact", label: t('contactMenu'), icon: PhoneIcon },
