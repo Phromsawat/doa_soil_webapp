@@ -7,6 +7,7 @@ import {
   Users,
   FileBarChart,
   Sprout,
+  FlaskConical,
   Settings,
   LogOut,
   ChevronLeft,
@@ -20,6 +21,7 @@ const NAV_ITEMS = [
   { href: "/admin/users",    label: "ผู้ใช้",   icon: Users },
   { href: "/admin/analyses", label: "ประวัติ",  icon: FileBarChart },
   { href: "/admin/crops",    label: "พืช/ปุ๋ย", icon: Sprout },
+  { href: "/admin/fertilizers", label: "สูตรปุ๋ย", icon: FlaskConical },
   { href: "/admin/settings", label: "ตั้งค่า",  icon: Settings },
 ]
 
