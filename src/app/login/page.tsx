@@ -2,7 +2,7 @@
 
 import React, { useState } from "react"
 import Link from "next/link"
-import { useRouter, useSearchParams } from "next/navigation"
+import { useSearchParams } from "next/navigation"
 import { ArrowLeft, Loader2, Eye, EyeOff } from "lucide-react"
 import { useLanguage } from "@/components/providers/LanguageProvider"
 import {
@@ -12,9 +12,16 @@ import {
 
 export default function LoginPage() {
   const { t } = useLanguage()
-  const router = useRouter()
   const searchParams = useSearchParams()
   const authErrorParam = searchParams.get("auth_error")
+
+  // หน้าที่ต้องกลับไปหลังล็อกอิน (เช่น /admin ส่ง ?redirect=/admin มา)
+  // รับเฉพาะ path ภายในเว็บ กัน open redirect ไปเว็บนอก
+  const redirectParam = searchParams.get("redirect")
+  const redirectTo =
+    redirectParam && redirectParam.startsWith("/") && !redirectParam.startsWith("//")
+      ? redirectParam
+      : "/"
 
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
@@ -32,7 +39,9 @@ export default function LoginPage() {
     setIsLoadingEmail(true)
     try {
       await signInWithEmail(email, password)
-      router.push("/")
+      // hard navigation: ให้ server component (navbar/admin guard) เห็น session ใหม่
+      // ถ้าใช้ router.push เฉยๆ RSC cache เดิมจะทำให้ดูเหมือนยังไม่ได้ล็อกอิน
+      window.location.href = redirectTo
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err)
       if (msg.includes("Invalid login credentials")) {
@@ -62,7 +71,7 @@ export default function LoginPage() {
     setIsLoadingAnon(true)
     try {
       await signInAnonymously()
-      router.push("/")
+      window.location.href = redirectTo
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err))
     } finally {
