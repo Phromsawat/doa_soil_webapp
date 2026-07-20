@@ -3,10 +3,20 @@
 // โจทย์: มีปุ๋ย m สูตร (m = 1..3) แต่ละสูตรมี %N, %P2O5, %K2O
 //        หาปริมาณ x (กก.) ของแต่ละสูตร ให้ธาตุที่ได้ใกล้เป้าหมายที่สุด โดย x >= 0
 //
-// วิธี: least squares แบบมีเงื่อนไข x >= 0 (NNLS)
+// วิธี: weighted least squares แบบมีเงื่อนไข x >= 0 (NNLS)
 //       เนื่องจาก m <= 3 จึงไล่ทุก subset ของสูตรที่เลือก (สูงสุด 7 แบบ)
 //       แต่ละ subset แก้สมการปกติ (normal equations) แล้วเก็บคำตอบที่ไม่ติดลบและ residual ต่ำสุด
 //       -> ได้คำตอบที่ถูกต้องแน่นอนสำหรับปัญหาขนาดเล็ก และไม่มีทางได้ปุ๋ยติดลบ
+//
+// ลำดับความสำคัญ P > N > K (WEIGHTS ด้านล่าง) — ตรงหลักกรมฯ ที่ให้ตรึงฟอสฟอรัสก่อน
+// เพราะ P ในดินเคลื่อนที่ยาก แก้กลางฤดูลำบาก (ต่างจาก N ที่หว่านเสริมทีหลังได้):
+//   * ถ้าปุ๋ยที่เลือก "เข้าเป้าได้พอดี" -> residual = 0 ไม่ว่าน้ำหนักเท่าไร
+//     => คำตอบเท่าเดิมเป๊ะ (เท่ากับวิธีคำนวณมือ P->N->K ของกรมฯ)
+//   * ถ้า "เข้าเป้าไม่ได้" (ปุ๋ยไม่ครบ/ซ้ำซ้อน) -> น้ำหนักบังคับให้ตรง P ก่อน แล้ว N แล้ว K
+//     แทนที่จะเกลี่ย error เท่า ๆ กันจนอาจปล่อยให้ P ขาด
+
+// น้ำหนักถ่วงต่อธาตุ [N, P2O5, K2O] — ต่างกันขั้นละ 100 เท่า ให้ลำดับ P > N > K เด็ดขาดแต่ยังปลอดภัยเชิงตัวเลข
+const WEIGHTS = [100, 10000, 1] as const
 
 export interface Formula {
   id: string
@@ -111,14 +121,14 @@ export function blendFertilizer(
       subset.map((f) => f.k2o / 100),
     ]
 
-    // normal equations: (AᵀA) x = Aᵀb  -> ขนาด m×m
+    // weighted normal equations: (AᵀWA) x = AᵀWb  -> ขนาด m×m (W = diag(WEIGHTS))
     const AtA: number[][] = Array.from({ length: m }, (_, i) =>
       Array.from({ length: m }, (_, j) =>
-        A.reduce((s, row) => s + row[i] * row[j], 0)
+        A.reduce((s, row, r) => s + WEIGHTS[r] * row[i] * row[j], 0)
       )
     )
     const Atb: number[] = Array.from({ length: m }, (_, i) =>
-      A.reduce((s, row, r) => s + row[i] * b[r], 0)
+      A.reduce((s, row, r) => s + WEIGHTS[r] * row[i] * b[r], 0)
     )
 
     const x = solveLinear(AtA, Atb)
@@ -130,10 +140,11 @@ export function blendFertilizer(
       .filter((it) => it.kg > 1e-6)
 
     const sup = sumSupply(items)
+    // residual ถ่วงน้ำหนัก P > N > K -> เข้าเป้าพอดี = 0 (คำตอบเดิม), เข้าไม่ได้ = ยอมพลาด K ก่อน P
     const residual =
-      (sup.n - target.n) ** 2 +
-      (sup.p2o5 - target.p2o5) ** 2 +
-      (sup.k2o - target.k2o) ** 2
+      WEIGHTS[0] * (sup.n - target.n) ** 2 +
+      WEIGHTS[1] * (sup.p2o5 - target.p2o5) ** 2 +
+      WEIGHTS[2] * (sup.k2o - target.k2o) ** 2
 
     // เลือก residual ต่ำสุด; ถ้าเท่ากันเลือกที่ใช้ปุ๋ยน้อยชนิดกว่า
     if (

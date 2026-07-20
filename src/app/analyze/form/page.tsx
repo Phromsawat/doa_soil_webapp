@@ -1,7 +1,7 @@
 "use client"
 
-import { useEffect, useMemo, useState } from "react"
-import { Loader2, Sprout, Check, History } from "lucide-react"
+import { useEffect, useState } from "react"
+import { Loader2, Sprout, Check, History, Calculator } from "lucide-react"
 import Link from "next/link"
 import { Button } from "@/components/ui/Button"
 import { saveManualAnalysis } from "@/lib/supabase/analyses"
@@ -12,10 +12,17 @@ import {
   type CropOption,
   type FertilizerResult,
 } from "@/lib/supabase/fertilizer"
+import {
+  listFertilizerFormulas,
+  type FertilizerFormulaRow,
+} from "@/lib/supabase/fertilizerFormulas"
 import { ensureSession } from "@/lib/supabase/auth"
 import { classify, soilScore, LEVEL_COLORS, LEVEL_LABEL_TH } from "@/lib/soil/grid"
-import FertilizerBlend from "../result/FertilizerBlend"
+import { blendFertilizer, type BlendResult } from "@/lib/fertilizer/blend"
 import FruitStageTable from "@/components/fertilizer/FruitStageTable"
+import CropPicker from "@/components/fertilizer/CropPicker"
+import FertilizerPicker from "@/components/fertilizer/FertilizerPicker"
+import BlendResultCard from "@/components/fertilizer/BlendResultCard"
 
 /** ช่องกรอกตัวเลข + ป้ายระดับ (ต่ำ/ปานกลาง/สูง) */
 function NutrientInput({
@@ -83,7 +90,12 @@ export default function AnalyzeForm() {
   const [k, setK] = useState("")
   const [ph, setPh] = useState("") // เก็บลง DB เฉยๆ ยังไม่นำมาคำนวณ
 
+  const [formulas, setFormulas] = useState<FertilizerFormulaRow[]>([])
+  const [formulasLoading, setFormulasLoading] = useState(true)
+  const [picked, setPicked] = useState<string[]>([""]) // สูตรปุ๋ยที่เลือก (สูงสุด 3)
+
   const [calc, setCalc] = useState<FertilizerResult | null>(null)
+  const [blendResult, setBlendResult] = useState<BlendResult | null>(null)
   const [calcLoading, setCalcLoading] = useState(false)
 
   const [saving, setSaving] = useState(false)
@@ -95,6 +107,10 @@ export default function AnalyzeForm() {
       .then(setCrops)
       .catch((e) => setError(e instanceof Error ? e.message : String(e)))
       .finally(() => setCropsLoading(false))
+    listFertilizerFormulas()
+      .then(setFormulas)
+      .catch(() => {})
+      .finally(() => setFormulasLoading(false))
   }, [])
 
   const num = (s: string) => (s.trim() === "" ? null : Number(s))
@@ -111,45 +127,59 @@ export default function AnalyzeForm() {
   const hasSoil = omN != null || pN != null || kN != null
   const ready = !!cropId && hasSoil
 
-  // คำนวณธาตุอาหารที่ต้องการทันทีเมื่อค่าเปลี่ยน (ยังไม่บันทึก)
-  useEffect(() => {
-    if (!ready) {
-      setCalc(null)
-      return
-    }
-    let cancelled = false
+  // กดปุ่ม "คำนวณ" ก่อน ถึงจะแสดงผล (ไม่คำนวณอัตโนมัติทันทีที่กรอก)
+  // ล้างผลเก่าทิ้งก่อนเสมอ แล้วคำนวณใหม่ทั้งชุด (ธาตุอาหาร + ปริมาณปุ๋ย) กันค่าตกค้าง
+  async function handleCalculate() {
+    if (!ready) return
+    setError(null)
+    setCalc(null)
+    setBlendResult(null)
     setCalcLoading(true)
-    const t = setTimeout(() => {
-      calculateFertilizer({
+    try {
+      const r = await calculateFertilizer({
         crop_id: cropId,
         om_value: omN,
         p_value: pN,
         k_value: kN,
       })
-        .then((r) => !cancelled && setCalc(r))
-        .catch(() => !cancelled && setCalc(null))
-        .finally(() => !cancelled && setCalcLoading(false))
-    }, 400)
-    return () => {
-      cancelled = true
-      clearTimeout(t)
+      setCalc(r)
+
+      // คำนวณปริมาณปุ๋ยจากสูตรที่เลือก (ถ้ามีเป้าหมาย + เลือกปุ๋ยไว้)
+      const target = {
+        n: r.target_n ?? 0,
+        p2o5: r.target_p2o5 ?? 0,
+        k2o: r.target_k2o ?? 0,
+      }
+      const selected = picked
+        .map((id) => formulas.find((f) => f.id === id))
+        .filter((f): f is FertilizerFormulaRow => !!f)
+        .map((f) => ({
+          id: f.id,
+          name: f.name,
+          grade: f.grade,
+          n: f.n_percent,
+          p2o5: f.p2o5_percent,
+          k2o: f.k2o_percent,
+        }))
+      const hasTarget = target.n > 0 || target.p2o5 > 0 || target.k2o > 0
+      setBlendResult(
+        hasTarget && selected.length > 0 ? blendFertilizer(target, selected) : null
+      )
+    } catch (e) {
+      setCalc(null)
+      setBlendResult(null)
+      setError(e instanceof Error ? e.message : String(e))
+    } finally {
+      setCalcLoading(false)
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [cropId, om, p, k, ready])
+  }
 
-  // ค่าที่กรอกเปลี่ยน = ผลที่บันทึกไว้ไม่ตรงแล้ว
-  useEffect(() => {
+  // เปลี่ยนพืช/ค่าดิน/ปุ๋ย = ผลคำนวณ+ผลที่บันทึกไว้ไม่ตรงแล้ว -> ล้าง ให้กดคำนวณใหม่
+  function invalidate() {
+    setCalc(null)
+    setBlendResult(null)
     setSavedId(null)
-  }, [cropId, om, p, k, ph])
-
-  const cropsByType = useMemo(
-    () =>
-      crops.reduce<Record<string, CropOption[]>>((acc, c) => {
-        ;(acc[c.crop_type_name] = acc[c.crop_type_name] ?? []).push(c)
-        return acc
-      }, {}),
-    [crops]
-  )
+  }
 
   async function handleSave() {
     setError(null)
@@ -195,28 +225,13 @@ export default function AnalyzeForm() {
         </h1>
 
         {/* ① เลือกพืช */}
-        <StepHeader n={1} title="เลือกพืชที่จะปลูก" />
+        <StepHeader n={1} title="เลือกพืชที่จะปลูก" hint="เลือกประเภทก่อน แล้วเลือกพืช" />
         {cropsLoading ? (
           <div className="flex items-center gap-2 text-sm text-gray-500">
             <Loader2 className="h-4 w-4 animate-spin" /> กำลังโหลดรายการพืช…
           </div>
         ) : (
-          <select
-            value={cropId}
-            onChange={(e) => setCropId(e.target.value)}
-            className="w-full rounded-xl border border-gray-200 bg-gray-50/60 px-4 py-2.5 text-sm focus:border-[#1A4D2E] focus:bg-white focus:outline-none"
-          >
-            <option value="">— เลือกพืช —</option>
-            {Object.entries(cropsByType).map(([type, list]) => (
-              <optgroup key={type} label={type}>
-                {list.map((c) => (
-                  <option key={c.id} value={c.id}>
-                    {c.name}
-                  </option>
-                ))}
-              </optgroup>
-            ))}
-          </select>
+          <CropPicker crops={crops} value={cropId} onChange={(id) => { setCropId(id); invalidate() }} />
         )}
 
         {/* ② ค่าวิเคราะห์ดิน */}
@@ -227,13 +242,13 @@ export default function AnalyzeForm() {
             hint="กรอกค่าจากชุดตรวจดินหรือผลแล็บ"
           />
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-            <NutrientInput label="อินทรียวัตถุ (OM)" unit="%" value={om} onChange={setOm} level={omLevel} placeholder="เช่น 1.5" />
-            <NutrientInput label="ฟอสฟอรัส (P)" unit="mg/kg" value={p} onChange={setP} level={pLevel} placeholder="เช่น 20" />
-            <NutrientInput label="โพแทสเซียม (K)" unit="mg/kg" value={k} onChange={setK} level={kLevel} placeholder="เช่น 80" />
+            <NutrientInput label="อินทรียวัตถุ (OM)" unit="%" value={om} onChange={(v) => { setOm(v); invalidate() }} level={omLevel} placeholder="เช่น 1.5" />
+            <NutrientInput label="ฟอสฟอรัส (P)" unit="mg/kg" value={p} onChange={(v) => { setP(v); invalidate() }} level={pLevel} placeholder="เช่น 20" />
+            <NutrientInput label="โพแทสเซียม (K)" unit="mg/kg" value={k} onChange={(v) => { setK(v); invalidate() }} level={kLevel} placeholder="เช่น 80" />
           </div>
 
           <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-3">
-            <NutrientInput label="ความเป็นกรด-ด่าง (pH)" unit="0–14" value={ph} onChange={setPh} placeholder="เช่น 6.5" />
+            <NutrientInput label="ความเป็นกรด-ด่าง (pH)" unit="0–14" value={ph} onChange={(v) => { setPh(v); setSavedId(null) }} placeholder="เช่น 6.5" />
           </div>
 
           {score != null && scoreLevel && (
@@ -255,18 +270,49 @@ export default function AnalyzeForm() {
           )}
         </div>
 
-        {/* ③ ธาตุอาหารที่ต้องการ */}
+        {/* ③ เลือกปุ๋ยที่จะใช้ (input ก่อนกดคำนวณ) */}
         <div className="mt-6 border-t border-gray-100 pt-5">
-          <StepHeader n={3} title="ธาตุอาหารที่พืชต้องการ" hint="คำนวณอัตโนมัติจากค่าดิน + ชนิดพืช" />
-          {!ready ? (
-            <p className="rounded-xl bg-gray-50 p-4 text-center text-sm text-gray-400">
-              เลือกพืชและกรอกค่าดินด้านบน ระบบจะคำนวณให้ทันที
+          <StepHeader
+            n={3}
+            title="เลือกปุ๋ยที่จะใช้"
+            hint="เลือกปุ๋ยที่หาซื้อได้ 1–3 สูตร (จะคำนวณปริมาณให้ตอนกดคำนวณ)"
+          />
+          <FertilizerPicker
+            formulas={formulas}
+            loading={formulasLoading}
+            picked={picked}
+            onChange={(p) => { setPicked(p); invalidate() }}
+          />
+        </div>
+
+        {/* ปุ่มคำนวณ — ต้องกดก่อนถึงจะแสดงผล */}
+        <div className="mt-6 border-t border-gray-100 pt-5">
+          <Button
+            onClick={handleCalculate}
+            disabled={!ready || calcLoading}
+            className="h-12 w-full rounded-full bg-[#1A4D2E] font-medium text-white hover:bg-[#143a22] disabled:opacity-50"
+          >
+            {calcLoading ? (
+              <span className="flex items-center justify-center gap-2">
+                <Loader2 className="h-4 w-4 animate-spin" /> กำลังคำนวณ…
+              </span>
+            ) : (
+              <span className="flex items-center justify-center gap-2">
+                <Calculator className="h-4 w-4" /> {calc ? "คำนวณใหม่" : "คำนวณ"}
+              </span>
+            )}
+          </Button>
+          {!ready && (
+            <p className="mt-2 text-center text-xs text-gray-400">
+              เลือกพืชและกรอกค่าดินอย่างน้อย 1 ค่า แล้วกดคำนวณ
             </p>
-          ) : calcLoading ? (
-            <div className="flex items-center justify-center gap-2 rounded-xl bg-gray-50 p-4 text-sm text-gray-500">
-              <Loader2 className="h-4 w-4 animate-spin" /> กำลังคำนวณ…
-            </div>
-          ) : calc ? (
+          )}
+        </div>
+
+        {/* ④ ธาตุอาหารที่ต้องการ — แสดงหลังกดคำนวณ */}
+        {calc && (
+          <div className="mt-6 border-t border-gray-100 pt-5">
+            <StepHeader n={4} title="ธาตุอาหารที่พืชต้องการ" hint="จากค่าดิน + ชนิดพืช" />
             <div className="rounded-xl bg-[#1A2F2A] p-4 text-white">
               <div className="grid grid-cols-3 gap-3">
                 {[
@@ -291,32 +337,32 @@ export default function AnalyzeForm() {
                 </div>
               )}
             </div>
-          ) : (
-            <p className="rounded-xl bg-amber-50 p-4 text-center text-sm text-amber-600">
-              ไม่พบตารางคำแนะนำสำหรับพืชนี้
-            </p>
-          )}
-        </div>
-
-        {/* ④ เลือกปุ๋ย */}
-        {calc && (
-          <div className="mt-6 border-t border-gray-100 pt-5">
-            <StepHeader n={4} title="เลือกปุ๋ยที่จะใช้" hint="ระบบคำนวณให้ว่าต้องใช้แต่ละสูตรเท่าไร" />
-            <FertilizerBlend
-              target={{ n: calc.target_n, p2o5: calc.target_p2o5, k2o: calc.target_k2o }}
-              unit={calc.unit}
-              embedded
-            />
           </div>
         )}
 
-        {/* ตารางแบ่งใส่ตามระยะ — แสดงเฉพาะไม้ผล 9 ชนิดที่มีตารางของกรมฯ */}
-        <FruitStageTable
-          cropName={crops.find((c) => c.id === cropId)?.name}
-          om={omN}
-          p={pN}
-          k={kN}
-        />
+        {/* ⑤ ปริมาณปุ๋ยที่ต้องใช้ — จากสูตรที่เลือกไว้ */}
+        {calc && (
+          <div className="mt-6 border-t border-gray-100 pt-5">
+            <StepHeader n={5} title="ปริมาณปุ๋ยที่ต้องใช้" hint="จากสูตรปุ๋ยที่เลือกในขั้นที่ 3" />
+            {blendResult ? (
+              <BlendResultCard result={blendResult} unit={calc.unit} />
+            ) : (
+              <p className="rounded-xl bg-gray-50 p-4 text-center text-sm text-gray-400">
+                เลือกปุ๋ยอย่างน้อย 1 สูตรในขั้นที่ 3 แล้วกดคำนวณ เพื่อดูปริมาณที่ต้องใช้
+              </p>
+            )}
+          </div>
+        )}
+
+        {/* ตารางแบ่งใส่ตามระยะ — แสดงเฉพาะไม้ผล 9 ชนิดที่มีตารางของกรมฯ (หลังกดคำนวณ) */}
+        {calc && (
+          <FruitStageTable
+            cropName={crops.find((c) => c.id === cropId)?.name}
+            om={omN}
+            p={pN}
+            k={kN}
+          />
+        )}
 
         {/* บันทึก */}
         {error && (
@@ -347,7 +393,7 @@ export default function AnalyzeForm() {
           ) : (
             <Button
               onClick={handleSave}
-              disabled={!ready || saving}
+              disabled={!ready || !calc || saving}
               className="h-12 w-full rounded-full bg-[#1A4D2E] font-medium text-white hover:bg-[#143a22] disabled:opacity-50"
             >
               {saving ? (
