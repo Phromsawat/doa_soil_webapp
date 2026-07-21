@@ -19,10 +19,10 @@ import {
 import { ensureSession } from "@/lib/supabase/auth"
 import { classify, soilScore, LEVEL_COLORS, LEVEL_LABEL_TH } from "@/lib/soil/grid"
 import { blendFertilizer, type BlendResult } from "@/lib/fertilizer/blend"
-import FruitStageTable from "@/components/fertilizer/FruitStageTable"
 import CropPicker from "@/components/fertilizer/CropPicker"
 import FertilizerPicker from "@/components/fertilizer/FertilizerPicker"
 import BlendResultCard from "@/components/fertilizer/BlendResultCard"
+import FertilizerPlanTable from "@/components/fertilizer/FertilizerPlanTable"
 
 /** ช่องกรอกตัวเลข + ป้ายระดับ (ต่ำ/ปานกลาง/สูง) */
 function NutrientInput({
@@ -340,28 +340,28 @@ export default function AnalyzeForm() {
           </div>
         )}
 
-        {/* ⑤ ปริมาณปุ๋ยที่ต้องใช้ — จากสูตรที่เลือกไว้ */}
+        {/* ⑤ แผนใส่ปุ๋ยตามระยะ (คำแนะนำกรมฯ ตายตัว) — ตัวหลัก */}
         {calc && (
           <div className="mt-6 border-t border-gray-100 pt-5">
-            <StepHeader n={5} title="ปริมาณปุ๋ยที่ต้องใช้" hint="จากสูตรปุ๋ยที่เลือกในขั้นที่ 3" />
-            {blendResult ? (
-              <BlendResultCard result={blendResult} unit={calc.unit} />
-            ) : (
-              <p className="rounded-xl bg-gray-50 p-4 text-center text-sm text-gray-400">
-                เลือกปุ๋ยอย่างน้อย 1 สูตรในขั้นที่ 3 แล้วกดคำนวณ เพื่อดูปริมาณที่ต้องใช้
-              </p>
-            )}
+            <StepHeader
+              n={5}
+              title="แผนการใส่ปุ๋ยตามระยะ"
+              hint="คำแนะนำตายตัวของกรมวิชาการเกษตร ตามช่วงค่าดิน"
+            />
+            <FertilizerPlanTable cropId={cropId} om={omN} p={pN} k={kN} />
           </div>
         )}
 
-        {/* ตารางแบ่งใส่ตามระยะ — แสดงเฉพาะไม้ผล 9 ชนิดที่มีตารางของกรมฯ (หลังกดคำนวณ) */}
-        {calc && (
-          <FruitStageTable
-            cropName={crops.find((c) => c.id === cropId)?.name}
-            om={omN}
-            p={pN}
-            k={kN}
-          />
+        {/* ⑥ ทางเลือก: เลือกปุ๋ยเอง (solver) — จากสูตรที่เลือกไว้ในขั้นที่ 3 */}
+        {calc && blendResult && (
+          <div className="mt-6 border-t border-gray-100 pt-5">
+            <StepHeader
+              n={6}
+              title="ทางเลือก: เลือกปุ๋ยเอง"
+              hint="กรณีหาปุ๋ยตามตารางไม่ได้ — คำนวณจากสูตรที่เลือกในขั้นที่ 3"
+            />
+            <BlendResultCard result={blendResult} unit={calc.unit} />
+          </div>
         )}
 
         {/* บันทึก */}
