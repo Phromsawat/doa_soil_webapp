@@ -31,7 +31,13 @@ CROP_KEY = {
 LEVELS = ["low", "med", "high"]
 
 # 4 ระยะ × 3 สูตรปุ๋ย (46-0-0 = urea, 18-46-0 = dap, 0-0-60 = kcl)
-# rounded value columns: W (23) เป็นต้นไปสำหรับ ระยะบำรุงต้น/สร้างตาดอก/บำรุงผล/ปรับปรุงคุณภาพ
+#
+# ⚠️ คอลัมน์ของ "ระยะ" เริ่มที่ 26 ไม่ใช่ 23 — ยืนยันจากหัวตารางแถว 11 ของ Excel:
+#     C23 = "**ปรับเป็นเลขจำนวนเต็มหลักร้อย"  ← คอลัมน์ผลรวมทั้งปี (ไม่ใช่ระยะ)
+#     C26 = ระยะบำรุงต้น | C29 = ระยะสร้างตาดอก | C32 = ระยะบำรุงผล | C35 = ระยะปรับปรุงคุณภาพ
+#   เดิมเริ่มที่ 23 ทำให้อ่าน "ผลรวม" มาเป็นระยะแรก แล้วทุกระยะเลื่อนไป 1 ระยะ
+#   และระยะปรับปรุงคุณภาพหายไป -> ตัวเลขไม่ตรงกับเว็บกรมวิชาการเกษตร
+STAGE_COL_START = 26
 STAGES = ["nurture", "bud", "fruit", "quality"]
 
 def main():
@@ -48,7 +54,7 @@ def main():
                     key = f"{om}_{p}_{k}"
                     stage_vals = {}
                     for si, stage in enumerate(STAGES):
-                        c_start = 23 + si * 3
+                        c_start = STAGE_COL_START + si * 3
                         stage_vals[stage] = {
                             "urea": int(ws.cell(row, c_start).value or 0),
                             "dap":  int(ws.cell(row, c_start + 1).value or 0),

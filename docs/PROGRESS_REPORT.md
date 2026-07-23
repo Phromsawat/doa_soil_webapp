@@ -80,6 +80,13 @@
 - URL: https://doa-test-kit.vercel.app
 - Environment variables setup (Supabase keys)
 
+### ✅ อัปเดต 2026-07-21 — ปรับ UX คำนวณปุ๋ย + ซ่อนแผนที่ (แอดมินคุมได้)
+- **หน้าคำนวณปุ๋ย (`/analyze/form`) เปลี่ยนเป็นกดปุ่มคำนวณ** (จากเดิมคำนวณอัตโนมัติทันทีที่กรอก) — ลำดับใหม่: เลือกพืช → ค่าดิน → **เลือกปุ๋ย 1–3 สูตร** → กด **"คำนวณ"** → แสดงธาตุอาหาร + ปริมาณปุ๋ย. กด "คำนวณใหม่" จะล้างผลเก่าก่อนคำนวณเสมอ (กันค่าตกค้าง) และแก้ค่าใด ๆ ผลจะล้างให้กดใหม่
+- **ตรรกะผสมปุ๋ย (`blend.ts`) ให้ความสำคัญ P > N > K** (weighted least-squares) — ตรงกับหลักกรมฯ ที่ตรึงฟอสฟอรัสก่อน (P เคลื่อนที่ในดินยาก): กรณีปุ๋ยเข้าเป้าได้ผลเท่าเดิมเป๊ะ, กรณีเข้าไม่ได้จะการันตี P ครบก่อน
+- **ไอคอนพืชเป็นภาพวาด SVG รายชนิด** (29 พืช) แทน emoji — เลือกประเภทก่อนแล้วพืชทยอยแสดง
+- **แผนที่ดินซ่อนเป็นค่าเริ่มต้น — แอดมินเปิด/ปิดได้** ที่ `/admin/settings` (toggle). ตาราง `app_settings` (migration `006_app_settings.sql`), route `/map` มี guard กันเข้าถึงเมื่อปิด
+- **ไฟล์หลัก:** `src/lib/fertilizer/blend.ts`, `src/components/fertilizer/{CropPicker,FertilizerPicker,BlendResultCard,cropIcons}.tsx`, `src/lib/supabase/settings.ts`, `src/app/admin/settings/*`, `supabase/migrations/006_app_settings.sql`
+
 ### 🎨 UI Polish (ทำตลอด)
 - **BottomNav** เปลี่ยนเป็น **Liquid Glass** style ลอย
 - Profile Drawer แสดงข้อมูล user จริง + chip "ผู้ใช้ไม่ระบุตัวตน"

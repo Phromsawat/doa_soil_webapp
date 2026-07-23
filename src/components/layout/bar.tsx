@@ -4,12 +4,24 @@ import { ArrowLeft, Home, Sprout, History, User, Info, Phone as PhoneIcon, Menu,
 import { usePathname, useRouter } from "next/navigation"
 import Link from "next/link"
 import { useLanguage } from "@/components/providers/LanguageProvider"
+import { useUser, useIsAdmin } from "@/lib/supabase/useUser"
+import { useShowSoilMap } from "@/lib/supabase/useSettings"
+import { signOut } from "@/lib/supabase/auth"
 import { useState, useEffect } from "react"
 
 export default function Bar() {
   const pathname = usePathname()
   const router = useRouter()
   const { language, setLanguage, t } = useLanguage()
+  // สถานะล็อกอิน — ใช้ตัดสินใจว่าจะโชว์ปุ่ม "เข้าสู่ระบบ" หรือโปรไฟล์ผู้ใช้
+  const { user, displayName, isAnonymous, initial } = useUser()
+  const { isAdmin } = useIsAdmin()
+  // แผนที่ดิน: default ซ่อน — โชว์ในเมนูต่อเมื่อ admin เปิดไว้ที่ /admin/settings
+  const showSoilMap = useShowSoilMap()
+  // useIsAdmin อ่าน localStorage ตอน init -> ค่า render แรกฝั่ง client อาจต่างจาก server
+  // ทำให้ hydration mismatch จนหน้าเว็บกดไม่ได้ จึงรอ mount ก่อนค่อยใช้ค่านี้
+  const [mounted, setMounted] = useState(false)
+  useEffect(() => setMounted(true), [])
   const [activeHash, setActiveHash] = useState("")
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const [isProfileOpen, setIsProfileOpen] = useState(false)
@@ -63,9 +75,7 @@ export default function Bar() {
     if (pathname === "/analyze/upload") {
       title = "อัปโหลดรูปภาพ"
     } else if (pathname === "/analyze/form") {
-      title = "กรอกผลวิเคราะห์ดิน"
-    } else if (pathname === "/analyze/fertilizer") {
-      title = "คำนวณสูตรปุ๋ย"
+      title = "คำนวณปุ๋ย"
     } else if (pathname === "/analyze/map") {
       title = "เลือกพิกัดบนแผนที่"
     } else if (pathname === "/analyze/result") {
@@ -87,7 +97,7 @@ export default function Bar() {
 
   const navLinks = [
     { href: "/", label: t('homeMenu'), icon: Home },
-    { href: "/map", label: t('mapMenu'), icon: MapIcon },
+    ...(showSoilMap ? [{ href: "/map", label: t('mapMenu'), icon: MapIcon }] : []),
     { href: "/#about", label: t('aboutMenu'), icon: Info },
     { href: "/#terms", label: t('termsMenu'), icon: Info },
     { href: "/#contact", label: t('contactMenu'), icon: PhoneIcon },
@@ -95,13 +105,13 @@ export default function Bar() {
 
   return (
     <>
-      <header className={`h-16 flex items-center px-4 fixed top-0 left-0 right-0 z-40 ${pathname === '/my-page' ? 'bg-transparent justify-end pointer-events-none' : 'bg-white/60 backdrop-blur-lg border-b border-white/20 shadow-sm justify-between'}`}>
-      
-      {pathname !== '/my-page' && (
+      <header className="h-16 flex items-center px-4 fixed top-0 left-0 right-0 z-40 bg-white/60 backdrop-blur-lg border-b border-white/20 shadow-sm justify-between">
+
+      {(
         centerTitle ? (
           <>
             <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-              {(pathname === '/analyze/upload' || pathname === '/analyze/form' || pathname === '/analyze/fertilizer') ? (
+              {(pathname === '/analyze/upload' || pathname === '/analyze/form') ? (
                 <div className="relative pointer-events-auto">
                   <button
                     onClick={() => setIsDropdownOpen(o => !o)}
@@ -114,8 +124,7 @@ export default function Bar() {
                       <div className="fixed inset-0 z-10" onClick={() => setIsDropdownOpen(false)} />
                       <div className="absolute top-full mt-2 left-1/2 -translate-x-1/2 bg-white rounded-xl shadow-lg border border-gray-100 py-2 w-52 z-20">
                         <Link href="/analyze/upload" onClick={() => setIsDropdownOpen(false)} className={`block px-4 py-2.5 hover:bg-gray-50 text-[15px] font-thai ${pathname === '/analyze/upload' ? 'text-primary font-semibold' : 'text-gray-700'}`}>อัปโหลดรูปภาพ</Link>
-                        <Link href="/analyze/form" onClick={() => setIsDropdownOpen(false)} className={`block px-4 py-2.5 hover:bg-gray-50 text-[15px] font-thai ${pathname === '/analyze/form' ? 'text-primary font-semibold' : 'text-gray-700'}`}>กรอกผลวิเคราะห์ดิน</Link>
-                        <Link href="/analyze/fertilizer" onClick={() => setIsDropdownOpen(false)} className={`block px-4 py-2.5 hover:bg-gray-50 text-[15px] font-thai ${pathname === '/analyze/fertilizer' ? 'text-primary font-semibold' : 'text-gray-700'}`}>คำนวณสูตรปุ๋ย</Link>
+                        <Link href="/analyze/form" onClick={() => setIsDropdownOpen(false)} className={`block px-4 py-2.5 hover:bg-gray-50 text-[15px] font-thai ${pathname === '/analyze/form' ? 'text-primary font-semibold' : 'text-gray-700'}`}>คำนวณปุ๋ย</Link>
                       </div>
                     </>
                   )}
@@ -155,7 +164,7 @@ export default function Bar() {
       )}
 
       {!(isAnalyzeMain || isAnalyzeSub) && (
-        <div className={`flex items-center gap-10 ${pathname === '/my-page' ? 'pointer-events-auto' : ''}`}>
+        <div className="flex items-center gap-10">
           <div className="hidden lg:flex items-center gap-6">
             {pathname === '/' && navLinks.map((link) => {
               const hash = link.href.split('/')[1] || '';
@@ -205,7 +214,17 @@ export default function Bar() {
                   />
                 </button>
               )}
-              {pathname === '/' ? (
+              {user ? (
+                /* ล็อกอินแล้ว -> ปุ่มโปรไฟล์ (ตัวเปิด profile drawer) */
+                <button
+                  onClick={() => setIsProfileOpen(true)}
+                  aria-label="โปรไฟล์"
+                  title={displayName ?? (isAnonymous ? "ผู้ใช้ทั่วไป" : "โปรไฟล์")}
+                  className="flex h-9 w-9 items-center justify-center rounded-full bg-[#1A4D2E] text-sm font-bold text-white shadow-sm transition-all hover:bg-[#143a22]"
+                >
+                  {initial}
+                </button>
+              ) : pathname === '/' ? (
                 <Link href="/login" className="flex items-center justify-center py-1.5 px-4 w-[120px] bg-[#1A4D2E] hover:bg-[#143a22] text-white rounded-full font-medium transition-all shadow-sm text-sm">
                   {t('login')}
                 </Link>
@@ -306,13 +325,15 @@ export default function Bar() {
                 <span>{language === 'th' ? 'ไทย' : 'EN'}</span>
               </button>
 
-              <Link 
-                href="/login"
-                onClick={() => setIsMobileMenuOpen(false)}
-                className="mt-2 flex items-center justify-center w-full py-2 bg-[#E1F0E5] hover:bg-[#d1e6d8] text-[#1A1A1A] rounded-full font-medium transition-all shadow-sm"
-              >
-                {t('login')}
-              </Link>
+              {!user && (
+                <Link
+                  href="/login"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className="mt-2 flex items-center justify-center w-full py-2 bg-[#E1F0E5] hover:bg-[#d1e6d8] text-[#1A1A1A] rounded-full font-medium transition-all shadow-sm"
+                >
+                  {t('login')}
+                </Link>
+              )}
             </div>
           </div>
         </>
@@ -324,23 +345,32 @@ export default function Bar() {
       />
       
       <div 
-        className={`fixed top-0 right-0 h-full w-[340px] max-w-full bg-[#F5F5F5] z-[1300] transform transition-transform duration-300 ease-in-out flex flex-col overflow-y-auto ${isProfileOpen ? 'translate-x-0' : 'translate-x-full'}`}
+        className="fixed top-0 right-0 h-full w-[340px] max-w-full bg-[#F5F5F5] z-[1300] transition-transform duration-300 ease-in-out flex flex-col overflow-y-auto"
+        // ใช้ inline style แทน utility class เพื่อไม่ให้พลาดถ้า CSS/utility เพี้ยน
+        style={{ transform: isProfileOpen ? "translateX(0)" : "translateX(100%)" }}
       >
         <div className="bg-white px-6 py-8 shadow-sm flex items-center gap-4 rounded-b-[2rem] mb-6">
           <div className="w-14 h-14 rounded-full bg-[#1A4D2E] text-white flex items-center justify-center text-xl font-bold shrink-0">
-            O
+            {displayName ? displayName.charAt(0).toUpperCase() : isAnonymous ? "?" : "O"}
           </div>
-          <span className="font-bold text-[#0f321d] text-lg">สวัสดี, 0821511958</span>
+          <span className="font-bold text-[#0f321d] text-lg">
+            สวัสดี, {displayName ?? (isAnonymous ? "ผู้ใช้ทั่วไป" : "ผู้ใช้")}
+          </span>
         </div>
 
         <div className="flex flex-col px-5 gap-3 flex-1">
           <Link href="/" onClick={() => setIsProfileOpen(false)} className="bg-white rounded-[1rem] py-3.5 px-5 font-bold text-[#0f321d] text-[16px] shadow-sm hover:bg-gray-50 transition-colors">
             หน้าหลัก
           </Link>
-          <Link href="/my-page" onClick={() => setIsProfileOpen(false)} className="bg-white rounded-[1rem] py-3.5 px-5 font-bold text-[#0f321d] text-[16px] shadow-sm hover:bg-gray-50 transition-colors">
+          {mounted && isAdmin && (
+            <Link href="/admin" onClick={() => setIsProfileOpen(false)} className="bg-[#1A4D2E] rounded-[1rem] py-3.5 px-5 font-bold text-white text-[16px] shadow-sm hover:opacity-90 transition-colors">
+              จัดการระบบ (Admin)
+            </Link>
+          )}
+          <Link href="/profile" onClick={() => setIsProfileOpen(false)} className="bg-white rounded-[1rem] py-3.5 px-5 font-bold text-[#0f321d] text-[16px] shadow-sm hover:bg-gray-50 transition-colors">
             แก้ไขโปรไฟล์
           </Link>
-          <Link href="/my-page" onClick={() => setIsProfileOpen(false)} className="bg-white rounded-[1rem] py-3.5 px-5 font-bold text-[#0f321d] text-[16px] shadow-sm hover:bg-gray-50 transition-colors">
+          <Link href="/profile/change-password" onClick={() => setIsProfileOpen(false)} className="bg-white rounded-[1rem] py-3.5 px-5 font-bold text-[#0f321d] text-[16px] shadow-sm hover:bg-gray-50 transition-colors">
             เปลี่ยนรหัสผ่าน
           </Link>
           <div className="bg-white rounded-[1rem] py-2 px-5 font-bold text-[#0f321d] text-[16px] shadow-sm flex items-center justify-between">
@@ -357,11 +387,16 @@ export default function Bar() {
               <span className="text-sm font-medium text-[#1A1A1A]">{language === 'th' ? 'ไทย' : 'EN'}</span>
             </button>
           </div>
-          <Link href="/my-page" onClick={() => setIsProfileOpen(false)} className="bg-white rounded-[1rem] py-3.5 px-5 font-bold text-[#0f321d] text-[16px] shadow-sm hover:bg-gray-50 transition-colors">
-            ให้คะแนนความพึงพอใจ
-          </Link>
 
-          <button onClick={() => { setIsProfileOpen(false); router.push('/'); }} className="mt-8 text-[#F58220] font-bold text-[17px] hover:opacity-80 transition-opacity">
+          <button
+            onClick={async () => {
+              setIsProfileOpen(false)
+              try { await signOut() } catch { /* ออกจากระบบไม่สำเร็จก็ยังพากลับหน้าหลัก */ }
+              // hard navigation เพื่อให้ server component เห็นว่า session หายแล้ว
+              window.location.href = '/'
+            }}
+            className="mt-8 text-[#F58220] font-bold text-[17px] hover:opacity-80 transition-opacity"
+          >
             ออกจากระบบ
           </button>
         </div>

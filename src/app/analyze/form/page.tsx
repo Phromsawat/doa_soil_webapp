@@ -1,213 +1,413 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { useRouter } from "next/navigation"
-import { useForm } from "react-hook-form"
-import { zodResolver } from "@hookform/resolvers/zod"
-import * as z from "zod"
-import { Loader2, Sprout, RefreshCw } from "lucide-react"
+import { Loader2, Sprout, Check, History, Calculator } from "lucide-react"
+import Link from "next/link"
 import { Button } from "@/components/ui/Button"
 import { saveManualAnalysis } from "@/lib/supabase/analyses"
-import { calculateAndSave, listCrops, type CropOption } from "@/lib/supabase/fertilizer"
+import {
+  calculateFertilizer,
+  calculateAndSave,
+  listCrops,
+  type CropOption,
+  type FertilizerResult,
+} from "@/lib/supabase/fertilizer"
+import {
+  listFertilizerFormulas,
+  type FertilizerFormulaRow,
+} from "@/lib/supabase/fertilizerFormulas"
 import { ensureSession } from "@/lib/supabase/auth"
+import { classify, soilScore, LEVEL_COLORS, LEVEL_LABEL_TH } from "@/lib/soil/grid"
+import { blendFertilizer, type BlendResult } from "@/lib/fertilizer/blend"
+import CropPicker from "@/components/fertilizer/CropPicker"
+import FertilizerPicker from "@/components/fertilizer/FertilizerPicker"
+import BlendResultCard from "@/components/fertilizer/BlendResultCard"
+import FertilizerPlanTable from "@/components/fertilizer/FertilizerPlanTable"
 
-const formSchema = z.object({
-  crop_id: z.string().uuid("กรุณาเลือกพืช"),
-  organicMatter: z.number().min(0).max(100),
-  phosphorus: z.number().min(0).max(10000),
-  potassium: z.number().min(0).max(10000),
-})
+/** ช่องกรอกตัวเลข + ป้ายระดับ (ต่ำ/ปานกลาง/สูง) */
+function NutrientInput({
+  label,
+  unit,
+  value,
+  onChange,
+  level,
+  placeholder,
+}: {
+  label: string
+  unit: string
+  value: string
+  onChange: (v: string) => void
+  level?: ReturnType<typeof classify>
+  placeholder?: string
+}) {
+  return (
+    <div>
+      <label className="text-xs text-gray-500">
+        {label} <span className="text-gray-400">— {unit}</span>
+      </label>
+      <input
+        type="number"
+        inputMode="decimal"
+        step="any"
+        value={value}
+        placeholder={placeholder}
+        onChange={(e) => onChange(e.target.value)}
+        className="mt-1 w-full rounded-xl border border-gray-200 bg-gray-50/60 px-4 py-2.5 text-sm focus:border-[#1A4D2E] focus:bg-white focus:outline-none"
+      />
+      {level && (
+        <span
+          className="mt-1.5 inline-block rounded-full px-2 py-0.5 text-[11px] font-semibold text-gray-800"
+          style={{ background: LEVEL_COLORS[level] }}
+        >
+          {LEVEL_LABEL_TH[level]}
+        </span>
+      )}
+    </div>
+  )
+}
 
-type FormValues = z.infer<typeof formSchema>
+function StepHeader({ n, title, hint }: { n: number; title: string; hint?: string }) {
+  return (
+    <div className="mb-3 flex items-start gap-2">
+      <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[#1A4D2E] text-xs font-bold text-white">
+        {n}
+      </span>
+      <div>
+        <h2 className="text-sm font-bold text-gray-800">{title}</h2>
+        {hint && <p className="text-xs text-gray-500">{hint}</p>}
+      </div>
+    </div>
+  )
+}
 
 export default function AnalyzeForm() {
-  const router = useRouter()
   const [crops, setCrops] = useState<CropOption[]>([])
   const [cropsLoading, setCropsLoading] = useState(true)
-  const [submitting, setSubmitting] = useState(false)
-  const [submitError, setSubmitError] = useState<string | null>(null)
 
-  const { register, handleSubmit, watch, formState: { errors } } = useForm<FormValues>({
-    resolver: zodResolver(formSchema),
-    defaultValues: {
-      crop_id: "",
-      organicMatter: 1.5,
-      phosphorus: 0,
-      potassium: 0,
-    },
-  })
+  const [cropId, setCropId] = useState("")
+  const [om, setOm] = useState("")
+  const [p, setP] = useState("")
+  const [k, setK] = useState("")
+  const [ph, setPh] = useState("") // เก็บลง DB เฉยๆ ยังไม่นำมาคำนวณ
+
+  const [formulas, setFormulas] = useState<FertilizerFormulaRow[]>([])
+  const [formulasLoading, setFormulasLoading] = useState(true)
+  const [picked, setPicked] = useState<string[]>([""]) // สูตรปุ๋ยที่เลือก (สูงสุด 3)
+
+  const [calc, setCalc] = useState<FertilizerResult | null>(null)
+  const [blendResult, setBlendResult] = useState<BlendResult | null>(null)
+  const [calcLoading, setCalcLoading] = useState(false)
+
+  const [saving, setSaving] = useState(false)
+  const [savedId, setSavedId] = useState<string | null>(null)
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     listCrops()
       .then(setCrops)
-      .catch((e) => setSubmitError(e instanceof Error ? e.message : String(e)))
+      .catch((e) => setError(e instanceof Error ? e.message : String(e)))
       .finally(() => setCropsLoading(false))
+    listFertilizerFormulas()
+      .then(setFormulas)
+      .catch(() => {})
+      .finally(() => setFormulasLoading(false))
   }, [])
 
-  const omValue = watch("organicMatter") as number
-  const pValue  = watch("phosphorus") as number
-  const kValue  = watch("potassium") as number
+  const num = (s: string) => (s.trim() === "" ? null : Number(s))
+  const omN = num(om)
+  const pN = num(p)
+  const kN = num(k)
 
-  const getBadge = (value: number, lowMax: number, highMin: number) => {
-    if (value < lowMax)  return { label: "ต่ำ",      className: "bg-red-100 text-red-600" }
-    if (value > highMin) return { label: "สูง",      className: "bg-green-100 text-primary" }
-    return                       { label: "ปานกลาง", className: "bg-orange-100 text-orange-600" }
+  const omLevel = classify("om", omN)
+  const pLevel = classify("p", pN)
+  const kLevel = classify("k", kN)
+  const score = soilScore(omN, pN, kN)
+  const scoreLevel = score != null ? classify("sum", score) : null
+
+  const hasSoil = omN != null || pN != null || kN != null
+  const ready = !!cropId && hasSoil
+
+  // กดปุ่ม "คำนวณ" ก่อน ถึงจะแสดงผล (ไม่คำนวณอัตโนมัติทันทีที่กรอก)
+  // ล้างผลเก่าทิ้งก่อนเสมอ แล้วคำนวณใหม่ทั้งชุด (ธาตุอาหาร + ปริมาณปุ๋ย) กันค่าตกค้าง
+  async function handleCalculate() {
+    if (!ready) return
+    setError(null)
+    setCalc(null)
+    setBlendResult(null)
+    setCalcLoading(true)
+    try {
+      const r = await calculateFertilizer({
+        crop_id: cropId,
+        om_value: omN,
+        p_value: pN,
+        k_value: kN,
+      })
+      setCalc(r)
+
+      // คำนวณปริมาณปุ๋ยจากสูตรที่เลือก (ถ้ามีเป้าหมาย + เลือกปุ๋ยไว้)
+      const target = {
+        n: r.target_n ?? 0,
+        p2o5: r.target_p2o5 ?? 0,
+        k2o: r.target_k2o ?? 0,
+      }
+      const selected = picked
+        .map((id) => formulas.find((f) => f.id === id))
+        .filter((f): f is FertilizerFormulaRow => !!f)
+        .map((f) => ({
+          id: f.id,
+          name: f.name,
+          grade: f.grade,
+          n: f.n_percent,
+          p2o5: f.p2o5_percent,
+          k2o: f.k2o_percent,
+        }))
+      const hasTarget = target.n > 0 || target.p2o5 > 0 || target.k2o > 0
+      setBlendResult(
+        hasTarget && selected.length > 0 ? blendFertilizer(target, selected) : null
+      )
+    } catch (e) {
+      setCalc(null)
+      setBlendResult(null)
+      setError(e instanceof Error ? e.message : String(e))
+    } finally {
+      setCalcLoading(false)
+    }
   }
 
-  const onSubmit = async (data: FormValues) => {
-    setSubmitError(null)
-    setSubmitting(true)
+  // เปลี่ยนพืช/ค่าดิน/ปุ๋ย = ผลคำนวณ+ผลที่บันทึกไว้ไม่ตรงแล้ว -> ล้าง ให้กดคำนวณใหม่
+  function invalidate() {
+    setCalc(null)
+    setBlendResult(null)
+    setSavedId(null)
+  }
+
+  async function handleSave() {
+    setError(null)
+    setSaving(true)
     try {
       await ensureSession()
-      const crop = crops.find((c) => c.id === data.crop_id)
-
+      const crop = crops.find((c) => c.id === cropId)
       const analysisId = await saveManualAnalysis({
-        crop_id: data.crop_id,
-        om_value: data.organicMatter,
-        p_value: data.phosphorus,
-        k_value: data.potassium,
-        ph_value: null,
+        crop_id: cropId,
+        om_value: omN,
+        p_value: pN,
+        k_value: kN,
+        ph_value: num(ph),
         province: null,
         amphur: null,
         district: null,
         notes: crop ? `พืช: ${crop.name}` : null,
       })
-
       try {
         await calculateAndSave({
           analysis_id: analysisId,
-          crop_id: data.crop_id,
-          om_value: data.organicMatter,
-          p_value: data.phosphorus,
-          k_value: data.potassium,
+          crop_id: cropId,
+          om_value: omN,
+          p_value: pN,
+          k_value: kN,
         })
-      } catch (calcErr) {
-        console.warn("calculateAndSave failed:", calcErr)
+      } catch (e) {
+        console.warn("calculateAndSave failed:", e)
       }
-
-      router.push(`/analyze/result?id=${analysisId}`)
+      setSavedId(analysisId)
     } catch (e) {
-      setSubmitError(e instanceof Error ? e.message : String(e))
+      setError(e instanceof Error ? e.message : String(e))
     } finally {
-      setSubmitting(false)
+      setSaving(false)
     }
   }
 
-  const cropsByType = crops.reduce<Record<string, CropOption[]>>((acc, c) => {
-    (acc[c.crop_type_name] = acc[c.crop_type_name] ?? []).push(c)
-    return acc
-  }, {})
-
-  const omBadge = getBadge(omValue, 1, 3)
-  const pBadge  = getBadge(pValue,  15, 45)
-  const kBadge  = getBadge(kValue,  50, 100)
-
   return (
-    <div className="font-thai pb-24">
-      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 mt-4 mx-4 max-w-3xl lg:mx-auto">
-        <h2 className="text-lg font-semibold text-gray-800 text-center mb-6">กรอกผลการวิเคราะห์ทางเคมี</h2>
+    <div className="mx-auto w-full max-w-[46rem] px-4 py-6">
+      <div className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
+        <h1 className="mb-5 text-center text-lg font-bold text-gray-800">
+          คำนวณปุ๋ยตามค่าวิเคราะห์ดิน
+        </h1>
 
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+        {/* ① เลือกพืช */}
+        <StepHeader n={1} title="เลือกพืชที่จะปลูก" hint="เลือกประเภทก่อน แล้วเลือกพืช" />
+        {cropsLoading ? (
+          <div className="flex items-center gap-2 text-sm text-gray-500">
+            <Loader2 className="h-4 w-4 animate-spin" /> กำลังโหลดรายการพืช…
+          </div>
+        ) : (
+          <CropPicker crops={crops} value={cropId} onChange={(id) => { setCropId(id); invalidate() }} />
+        )}
 
-          {/* Crop selection */}
-          <div className="space-y-3">
-            <label className="text-sm font-semibold text-gray-700 flex items-center gap-2">
-              <Sprout className="w-4 h-4 text-[#1A4D2E]" /> เลือกพืชที่จะปลูก
-            </label>
-            {cropsLoading ? (
-              <div className="flex items-center gap-2 text-sm text-gray-400 px-4 h-11 bg-gray-50 rounded-full border border-gray-100">
-                <Loader2 className="w-4 h-4 animate-spin" /> กำลังโหลดรายการพืช...
-              </div>
-            ) : (
-              <select
-                {...register("crop_id")}
-                className="w-full bg-gray-50 border border-gray-100 rounded-full px-4 h-11 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#1A4D2E]/20 focus:border-[#1A4D2E] transition-all"
-              >
-                <option value="">-- เลือกพืช --</option>
-                {Object.entries(cropsByType).map(([type, list]) => (
-                  <optgroup key={type} label={type}>
-                    {list.map((c) => (
-                      <option key={c.id} value={c.id}>{c.name}</option>
-                    ))}
-                  </optgroup>
-                ))}
-              </select>
-            )}
-            {errors.crop_id && (
-              <p className="text-xs text-red-500 pl-2">{errors.crop_id.message}</p>
-            )}
+        {/* ② ค่าวิเคราะห์ดิน */}
+        <div className="mt-6 border-t border-gray-100 pt-5">
+          <StepHeader
+            n={2}
+            title="ค่าวิเคราะห์ดิน"
+            hint="กรอกค่าจากชุดตรวจดินหรือผลแล็บ"
+          />
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+            <NutrientInput label="อินทรียวัตถุ (OM)" unit="%" value={om} onChange={(v) => { setOm(v); invalidate() }} level={omLevel} placeholder="เช่น 1.5" />
+            <NutrientInput label="ฟอสฟอรัส (P)" unit="mg/kg" value={p} onChange={(v) => { setP(v); invalidate() }} level={pLevel} placeholder="เช่น 20" />
+            <NutrientInput label="โพแทสเซียม (K)" unit="mg/kg" value={k} onChange={(v) => { setK(v); invalidate() }} level={kLevel} placeholder="เช่น 80" />
           </div>
 
-          {/* Chemical analysis values */}
-          <div className="space-y-4 pt-6 border-t border-gray-100">
-            <label className="text-sm font-semibold text-gray-700">ค่าวิเคราะห์จากชุดทดสอบดิน</label>
+          <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-3">
+            <NutrientInput label="ความเป็นกรด-ด่าง (pH)" unit="0–14" value={ph} onChange={(v) => { setPh(v); setSavedId(null) }} placeholder="เช่น 6.5" />
+          </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <div className="space-y-1.5">
-                <label className="text-xs font-medium text-gray-600">
-                  อินทรียวัตถุ (OM) <span className="text-gray-400">— %</span>
-                </label>
-                <input
-                  type="number" step="any" min="0" max="100"
-                  {...register("organicMatter", { valueAsNumber: true })}
-                  className="w-full bg-gray-50 border border-gray-100 rounded-full px-4 h-10 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#1A4D2E]/20 focus:border-[#1A4D2E] transition-all"
-                />
-                <span className={`inline-block px-2 py-0.5 rounded-full text-[10px] font-bold ${omBadge.className}`}>{omBadge.label}</span>
+          {score != null && scoreLevel && (
+            <div className="mt-4 flex items-center justify-between rounded-xl bg-gray-50 px-4 py-2.5">
+              <span className="text-xs text-gray-600">ความอุดมสมบูรณ์ของดินโดยรวม</span>
+              <span className="flex items-center gap-2">
+                <span className="text-base font-bold text-gray-800">
+                  {score}
+                  <span className="text-[11px] font-normal text-gray-400">/9</span>
+                </span>
+                <span
+                  className="rounded-full px-2 py-0.5 text-[11px] font-semibold text-gray-800"
+                  style={{ background: LEVEL_COLORS[scoreLevel] }}
+                >
+                  {LEVEL_LABEL_TH[scoreLevel]}
+                </span>
+              </span>
+            </div>
+          )}
+        </div>
+
+        {/* ③ เลือกปุ๋ยที่จะใช้ (input ก่อนกดคำนวณ) */}
+        <div className="mt-6 border-t border-gray-100 pt-5">
+          <StepHeader
+            n={3}
+            title="เลือกปุ๋ยที่จะใช้"
+            hint="เลือกปุ๋ยที่หาซื้อได้ 1–3 สูตร (จะคำนวณปริมาณให้ตอนกดคำนวณ)"
+          />
+          <FertilizerPicker
+            formulas={formulas}
+            loading={formulasLoading}
+            picked={picked}
+            onChange={(p) => { setPicked(p); invalidate() }}
+          />
+        </div>
+
+        {/* ปุ่มคำนวณ — ต้องกดก่อนถึงจะแสดงผล */}
+        <div className="mt-6 border-t border-gray-100 pt-5">
+          <Button
+            onClick={handleCalculate}
+            disabled={!ready || calcLoading}
+            className="h-12 w-full rounded-full bg-[#1A4D2E] font-medium text-white hover:bg-[#143a22] disabled:opacity-50"
+          >
+            {calcLoading ? (
+              <span className="flex items-center justify-center gap-2">
+                <Loader2 className="h-4 w-4 animate-spin" /> กำลังคำนวณ…
+              </span>
+            ) : (
+              <span className="flex items-center justify-center gap-2">
+                <Calculator className="h-4 w-4" /> {calc ? "คำนวณใหม่" : "คำนวณ"}
+              </span>
+            )}
+          </Button>
+          {!ready && (
+            <p className="mt-2 text-center text-xs text-gray-400">
+              เลือกพืชและกรอกค่าดินอย่างน้อย 1 ค่า แล้วกดคำนวณ
+            </p>
+          )}
+        </div>
+
+        {/* ④ ธาตุอาหารที่ต้องการ — แสดงหลังกดคำนวณ */}
+        {calc && (
+          <div className="mt-6 border-t border-gray-100 pt-5">
+            <StepHeader n={4} title="ธาตุอาหารที่พืชต้องการ" hint="จากค่าดิน + ชนิดพืช" />
+            <div className="rounded-xl bg-[#1A2F2A] p-4 text-white">
+              <div className="grid grid-cols-3 gap-3">
+                {[
+                  ["N (ไนโตรเจน)", calc.target_n],
+                  ["P₂O₅ (ฟอสฟอรัส)", calc.target_p2o5],
+                  ["K₂O (โพแทสเซียม)", calc.target_k2o],
+                ].map(([label, v]) => (
+                  <div key={label as string} className="text-center">
+                    <p className="mb-1 text-[11px] text-white/60">{label as string}</p>
+                    <p className="text-2xl font-medium text-accent">{(v as number | null) ?? "—"}</p>
+                  </div>
+                ))}
               </div>
+              <p className="mt-2 border-t border-white/10 pt-2 text-center text-xs text-white/70">
+                หน่วย: <span className="font-medium text-white">{calc.unit}</span>
+              </p>
+              {calc.notes.length > 0 && (
+                <div className="mt-2 border-t border-white/10 pt-2">
+                  {calc.notes.map((n, i) => (
+                    <p key={i} className="text-[11px] italic text-orange-200">⚠ {n}</p>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
 
-              <div className="space-y-1.5">
-                <label className="text-xs font-medium text-gray-600">
-                  ฟอสฟอรัส (P) <span className="text-gray-400">— mg/kg</span>
-                </label>
-                <input
-                  type="number" step="any" min="0"
-                  {...register("phosphorus", { valueAsNumber: true })}
-                  className="w-full bg-gray-50 border border-gray-100 rounded-full px-4 h-10 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#1A4D2E]/20 focus:border-[#1A4D2E] transition-all"
-                />
-                <span className={`inline-block px-2 py-0.5 rounded-full text-[10px] font-bold ${pBadge.className}`}>{pBadge.label}</span>
-              </div>
+        {/* ⑤ แผนใส่ปุ๋ยตามระยะ (คำแนะนำกรมฯ ตายตัว) — ตัวหลัก */}
+        {calc && (
+          <div className="mt-6 border-t border-gray-100 pt-5">
+            <StepHeader
+              n={5}
+              title="แผนการใส่ปุ๋ยตามระยะ"
+              hint="คำแนะนำตายตัวของกรมวิชาการเกษตร ตามช่วงค่าดิน"
+            />
+            <FertilizerPlanTable cropId={cropId} om={omN} p={pN} k={kN} />
+          </div>
+        )}
 
-              <div className="space-y-1.5">
-                <label className="text-xs font-medium text-gray-600">
-                  โพแทสเซียม (K) <span className="text-gray-400">— mg/kg</span>
-                </label>
-                <input
-                  type="number" step="any" min="0"
-                  {...register("potassium", { valueAsNumber: true })}
-                  className="w-full bg-gray-50 border border-gray-100 rounded-full px-4 h-10 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#1A4D2E]/20 focus:border-[#1A4D2E] transition-all"
-                />
-                <span className={`inline-block px-2 py-0.5 rounded-full text-[10px] font-bold ${kBadge.className}`}>{kBadge.label}</span>
+        {/* ⑥ ทางเลือก: เลือกปุ๋ยเอง (solver) — จากสูตรที่เลือกไว้ในขั้นที่ 3 */}
+        {calc && blendResult && (
+          <div className="mt-6 border-t border-gray-100 pt-5">
+            <StepHeader
+              n={6}
+              title="ทางเลือก: เลือกปุ๋ยเอง"
+              hint="กรณีหาปุ๋ยตามตารางไม่ได้ — คำนวณจากสูตรที่เลือกในขั้นที่ 3"
+            />
+            <BlendResultCard result={blendResult} unit={calc.unit} />
+          </div>
+        )}
+
+        {/* บันทึก */}
+        {error && (
+          <p className="mt-4 rounded-xl bg-red-50 px-4 py-2 text-sm text-red-600">{error}</p>
+        )}
+
+        <div className="mt-6 border-t border-gray-100 pt-5">
+          {savedId ? (
+            <div className="flex flex-col items-center gap-3 rounded-xl bg-emerald-50 p-4">
+              <p className="flex items-center gap-2 text-sm font-medium text-emerald-700">
+                <Check className="h-4 w-4" /> บันทึกลงประวัติแล้ว
+              </p>
+              <div className="flex gap-2">
+                <Link
+                  href="/history"
+                  className="flex items-center gap-1 rounded-full border border-emerald-200 bg-white px-4 py-2 text-sm font-medium text-emerald-700 hover:bg-emerald-50"
+                >
+                  <History className="h-4 w-4" /> ดูประวัติ
+                </Link>
+                <Link
+                  href={`/analyze/result?id=${savedId}`}
+                  className="rounded-full bg-[#1A4D2E] px-4 py-2 text-sm font-medium text-white hover:opacity-90"
+                >
+                  เปิดผลที่บันทึก
+                </Link>
               </div>
             </div>
-
-            <p className="text-[11px] text-gray-400 italic pt-1">
-              💡 ระบบจะคำนวณ N, P₂O₅, K₂O ที่ต้องใส่ให้คุณเอง — กรอกแค่ค่าจากผลวิเคราะห์ดิน
-            </p>
-          </div>
-
-          {submitError && (
-            <div className="bg-red-50 text-red-600 text-sm px-4 py-3 rounded-xl">{submitError}</div>
+          ) : (
+            <Button
+              onClick={handleSave}
+              disabled={!ready || !calc || saving}
+              className="h-12 w-full rounded-full bg-[#1A4D2E] font-medium text-white hover:bg-[#143a22] disabled:opacity-50"
+            >
+              {saving ? (
+                <span className="flex items-center justify-center gap-2">
+                  <Loader2 className="h-4 w-4 animate-spin" /> กำลังบันทึก…
+                </span>
+              ) : (
+                <span className="flex items-center justify-center gap-2">
+                  <Sprout className="h-4 w-4" /> บันทึกลงประวัติ
+                </span>
+              )}
+            </Button>
           )}
-
-          {/* Actions */}
-          <div className="flex gap-3 pt-2">
-            <Button
-              type="button"
-              onClick={() => window.location.reload()}
-              className="flex-1 h-11 bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 rounded-full font-medium text-[15px] shadow-sm flex items-center justify-center gap-2"
-            >
-              <RefreshCw className="w-4 h-4" /> รีเฟรช
-            </Button>
-            <Button
-              type="submit"
-              disabled={submitting}
-              className="flex-[2] h-11 bg-[#1A4D2E] hover:bg-[#143a22] text-white rounded-full font-medium text-[15px] shadow-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-            >
-              {submitting ? (<><Loader2 className="w-4 h-4 animate-spin" /> กำลังบันทึก...</>)
-                          : "บันทึก + คำนวณสูตรปุ๋ย"}
-            </Button>
-          </div>
-        </form>
+        </div>
       </div>
     </div>
   )
