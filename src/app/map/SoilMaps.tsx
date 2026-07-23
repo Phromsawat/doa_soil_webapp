@@ -401,6 +401,7 @@ export default function SoilMaps() {
               )}
               {!loading && result && (
                 <div className="space-y-0">
+                  {/* คะแนนความอุดมสมบูรณ์รวม (ผลรวม level OM+P+K = 3-9) */}
                   <div
                     className={`mb-2 flex items-center justify-between rounded-xl border px-3 py-2 ${
                       active === "sum"
@@ -409,7 +410,13 @@ export default function SoilMaps() {
                     }`}
                   >
                     <span className="text-xs text-gray-600">ความอุดมสมบูรณ์รวม</span>
-                    <LevelBadge level={sumLevel} />
+                    <span className="flex items-center gap-2">
+                      <span className="text-base font-bold text-gray-800">
+                        {score ?? "—"}
+                        <span className="text-[11px] font-normal text-gray-400">/9</span>
+                      </span>
+                      <LevelBadge level={sumLevel} />
+                    </span>
                   </div>
                   <div className="grid grid-cols-3 gap-2">
                   {NUTRIENTS.map((n) => {
