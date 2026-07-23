@@ -11,7 +11,7 @@ import { createClient } from "@/lib/supabase/server"
 //   เช่น เกณฑ์ <2 / 2-3 / >3 : ค่า 2.0 -> "2-3", ค่า 3.0 -> ">3"
 // =============================================================================
 
-export type UseType = "straight" | "compound"
+export type UseType = "straight" | "compound" | "organic70"
 
 interface PlanDbRow {
   use_type: UseType
@@ -28,7 +28,7 @@ interface PlanDbRow {
 export interface PlanStage {
   stage: string
   order: number
-  items: { grade: string; amount: number }[]
+  items: { grade: string; amount: number; unit: string }[]
 }
 
 export interface FertilizerPlan {
@@ -52,7 +52,7 @@ export async function getCropPlanUseTypes(cropId: string): Promise<UseType[]> {
     .eq("crop_id", cropId)
   const set = new Set<UseType>()
   for (const r of data ?? []) set.add((r as { use_type: UseType }).use_type)
-  return (["straight", "compound"] as const).filter((t) => set.has(t))
+  return (["straight", "compound", "organic70"] as const).filter((t) => set.has(t))
 }
 
 /**
@@ -103,7 +103,7 @@ export async function getFertilizerPlan(input: {
       s = { stage: r.stage, order: r.stage_order, items: [] }
       byStage.set(r.stage, s)
     }
-    s.items.push({ grade: r.grade, amount: r.amount })
+    s.items.push({ grade: r.grade, amount: r.amount, unit: r.unit })
   }
   const stages = [...byStage.values()].sort((a, b) => a.order - b.order)
 

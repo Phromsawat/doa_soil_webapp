@@ -14,6 +14,7 @@ import {
   type AdminRecommendationRow,
 } from "@/lib/supabase/admin"
 import { createClient } from "@/lib/supabase/client"
+import CropPlanEditor from "@/components/admin/CropPlanEditor"
 
 type CropType = { id: string; name: string; unit_basis: string }
 
@@ -265,8 +266,10 @@ export default function EditCropPage({ params }: PageProps) {
       <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 space-y-4">
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-lg font-bold text-gray-900">Recommendations</h2>
-            <p className="text-xs text-gray-500 mt-1">ค่าแนะนำ N/P₂O₅/K₂O ตามช่วงค่า OM/P/K — ทั้งหมด {recs.length} รายการ</p>
+            <h2 className="text-lg font-bold text-gray-900">① ความต้องการธาตุอาหาร (N–P₂O₅–K₂O)</h2>
+            <p className="text-xs text-gray-500 mt-1">
+              พืชนี้ต้องการธาตุอาหารเท่าไร ตามช่วงค่าดิน OM/P/K — ใช้ในหน้าคำนวณ &ldquo;ธาตุอาหารที่ต้องการ&rdquo; และ &ldquo;เลือกปุ๋ยเอง (solver)&rdquo; · ทั้งหมด {recs.length} รายการ
+            </p>
           </div>
           <button
             type="button"
@@ -312,6 +315,17 @@ export default function EditCropPage({ params }: PageProps) {
             </table>
           </div>
         )}
+      </div>
+
+      {/* ตารางปุ๋ยตามระยะ (crop_fertilizer_plan) — แบบเว็บเก่า */}
+      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 space-y-4">
+        <div>
+          <h2 className="text-lg font-bold text-gray-900">② ตารางการใส่ปุ๋ยตามระยะ</h2>
+          <p className="text-xs text-gray-500 mt-1">
+            ปริมาณปุ๋ยจริงที่แนะนำ (แม่ปุ๋ย/ผสม/70%) แยกตามระยะการเจริญเติบโต ต่อช่วงค่าดิน — ใช้ในหน้าคำนวณ &ldquo;แผนการใส่ปุ๋ยตามระยะ&rdquo; (ตัวหลัก แบบเดียวกับเว็บเก่า)
+          </p>
+        </div>
+        <CropPlanEditor cropId={cropId} />
       </div>
 
       {/* Add recommendation modal */}

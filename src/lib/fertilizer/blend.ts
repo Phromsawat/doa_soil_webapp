@@ -97,21 +97,14 @@ function sumSupply(items: BlendItem[]): Nutrients {
  * @param target ธาตุอาหารที่ต้องการ (กก.) — หน่วยเดียวกับผลลัพธ์ (เช่น กก./ไร่ หรือ กก./ต้น)
  * @param formulas ปุ๋ยที่ผู้ใช้เลือก (1-3 สูตร)
  */
-export function blendFertilizer(
-  target: Nutrients,
-  formulas: Formula[]
-): BlendResult {
-  const usable = formulas.filter(
-    (f) => f.n > 0 || f.p2o5 > 0 || f.k2o > 0
-  )
+// core: weighted NNLS ด้วยการไล่ทุก subset -> คืนชุดปุ๋ยที่ให้ธาตุใกล้เป้าที่สุด (ถ่วง P>N>K)
+function solveWeightedNNLS(target: Nutrients, formulas: Formula[]): BlendItem[] {
   const b = [target.n, target.p2o5, target.k2o]
-
   let best: { items: BlendItem[]; residual: number } | null = null
 
-  // ไล่ทุก subset (ไม่ว่าง) ของสูตรที่เลือก
-  const total = 1 << usable.length
+  const total = 1 << formulas.length
   for (let mask = 1; mask < total; mask++) {
-    const subset = usable.filter((_, i) => mask & (1 << i))
+    const subset = formulas.filter((_, i) => mask & (1 << i))
     const m = subset.length
 
     // A คือเมทริกซ์ 3×m (แถว = ธาตุ, คอลัมน์ = สูตร), หน่วยสัดส่วน (0-1)
@@ -140,7 +133,6 @@ export function blendFertilizer(
       .filter((it) => it.kg > 1e-6)
 
     const sup = sumSupply(items)
-    // residual ถ่วงน้ำหนัก P > N > K -> เข้าเป้าพอดี = 0 (คำตอบเดิม), เข้าไม่ได้ = ยอมพลาด K ก่อน P
     const residual =
       WEIGHTS[0] * (sup.n - target.n) ** 2 +
       WEIGHTS[1] * (sup.p2o5 - target.p2o5) ** 2 +
@@ -156,8 +148,39 @@ export function blendFertilizer(
       best = { items, residual }
     }
   }
+  return best?.items ?? []
+}
 
-  const items = best?.items ?? []
+export function blendFertilizer(
+  target: Nutrients,
+  formulas: Formula[]
+): BlendResult {
+  const usable = formulas.filter(
+    (f) => f.n > 0 || f.p2o5 > 0 || f.k2o > 0
+  )
+
+  // หลักกรมฯ (ปุ๋ยสั่งตัด P→N→K): ตรึงฟอสฟอรัสก่อน ด้วยปุ๋ยที่ %P สูงสุด
+  //   -> ล็อกปริมาณปุ๋ย P ตัวนั้นให้ได้ P2O5 พอดี แล้วหักธาตุที่มันพ่วงมา (N/K)
+  //   -> เติม N/K ที่เหลือด้วย NNLS จากปุ๋ยที่เหลือ (ตั้งเป้า P2O5=0 กันการใส่ P เกิน)
+  // ชุดปุ๋ยมาตรฐาน (46-0-0/18-46-0/0-0-60) จะได้ผลเท่ากับ least-squares เดิมทุกประการ
+  const pFert = usable
+    .filter((f) => f.p2o5 > 0)
+    .sort((a, b) => b.p2o5 - a.p2o5)[0]
+
+  let items: BlendItem[]
+  if (target.p2o5 > 1e-9 && pFert) {
+    const pKg = target.p2o5 / (pFert.p2o5 / 100)
+    const rest = usable.filter((f) => f !== pFert)
+    const remaining: Nutrients = {
+      n: Math.max(0, target.n - (pFert.n / 100) * pKg),
+      p2o5: 0,
+      k2o: Math.max(0, target.k2o - (pFert.k2o / 100) * pKg),
+    }
+    items = [{ formula: pFert, kg: pKg }, ...solveWeightedNNLS(remaining, rest)]
+      .filter((it) => it.kg > 1e-6)
+  } else {
+    items = solveWeightedNNLS(target, usable)
+  }
   const supplied = sumSupply(items)
   const diff = {
     n: supplied.n - target.n,

@@ -16,8 +16,14 @@ type Draft = {
   n_percent: string
   p2o5_percent: string
   k2o_percent: string
-  kind: "chemical" | "organic"
+  kind: "chemical" | "organic" | "biological"
   notes: string
+}
+
+const KIND_LABEL: Record<Draft["kind"], string> = {
+  chemical: "ปุ๋ยเคมี",
+  organic: "ปุ๋ยอินทรีย์",
+  biological: "ปุ๋ยชีวภาพ",
 }
 
 const EMPTY: Draft = {
@@ -242,6 +248,7 @@ export default function AdminFertilizersPage() {
               >
                 <option value="chemical">ปุ๋ยเคมี</option>
                 <option value="organic">ปุ๋ยอินทรีย์</option>
+                <option value="biological">ปุ๋ยชีวภาพ</option>
               </select>
             </div>
             <div className="col-span-2 lg:col-span-6">
@@ -344,11 +351,10 @@ export default function AdminFertilizersPage() {
                         >
                           <option value="chemical">ปุ๋ยเคมี</option>
                           <option value="organic">ปุ๋ยอินทรีย์</option>
+                          <option value="biological">ปุ๋ยชีวภาพ</option>
                         </select>
                       ) : (
-                        <span className="text-gray-600">
-                          {r.kind === "organic" ? "อินทรีย์" : "เคมี"}
-                        </span>
+                        <span className="text-gray-600">{KIND_LABEL[r.kind]}</span>
                       )}
                     </td>
                     <td className="px-3 py-2 text-center">

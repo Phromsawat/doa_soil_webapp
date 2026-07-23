@@ -17,7 +17,7 @@ export interface FertilizerFormulaRow {
   n_percent: number
   p2o5_percent: number
   k2o_percent: number
-  kind: "chemical" | "organic"
+  kind: "chemical" | "organic" | "biological"
   is_active: boolean
   sort_order: number
   notes: string | null
@@ -29,7 +29,7 @@ export interface FertilizerFormulaInput {
   n_percent: number
   p2o5_percent: number
   k2o_percent: number
-  kind?: "chemical" | "organic"
+  kind?: "chemical" | "organic" | "biological"
   is_active?: boolean
   sort_order?: number
   notes?: string | null
