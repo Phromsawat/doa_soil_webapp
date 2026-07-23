@@ -18,7 +18,7 @@ import {
 } from "@/lib/supabase/fertilizerFormulas"
 import { ensureSession } from "@/lib/supabase/auth"
 import { useUser } from "@/lib/supabase/useUser"
-import { classify, soilScore, LEVEL_COLORS, LEVEL_LABEL_TH } from "@/lib/soil/grid"
+import { classify, LEVEL_COLORS, LEVEL_LABEL_TH } from "@/lib/soil/grid"
 import { blendFertilizer, type BlendResult } from "@/lib/fertilizer/blend"
 import CropPicker from "@/components/fertilizer/CropPicker"
 import FertilizerPicker from "@/components/fertilizer/FertilizerPicker"
@@ -125,8 +125,6 @@ export default function AnalyzeForm() {
   const omLevel = classify("om", omN)
   const pLevel = classify("p", pN)
   const kLevel = classify("k", kN)
-  const score = soilScore(omN, pN, kN)
-  const scoreLevel = score != null ? classify("sum", score) : null
 
   const hasSoil = omN != null || pN != null || kN != null
   const ready = !!cropId && hasSoil
@@ -255,23 +253,6 @@ export default function AnalyzeForm() {
             <NutrientInput label="ความเป็นกรด-ด่าง (pH)" unit="0–14" value={ph} onChange={(v) => { setPh(v); setSavedId(null) }} placeholder="เช่น 6.5" />
           </div>
 
-          {score != null && scoreLevel && (
-            <div className="mt-4 flex items-center justify-between rounded-xl bg-gray-50 px-4 py-2.5">
-              <span className="text-xs text-gray-600">ความอุดมสมบูรณ์ของดินโดยรวม</span>
-              <span className="flex items-center gap-2">
-                <span className="text-base font-bold text-gray-800">
-                  {score}
-                  <span className="text-[11px] font-normal text-gray-400">/9</span>
-                </span>
-                <span
-                  className="rounded-full px-2 py-0.5 text-[11px] font-semibold text-gray-800"
-                  style={{ background: LEVEL_COLORS[scoreLevel] }}
-                >
-                  {LEVEL_LABEL_TH[scoreLevel]}
-                </span>
-              </span>
-            </div>
-          )}
         </div>
 
         {/* ③ เลือกปุ๋ยที่จะใช้ (input ก่อนกดคำนวณ) */}

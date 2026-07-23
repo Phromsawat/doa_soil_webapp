@@ -10,8 +10,9 @@ import {
 } from "@/lib/supabase/fertilizerPlan"
 
 const USE_TYPE_LABEL: Record<UseType, string> = {
-  straight: "แม่ปุ๋ย",
-  compound: "ปุ๋ยเชิงประกอบ",
+  straight: "แม่ปุ๋ย 100%",
+  compound: "ปุ๋ยผสม 100%",
+  organic70: "70% + อินทรีย์",
 }
 
 /**
@@ -115,7 +116,7 @@ export default function FertilizerPlanTable({
                     <span className="text-gray-700">{it.grade}</span>
                     <span className="font-bold text-gray-900">
                       {it.amount.toLocaleString()}{" "}
-                      <span className="text-xs font-normal text-gray-400">{plan.unit}</span>
+                      <span className="text-xs font-normal text-gray-400">{it.unit}</span>
                     </span>
                   </div>
                 ))}
