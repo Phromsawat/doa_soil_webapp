@@ -17,6 +17,7 @@ import {
   type FertilizerFormulaRow,
 } from "@/lib/supabase/fertilizerFormulas"
 import { ensureSession } from "@/lib/supabase/auth"
+import { useUser } from "@/lib/supabase/useUser"
 import { classify, soilScore, LEVEL_COLORS, LEVEL_LABEL_TH } from "@/lib/soil/grid"
 import { blendFertilizer, type BlendResult } from "@/lib/fertilizer/blend"
 import CropPicker from "@/components/fertilizer/CropPicker"
@@ -101,6 +102,9 @@ export default function AnalyzeForm() {
   const [saving, setSaving] = useState(false)
   const [savedId, setSavedId] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
+
+  // บันทึกได้เฉพาะคน login จริง (ไม่ใช่ anonymous) — ผู้ไม่ล็อกอินแค่คำนวณดูผล ไม่เก็บข้อมูล
+  const { isAuthenticated, loading: userLoading } = useUser()
 
   useEffect(() => {
     listCrops()
@@ -369,45 +373,61 @@ export default function AnalyzeForm() {
           <p className="mt-4 rounded-xl bg-red-50 px-4 py-2 text-sm text-red-600">{error}</p>
         )}
 
-        <div className="mt-6 border-t border-gray-100 pt-5">
-          {savedId ? (
-            <div className="flex flex-col items-center gap-3 rounded-xl bg-emerald-50 p-4">
-              <p className="flex items-center gap-2 text-sm font-medium text-emerald-700">
-                <Check className="h-4 w-4" /> บันทึกลงประวัติแล้ว
-              </p>
-              <div className="flex gap-2">
-                <Link
-                  href="/history"
-                  className="flex items-center gap-1 rounded-full border border-emerald-200 bg-white px-4 py-2 text-sm font-medium text-emerald-700 hover:bg-emerald-50"
-                >
-                  <History className="h-4 w-4" /> ดูประวัติ
-                </Link>
-                <Link
-                  href={`/analyze/result?id=${savedId}`}
-                  className="rounded-full bg-[#1A4D2E] px-4 py-2 text-sm font-medium text-white hover:opacity-90"
-                >
-                  เปิดผลที่บันทึก
-                </Link>
+        {/* บันทึก — เฉพาะผู้ล็อกอินจริง (ไม่ใช่ anonymous) */}
+        {!userLoading && isAuthenticated && (
+          <div className="mt-6 border-t border-gray-100 pt-5">
+            {savedId ? (
+              <div className="flex flex-col items-center gap-3 rounded-xl bg-emerald-50 p-4">
+                <p className="flex items-center gap-2 text-sm font-medium text-emerald-700">
+                  <Check className="h-4 w-4" /> บันทึกลงประวัติแล้ว
+                </p>
+                <div className="flex gap-2">
+                  <Link
+                    href="/history"
+                    className="flex items-center gap-1 rounded-full border border-emerald-200 bg-white px-4 py-2 text-sm font-medium text-emerald-700 hover:bg-emerald-50"
+                  >
+                    <History className="h-4 w-4" /> ดูประวัติ
+                  </Link>
+                  <Link
+                    href={`/analyze/result?id=${savedId}`}
+                    className="rounded-full bg-[#1A4D2E] px-4 py-2 text-sm font-medium text-white hover:opacity-90"
+                  >
+                    เปิดผลที่บันทึก
+                  </Link>
+                </div>
               </div>
-            </div>
-          ) : (
-            <Button
-              onClick={handleSave}
-              disabled={!ready || !calc || saving}
-              className="h-12 w-full rounded-full bg-[#1A4D2E] font-medium text-white hover:bg-[#143a22] disabled:opacity-50"
-            >
-              {saving ? (
-                <span className="flex items-center justify-center gap-2">
-                  <Loader2 className="h-4 w-4 animate-spin" /> กำลังบันทึก…
-                </span>
-              ) : (
-                <span className="flex items-center justify-center gap-2">
-                  <Sprout className="h-4 w-4" /> บันทึกลงประวัติ
-                </span>
-              )}
-            </Button>
-          )}
-        </div>
+            ) : (
+              <Button
+                onClick={handleSave}
+                disabled={!ready || !calc || saving}
+                className="h-12 w-full rounded-full bg-[#1A4D2E] font-medium text-white hover:bg-[#143a22] disabled:opacity-50"
+              >
+                {saving ? (
+                  <span className="flex items-center justify-center gap-2">
+                    <Loader2 className="h-4 w-4 animate-spin" /> กำลังบันทึก…
+                  </span>
+                ) : (
+                  <span className="flex items-center justify-center gap-2">
+                    <Sprout className="h-4 w-4" /> บันทึกลงประวัติ
+                  </span>
+                )}
+              </Button>
+            )}
+          </div>
+        )}
+
+        {/* ผู้ไม่ล็อกอิน: แค่คำนวณดูผล ไม่เก็บข้อมูล/ไม่บันทึก */}
+        {!userLoading && !isAuthenticated && calc && (
+          <div className="mt-6 border-t border-gray-100 pt-5 text-center">
+            <p className="text-xs text-gray-400">
+              คำนวณดูผลได้เลยโดยไม่ต้องบันทึก ·{" "}
+              <Link href="/login" className="font-medium text-[#1A4D2E] hover:underline">
+                เข้าสู่ระบบ
+              </Link>{" "}
+              เพื่อบันทึกผลลงประวัติ
+            </p>
+          </div>
+        )}
       </div>
     </div>
   )
