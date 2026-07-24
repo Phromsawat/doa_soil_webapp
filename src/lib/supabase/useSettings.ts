@@ -12,17 +12,21 @@ export function useShowSoilMap(): boolean {
   useEffect(() => {
     const supabase = createClient()
 
-    const fetch = () =>
-      supabase
-        .from("app_settings")
-        .select("value")
-        .eq("key", SHOW_SOIL_MAP)
-        .maybeSingle()
-        .then(({ data }) => setShow(data?.value === true))
-        .catch(() => {})
+    const fetchFlag = async () => {
+      try {
+        const { data } = await supabase
+          .from("app_settings")
+          .select("value")
+          .eq("key", SHOW_SOIL_MAP)
+          .maybeSingle()
+        setShow(data?.value === true)
+      } catch {
+        /* เงียบไว้ — ถ้าอ่านไม่ได้ถือว่าซ่อน */
+      }
+    }
 
-    fetch()
-    const timer = setInterval(fetch, POLL_MS)
+    fetchFlag()
+    const timer = setInterval(fetchFlag, POLL_MS)
 
     // Realtime bonus — ถ้า table เปิด replication ไว้ จะ update เร็วกว่า poll
     const channel = supabase
