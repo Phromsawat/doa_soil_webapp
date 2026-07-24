@@ -1,17 +1,19 @@
 "use client"
 
-import { useCallback, useEffect, useState } from "react"
+import { useCallback, useEffect, useRef, useState } from "react"
 import {
   MapContainer,
   TileLayer,
   ImageOverlay,
+  GeoJSON,
   Marker,
   useMap,
   useMapEvents,
 } from "react-leaflet"
+import type { FeatureCollection } from "geojson"
 import L from "leaflet"
 import "leaflet/dist/leaflet.css"
-import { Plus, Minus, Map, Layers } from "lucide-react"
+import { Plus, Minus, Map, Layers, X } from "lucide-react"
 import SearchBar from "./SearchBar"
 
 // --- Base Map Definitions ---
@@ -66,6 +68,14 @@ import {
   type SoilLevel,
 } from "@/lib/soil/grid"
 import { getSoilAtPoint, type SoilAtPoint } from "@/lib/supabase/soilGrid"
+import { createClient } from "@/lib/supabase/client"
+
+const BOUNDARY_LAYERS = [
+  { id: "provinces" as const, label: "จังหวัด", rpc: "get_provinces_geojson", color: "#111111", weight: 2 },
+  { id: "districts" as const, label: "อำเภอ", rpc: "get_districts_geojson", color: "#444444", weight: 1 },
+  { id: "subdistricts" as const, label: "ตำบล", rpc: "get_subdistricts_geojson", color: "#777777", weight: 0.5 },
+] as const
+type BoundaryId = typeof BOUNDARY_LAYERS[number]["id"]
 
 
 const pinIcon = L.divIcon({
@@ -112,7 +122,7 @@ function LevelBadge({ level }: { level: SoilLevel | null }) {
 }
 
 export default function SoilMaps() {
-  const [active, setActive] = useState<Layer>("om")
+  const [active, setActive] = useState<Layer | null>("om")
   const [picked, setPicked] = useState<{ lat: number; lng: number } | null>(null)
   const [result, setResult] = useState<SoilAtPoint | null>(null)
   const [loading, setLoading] = useState(false)
@@ -123,7 +133,22 @@ export default function SoilMaps() {
   const [showBasePanel, setShowBasePanel] = useState(false)
   const [showLayerPanel, setShowLayerPanel] = useState(false)
   const [compassHeading, setCompassHeading] = useState(0)
+  const [activeBoundaries, setActiveBoundaries] = useState<Set<BoundaryId>>(new Set())
+  const [boundaryOpacity, setBoundaryOpacity] = useState(0.7)
+  const [soilOpacity, setSoilOpacity] = useState(0.85)
+  const [boundaryData, setBoundaryData] = useState<Partial<Record<BoundaryId, FeatureCollection>>>({})
+  const [boundaryLoading, setBoundaryLoading] = useState<Set<BoundaryId>>(new Set())
+  const boundaryRefs = useRef<Partial<Record<BoundaryId, L.GeoJSON>>>({})
   const handleMapReady = useCallback((map: L.Map) => setMapInstance(map), [])
+
+  function getBoundaryOpacity(_id: BoundaryId) { return boundaryOpacity }
+  function updateBoundaryOpacity(val: number) {
+    setBoundaryOpacity(val)
+    BOUNDARY_LAYERS.forEach(({ id, color, weight }) => {
+      const ref = boundaryRefs.current[id]
+      if (ref) ref.setStyle({ color, weight, opacity: val, fillOpacity: 0 })
+    })
+  }
 
   useEffect(() => {
     function handleOrientation(e: DeviceOrientationEvent) {
@@ -133,6 +158,25 @@ export default function SoilMaps() {
     return () => window.removeEventListener("deviceorientation", handleOrientation, true)
   }, [])
 
+  async function toggleBoundary(id: BoundaryId) {
+    const next = new Set(activeBoundaries)
+    if (next.has(id)) {
+      next.delete(id)
+      setActiveBoundaries(next)
+      return
+    }
+    if (!boundaryData[id]) {
+      setBoundaryLoading(prev => { const s = new Set(prev); s.add(id); return s })
+      const supabase = createClient()
+      const layer = BOUNDARY_LAYERS.find(l => l.id === id)!
+      const { data } = await supabase.rpc(layer.rpc)
+      if (data) setBoundaryData(prev => ({ ...prev, [id]: data as FeatureCollection }))
+      setBoundaryLoading(prev => { const s = new Set(prev); s.delete(id); return s })
+    }
+    next.add(id)
+    setActiveBoundaries(next)
+  }
+
   function resetNorth() {
     if (!mapInstance) return
     mapInstance.fitBounds(SOIL_BOUNDS, { padding: [20, 20] })
@@ -140,7 +184,7 @@ export default function SoilMaps() {
 
   const currentBase = BASE_MAPS.find((b) => b.id === activeBase)!
 
-  const meta = NUTRIENT_META[active]
+  const meta = active ? NUTRIENT_META[active] : null
   const score = result ? soilScore(result.om, result.p, result.k) : null
   const sumLevel = score != null ? classify("sum", score) : null
 
@@ -195,13 +239,28 @@ export default function SoilMaps() {
           url={currentBase.url}
           {...(currentBase.subdomains ? { subdomains: currentBase.subdomains } : {})}
         />
-        <ImageOverlay
-          key={active}
-          url={meta.overlay}
-          bounds={SOIL_BOUNDS}
-          opacity={0.85}
-          className="soil-overlay"
-        />
+        {active && meta && (
+          <ImageOverlay
+            key={active}
+            url={meta.overlay}
+            bounds={SOIL_BOUNDS}
+            opacity={soilOpacity}
+            className="soil-overlay"
+          />
+        )}
+        {BOUNDARY_LAYERS.map(({ id, color, weight }) => {
+          const data = boundaryData[id]
+          if (!activeBoundaries.has(id) || !data) return null
+          return (
+            <GeoJSON
+              key={id}
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              ref={(layer: any) => { if (layer) boundaryRefs.current[id] = layer }}
+              data={data}
+              style={{ color, weight, opacity: getBoundaryOpacity(id), fillOpacity: 0 }}
+            />
+          )
+        })}
         <Marker position={[13.0, 101.5]} icon={L.divIcon({
           className: "",
           html: `<span style="color:#6b7280;font-size:11px;font-weight:700;letter-spacing:0.12em;text-shadow:1px 1px 0 white,-1px -1px 0 white,1px -1px 0 white,-1px 1px 0 white;white-space:nowrap;pointer-events:none;user-select:none;">THAILAND</span>`,
@@ -215,11 +274,11 @@ export default function SoilMaps() {
       </MapContainer>
 
       {/* Zoom + Location + Base Map */}
-      <div className="absolute right-3 top-1/2 -translate-y-1/2 z-[1000] flex flex-col gap-3 items-center">
+      <div className="absolute right-3 top-44 lg:top-1/2 lg:-translate-y-1/2 z-[1000] flex flex-col gap-3 items-center">
 
         {/* Base Map Switcher Button */}
         <div className="group relative">
-          <span className="pointer-events-none absolute right-full mr-2 top-1/2 -translate-y-1/2 whitespace-nowrap rounded-full bg-gray-800/75 px-2 py-1 text-xs text-white opacity-0 group-hover:opacity-100 transition-opacity z-[1003]">แผนที่ฐาน</span>
+          {!showBasePanel && <span className="pointer-events-none absolute right-full mr-2 top-1/2 -translate-y-1/2 whitespace-nowrap rounded-full bg-gray-800/75 px-2 py-1 text-xs text-white opacity-0 group-hover:opacity-100 transition-opacity z-[1003]">แผนที่ฐาน</span>}
           <button
             onClick={() => { setShowBasePanel((v) => !v); setShowLayerPanel(false) }}
             aria-label="เปลี่ยนแผนที่ฐาน"
@@ -233,7 +292,16 @@ export default function SoilMaps() {
           {/* Base Map Panel */}
           {showBasePanel && (
             <div className="absolute right-12 top-0 bg-white shadow-2xl ring-1 ring-black/8 rounded-2xl p-3 z-[1002] w-[168px]">
-              <p className="font-semibold text-[13px] text-[#1A1A1A] leading-tight mb-2.5 text-center">แผนที่ฐาน</p>
+              <div className="relative flex items-center justify-center mb-2.5">
+                <p className="font-semibold text-[13px] text-[#1A1A1A] leading-tight">แผนที่ฐาน</p>
+                <button
+                  onClick={() => setShowBasePanel(false)}
+                  className="absolute right-0 top-1/2 -translate-y-1/2 w-5 h-5 flex items-center justify-center rounded-full text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors"
+                  aria-label="ปิด"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              </div>
               <div className="grid grid-cols-2 gap-2">
                 {BASE_MAPS.map((bm) => (
                   <button
@@ -272,7 +340,7 @@ export default function SoilMaps() {
 
         {/* Soil Layer Switcher */}
         <div className="group relative">
-          <span className="pointer-events-none absolute right-full mr-2 top-1/2 -translate-y-1/2 whitespace-nowrap rounded-full bg-gray-800/75 px-2 py-1 text-xs text-white opacity-0 group-hover:opacity-100 transition-opacity z-[1003]">ชั้นข้อมูลดิน</span>
+          {!showLayerPanel && <span className="pointer-events-none absolute right-full mr-2 top-1/2 -translate-y-1/2 whitespace-nowrap rounded-full bg-gray-800/75 px-2 py-1 text-xs text-white opacity-0 group-hover:opacity-100 transition-opacity z-[1003]">ชั้นข้อมูลดิน</span>}
           <button
             onClick={() => { setShowLayerPanel((v) => !v); setShowBasePanel(false) }}
             aria-label="เลือกชั้นข้อมูลดิน"
@@ -284,33 +352,103 @@ export default function SoilMaps() {
           </button>
 
           {showLayerPanel && (
-            <div className="absolute right-12 top-0 bg-white shadow-2xl ring-1 ring-black/8 rounded-2xl p-3 z-[1002] w-[168px]">
-              <p className="font-semibold text-[13px] text-[#1A1A1A] leading-tight mb-2.5 text-center">ชั้นข้อมูลดิน</p>
-              <div className="grid grid-cols-2 gap-2">
+            <div className="absolute right-12 top-0 bg-white shadow-2xl ring-1 ring-black/8 rounded-2xl p-3 z-[1002] w-[200px] max-h-[70vh] overflow-y-auto">
+              <div className="relative flex items-center justify-center mb-2.5">
+                <p className="font-semibold text-[13px] text-[#1A1A1A] leading-tight">ชั้นข้อมูล</p>
+                <button
+                  onClick={() => setShowLayerPanel(false)}
+                  className="absolute right-0 top-1/2 -translate-y-1/2 w-5 h-5 flex items-center justify-center rounded-full text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors"
+                  aria-label="ปิด"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              </div>
+
+              {/* ชั้นดิน */}
+              <p className="text-[10px] text-gray-400 font-medium mb-1.5 uppercase tracking-wide">ชั้นดิน</p>
+              <div className="grid grid-cols-3 gap-1.5 mb-2">
                 {LAYERS.map((n) => {
                   const m = NUTRIENT_META[n]
                   const on = n === active
                   return (
                     <button
                       key={n}
-                      onClick={() => { setActive(n); setShowLayerPanel(false) }}
-                      className="flex flex-col items-center gap-1.5 group"
+                      onClick={() => setActive(on ? null : n)}
+                      className="flex flex-col items-center gap-1 group"
                     >
-                      <div className={`w-[68px] h-[68px] rounded-xl overflow-hidden transition-all duration-150 flex-shrink-0 ${
+                      <div className={`relative w-[54px] h-[54px] rounded-xl overflow-hidden transition-all duration-150 flex-shrink-0 ${
                         on
                           ? "ring-[2.5px] ring-[#1A4D2E] ring-offset-[1.5px] shadow-md"
-                          : "ring-1 ring-black/10 group-hover:ring-2 group-hover:ring-[#1A4D2E]/50 group-hover:shadow-sm"
+                          : "ring-1 ring-black/10 opacity-50 group-hover:opacity-80 group-hover:ring-2 group-hover:ring-[#1A4D2E]/50 group-hover:shadow-sm"
                       }`}>
                         <img src={m.preview} alt={m.label} className="w-full h-full object-cover" draggable={false} />
+                        {on && (
+                          <span className="absolute top-0.5 right-0.5 w-3.5 h-3.5 rounded-full bg-[#1A4D2E] flex items-center justify-center shadow">
+                            <svg width="7" height="7" viewBox="0 0 8 8" fill="none"><path d="M1.5 4L3.2 5.8L6.5 2" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                          </span>
+                        )}
                       </div>
-                      <span className={`text-[10px] leading-tight text-center w-[68px] truncate ${
-                        on ? "text-gray-700 font-semibold" : "text-gray-500 font-medium group-hover:text-gray-700"
+                      <span className={`text-[10px] leading-tight text-center w-[54px] truncate ${
+                        on ? "text-gray-700 font-semibold" : "text-gray-400 font-medium group-hover:text-gray-600"
                       }`}>
                         {m.short}
                       </span>
                     </button>
                   )
                 })}
+              </div>
+              {active && (
+                <div className="mb-3 px-1">
+                  <div className="flex items-center justify-between mb-0.5">
+                    <span className="text-[10px] text-gray-400">ความโปร่งแสง</span>
+                    <span className="text-[10px] text-gray-500 font-medium">{Math.round(soilOpacity * 100)}%</span>
+                  </div>
+                  <input type="range" min="0.1" max="1" step="0.05" value={soilOpacity}
+                    onChange={e => setSoilOpacity(Number(e.target.value))}
+                    className="w-full h-1 accent-[#1A4D2E] cursor-pointer" />
+                </div>
+              )}
+
+              {/* ขอบเขต */}
+              <div className="border-t border-gray-100 pt-2.5 mb-2">
+                <p className="text-[10px] text-gray-400 font-medium mb-1.5 uppercase tracking-wide">ขอบเขต</p>
+                <div className="flex flex-col gap-1">
+                  {BOUNDARY_LAYERS.map(({ id, label, color }) => {
+                    const on = activeBoundaries.has(id)
+                    const isLoading = boundaryLoading.has(id)
+                    const op = getBoundaryOpacity(id)
+                    return (
+                      <div key={id}>
+                        <button
+                          onClick={() => toggleBoundary(id)}
+                          disabled={isLoading}
+                          className={`flex items-center gap-2 w-full px-2 py-1.5 rounded-xl transition-colors text-left ${
+                            on ? "bg-gray-50" : "hover:bg-gray-50"
+                          }`}
+                        >
+                          <span className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ background: color }} />
+                          <span className="text-[12px] text-gray-700 flex-1">{label}</span>
+                          {isLoading ? (
+                            <span className="w-3.5 h-3.5 border-[1.5px] border-gray-200 border-t-[#1A4D2E] rounded-full animate-spin flex-shrink-0" />
+                          ) : on ? (
+                            <svg width="14" height="14" viewBox="0 0 8 8" fill="none" className="flex-shrink-0"><path d="M1.5 4L3.2 5.8L6.5 2" stroke="#1A4D2E" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                          ) : null}
+                        </button>
+                      </div>
+                    )
+                  })}
+                </div>
+                {activeBoundaries.size > 0 && (
+                  <div className="mt-2 px-1">
+                    <div className="flex items-center justify-between mb-0.5">
+                      <span className="text-[10px] text-gray-400">ความโปร่งแสง</span>
+                      <span className="text-[10px] text-gray-500 font-medium">{Math.round(boundaryOpacity * 100)}%</span>
+                    </div>
+                    <input type="range" min="0.1" max="1" step="0.05" value={boundaryOpacity}
+                      onChange={e => updateBoundaryOpacity(Number(e.target.value))}
+                      className="w-full h-1 accent-[#1A4D2E] cursor-pointer" />
+                  </div>
+                )}
               </div>
             </div>
           )}
@@ -364,30 +502,36 @@ export default function SoilMaps() {
       {/* Search bar — top left */}
       <SearchBar onSelect={(lat, lng) => { mapInstance?.setView([lat, lng], 12); handlePick(lat, lng) }} />
 
-      {/* legend — ล่างซ้าย (desktop) / บนซ้ายใต้ search (mobile) */}
-      <div className="absolute left-3 top-16 z-[1000] rounded-2xl bg-white/85 px-3 py-2 text-xs shadow-lg ring-1 ring-black/5 backdrop-blur">
-        <div className="mb-1 text-center">
-          <div className="font-semibold text-gray-700">ระดับ ({meta.short})</div>
-          <div className="font-semibold text-gray-700">{meta.label}</div>
-        </div>
-        {(["high", "medium", "low"] as SoilLevel[]).map((lv) => (
-          <div key={lv} className="flex items-center gap-2 py-0.5">
-            <span
-              className="inline-block h-3 w-3 rounded-full"
-              style={{ background: LEVEL_COLORS[lv] }}
-            />
-            <span className="text-gray-600">{LEVEL_LABEL_TH[lv]}</span>
+      {/* legend — ซ้ายบน แสดงเฉพาะเมื่อมี layer เปิดอยู่ */}
+      {meta && (
+        <div className="absolute left-3 top-16 z-[1000] rounded-2xl bg-white/85 px-3 py-2 text-xs shadow-lg ring-1 ring-black/5 backdrop-blur">
+          <div className="mb-1 text-center">
+            <div className="font-semibold text-gray-700">ระดับ ({meta.short})</div>
+            <div className="font-semibold text-gray-700">{meta.label}</div>
           </div>
-        ))}
-      </div>
+          {(["high", "medium", "low"] as SoilLevel[]).map((lv) => (
+            <div key={lv} className="flex items-center gap-2 py-0.5">
+              <span className="inline-block h-3 w-3 rounded-full" style={{ background: LEVEL_COLORS[lv] }} />
+              <span className="text-gray-600">{LEVEL_LABEL_TH[lv]}</span>
+            </div>
+          ))}
+        </div>
+      )}
 
       {/* การ์ดผลลัพธ์ — bottom sheet ลอย (มือถือ: ยกเหนือ BottomNav) */}
       {picked && (
-      <div className="pointer-events-none absolute inset-x-0 bottom-24 z-[1001] flex justify-center px-3 lg:bottom-4">
+      <div className="pointer-events-none absolute inset-x-0 bottom-[58px] z-[1001] flex justify-center px-3 lg:bottom-4">
         <div className="pointer-events-auto w-full max-w-[26rem] rounded-2xl bg-white/90 p-3 shadow-xl ring-1 ring-black/5 backdrop-blur">
-              <div className="mb-2 text-center text-xs text-gray-500">
+              <div className="relative mb-2 text-center text-xs text-gray-500">
                 พิกัด {picked.lat.toFixed(4)}, {picked.lng.toFixed(4)}
                 {loading && <span className="ml-2">กำลังดึงข้อมูล…</span>}
+                <button
+                  onClick={() => { setPicked(null); setResult(null); setOutside(false); setErrored(false) }}
+                  className="absolute right-0 top-1/2 -translate-y-1/2 w-5 h-5 flex items-center justify-center rounded-full text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors"
+                  aria-label="ปิด"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
               </div>
               {!loading && outside && (
                 <p className="py-1 text-center text-sm text-red-400">
@@ -404,9 +548,7 @@ export default function SoilMaps() {
                   {/* คะแนนความอุดมสมบูรณ์รวม (ผลรวม level OM+P+K = 3-9) */}
                   <div
                     className={`mb-2 flex items-center justify-between rounded-xl border px-3 py-2 ${
-                      active === "sum"
-                        ? "border-[#1A4D2E] bg-white/60"
-                        : "border-gray-100 bg-white/60"
+                      active === "sum" ? "border-[#1A4D2E] bg-white/60" : "border-gray-100 bg-white/60"
                     }`}
                   >
                     <span className="text-xs text-gray-600">ความอุดมสมบูรณ์รวม</span>

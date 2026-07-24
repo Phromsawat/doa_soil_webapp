@@ -41,7 +41,7 @@ export default function RootLayout({
               <Bar />
               
               {/* Dynamic Content View */}
-              <main className="flex-1 w-full pt-16">
+              <main className="flex-1 w-full pt-11 lg:pt-16">
                 {children}
               </main>
             </div>

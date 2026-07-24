@@ -36,7 +36,7 @@ export default function SearchBar({ onSelect }: Props) {
   }
 
   return (
-    <div className="absolute left-3 top-3 z-[1001] w-[280px] max-w-[calc(100vw-5rem)]">
+    <div className="absolute left-3 top-3 z-[1001] w-[180px] max-w-[calc(100vw-5rem)]">
       <div className="relative">
         <div className="flex items-center bg-white shadow-md rounded-full border border-gray-100 px-3 gap-2 h-10">
           {searching ? (

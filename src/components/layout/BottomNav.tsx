@@ -59,11 +59,11 @@ export default function BottomNav() {
 
   return (
     <nav className="fixed bottom-0 inset-x-0 z-[1100] lg:hidden bg-white border-t border-gray-100 shadow-[0_-4px_20px_rgba(0,0,0,0.06)] pb-[env(safe-area-inset-bottom)]">
-      <div className="flex items-center justify-around px-6 py-2.5">
+      <div className="flex items-center justify-around px-6 py-1">
         <Link
           href="/"
           aria-label="หน้าหลัก"
-          className="flex flex-col items-center gap-1.5 px-4 py-0.5"
+          className="flex flex-col items-center gap-1 px-4 py-0.5"
           onClick={() => { if (isMenuOpen) window.dispatchEvent(new Event("toggle-mobile-menu")) }}
         >
           <span className={cn(
@@ -79,7 +79,7 @@ export default function BottomNav() {
           type="button"
           aria-label="เมนู"
           onClick={() => window.dispatchEvent(new Event("toggle-mobile-menu"))}
-          className="flex flex-col items-center gap-1.5 px-4 py-0.5"
+          className="flex flex-col items-center gap-1 px-4 py-0.5"
         >
           <span className={cn(
             "flex items-center justify-center w-12 h-8 rounded-full transition-all duration-300",

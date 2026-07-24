@@ -32,16 +32,21 @@ export default function Bar() {
       setActiveHash(window.location.hash)
     }
     const handleHashChange = () => setActiveHash(window.location.hash)
-    const handleToggleMenu = () => setIsMobileMenuOpen(prev => !prev)
-    
     window.addEventListener("hashchange", handleHashChange)
-    window.addEventListener("toggle-mobile-menu", handleToggleMenu)
-    
-    return () => {
-      window.removeEventListener("hashchange", handleHashChange)
-      window.removeEventListener("toggle-mobile-menu", handleToggleMenu)
-    }
+    return () => window.removeEventListener("hashchange", handleHashChange)
   }, [])
+
+  useEffect(() => {
+    const handleToggleMenu = () => {
+      if (user) {
+        setIsProfileOpen(prev => !prev)
+      } else {
+        setIsMobileMenuOpen(prev => !prev)
+      }
+    }
+    window.addEventListener("toggle-mobile-menu", handleToggleMenu)
+    return () => window.removeEventListener("toggle-mobile-menu", handleToggleMenu)
+  }, [user])
 
   useEffect(() => {
     // Reset hash when changing pages entirely
@@ -105,7 +110,7 @@ export default function Bar() {
 
   return (
     <>
-      <header className="h-16 flex items-center px-4 fixed top-0 left-0 right-0 z-40 bg-white/60 backdrop-blur-lg border-b border-white/20 shadow-sm justify-between">
+      <header className="h-11 lg:h-16 flex items-center px-4 fixed top-0 left-0 right-0 z-40 bg-white/60 backdrop-blur-lg border-b border-white/20 shadow-sm justify-between">
 
       {(
         centerTitle ? (
@@ -339,69 +344,76 @@ export default function Bar() {
         </>
 
       {/* Profile Drawer */}
-      <div 
+      <div
         className={`fixed inset-0 bg-black/40 z-[1200] transition-opacity duration-300 ${isProfileOpen ? 'opacity-100 visible' : 'opacity-0 invisible'}`}
         onClick={() => setIsProfileOpen(false)}
       />
-      
-      <div 
-        className="fixed top-0 right-0 h-full w-[340px] max-w-full bg-[#F5F5F5] z-[1300] transition-transform duration-300 ease-in-out flex flex-col overflow-y-auto"
-        // ใช้ inline style แทน utility class เพื่อไม่ให้พลาดถ้า CSS/utility เพี้ยน
+
+      <div
+        className="fixed top-0 right-0 h-full w-[240px] bg-[#F5F5F5] z-[1300] transition-transform duration-300 ease-in-out flex flex-col p-6 shadow-2xl overflow-y-auto"
         style={{ transform: isProfileOpen ? "translateX(0)" : "translateX(100%)" }}
       >
-        <div className="bg-white px-6 py-8 shadow-sm flex items-center gap-4 rounded-b-[2rem] mb-6">
-          <div className="w-14 h-14 rounded-full bg-[#1A4D2E] text-white flex items-center justify-center text-xl font-bold shrink-0">
-            {displayName ? displayName.charAt(0).toUpperCase() : isAnonymous ? "?" : "O"}
-          </div>
-          <span className="font-bold text-[#0f321d] text-lg">
-            สวัสดี, {displayName ?? (isAnonymous ? "ผู้ใช้ทั่วไป" : "ผู้ใช้")}
-          </span>
+        <div className="flex justify-end mb-8">
+          <button onClick={() => setIsProfileOpen(false)} className="p-2 -mr-4 text-gray-500 hover:text-gray-800 transition-colors">
+            <X className="w-6 h-6" />
+          </button>
         </div>
 
-        <div className="flex flex-col px-5 gap-3 flex-1">
-          <Link href="/" onClick={() => setIsProfileOpen(false)} className="bg-white rounded-[1rem] py-3.5 px-5 font-bold text-[#0f321d] text-[16px] shadow-sm hover:bg-gray-50 transition-colors">
+        <div className="flex flex-col gap-8 flex-1">
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-full bg-[#1A4D2E] text-white flex items-center justify-center text-sm font-bold shrink-0">
+              {displayName ? displayName.charAt(0).toUpperCase() : isAnonymous ? "?" : "O"}
+            </div>
+            <span className="font-medium text-[#1A1A1A] text-[16px] font-thai truncate">
+              {displayName ?? (isAnonymous ? "ผู้ใช้ทั่วไป" : "ผู้ใช้")}
+            </span>
+          </div>
+
+          <Link href="/" onClick={() => setIsProfileOpen(false)} className="text-[16px] font-thai text-[#1A1A1A] font-normal hover:text-primary transition-colors">
             หน้าหลัก
           </Link>
+          {showSoilMap && (
+            <Link href="/map" onClick={() => setIsProfileOpen(false)} className="text-[16px] font-thai text-[#1A1A1A] font-normal hover:text-primary transition-colors">
+              แผนที่
+            </Link>
+          )}
           {mounted && isAdmin && (
-            <Link href="/admin" onClick={() => setIsProfileOpen(false)} className="bg-[#1A4D2E] rounded-[1rem] py-3.5 px-5 font-bold text-white text-[16px] shadow-sm hover:opacity-90 transition-colors">
+            <Link href="/admin" onClick={() => setIsProfileOpen(false)} className="text-[16px] font-thai text-primary font-medium hover:opacity-80 transition-opacity">
               จัดการระบบ (Admin)
             </Link>
           )}
-          <Link href="/profile" onClick={() => setIsProfileOpen(false)} className="bg-white rounded-[1rem] py-3.5 px-5 font-bold text-[#0f321d] text-[16px] shadow-sm hover:bg-gray-50 transition-colors">
+          <Link href="/profile" onClick={() => setIsProfileOpen(false)} className="text-[16px] font-thai text-[#1A1A1A] font-normal hover:text-primary transition-colors">
             แก้ไขโปรไฟล์
           </Link>
-          <Link href="/profile/change-password" onClick={() => setIsProfileOpen(false)} className="bg-white rounded-[1rem] py-3.5 px-5 font-bold text-[#0f321d] text-[16px] shadow-sm hover:bg-gray-50 transition-colors">
+          <Link href="/profile/change-password" onClick={() => setIsProfileOpen(false)} className="text-[16px] font-thai text-[#1A1A1A] font-normal hover:text-primary transition-colors">
             เปลี่ยนรหัสผ่าน
           </Link>
-          <div className="bg-white rounded-[1rem] py-2 px-5 font-bold text-[#0f321d] text-[16px] shadow-sm flex items-center justify-between">
-            <span>ภาษา</span>
-            <button 
-              onClick={() => setLanguage(language === 'th' ? 'en' : 'th')}
-              className="flex items-center gap-2 bg-[#F5F5F5] hover:bg-[#EBEBEB] px-3 py-1.5 rounded-full transition-colors"
-            >
-              <img 
-                src={language === 'th' ? "https://flagcdn.com/w40/th.png" : "https://flagcdn.com/w40/gb.png"} 
-                alt={language === 'th' ? "Thai Flag" : "UK Flag"} 
-                className="w-5 h-5 rounded-full object-cover border border-white/50 shadow-sm bg-white" 
-              />
-              <span className="text-sm font-medium text-[#1A1A1A]">{language === 'th' ? 'ไทย' : 'EN'}</span>
-            </button>
-          </div>
+
+          <button
+            onClick={() => setLanguage(language === 'th' ? 'en' : 'th')}
+            className="flex items-center gap-3 text-[#1A1A1A] font-thai text-[16px] font-normal transition-opacity hover:opacity-80"
+          >
+            <img
+              src={language === 'th' ? "https://flagcdn.com/w40/th.png" : "https://flagcdn.com/w40/gb.png"}
+              alt={language === 'th' ? "Thai Flag" : "UK Flag"}
+              className="w-6 h-6 rounded-full object-cover shadow-sm border border-black/10"
+            />
+            <span>{language === 'th' ? 'ไทย' : 'EN'}</span>
+          </button>
 
           <button
             onClick={async () => {
               setIsProfileOpen(false)
               try { await signOut() } catch { /* ออกจากระบบไม่สำเร็จก็ยังพากลับหน้าหลัก */ }
-              // hard navigation เพื่อให้ server component เห็นว่า session หายแล้ว
               window.location.href = '/'
             }}
-            className="mt-8 text-[#F58220] font-bold text-[17px] hover:opacity-80 transition-opacity"
+            className="flex items-center justify-center w-full py-2 bg-[#FEE9D6] hover:bg-[#fddcc0] text-[#C05C00] rounded-full font-medium transition-all shadow-sm text-[15px] font-thai"
           >
             ออกจากระบบ
           </button>
         </div>
 
-        <div className="px-6 pb-6 pt-10 text-center">
+        <div className="pt-10 text-center">
           <p className="text-[12px] text-gray-400">เวอร์ชัน : 2.1.10 d255cc0c วันที่ : 13 พฤษภาคม 2026 เวลา 17:56</p>
         </div>
       </div>

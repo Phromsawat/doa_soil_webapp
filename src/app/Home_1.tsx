@@ -24,7 +24,7 @@ export default function Home_1() {
   }, [])
 
   return (
-    <div className="flex flex-col min-h-screen bg-background font-thai">
+    <div className="flex flex-col min-h-screen bg-[#1A2F2A] font-thai">
       {/* Dark Hero Section with Quick Guide */}
       <section className="relative bg-[#1A2F2A] px-4 py-20 min-h-[100dvh] overflow-hidden w-full flex flex-col items-center justify-center">
         {/* Background Image Overlay */}
