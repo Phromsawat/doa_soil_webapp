@@ -2,11 +2,12 @@
 
 import { Suspense, useEffect, useState } from "react"
 import { useSearchParams, useRouter } from "next/navigation"
-import { Share2, Loader2, MapPin, Droplets, Sprout, ChevronDown } from "lucide-react"
+import { Share2, Loader2, MapPin } from "lucide-react"
 import { Button } from "@/components/ui/Button"
 import { getAnalysis } from "@/lib/supabase/analyses"
-import { listCrops, calculateAndSave, type CropOption, type FertilizerResult } from "@/lib/supabase/fertilizer"
+import { listCrops, calculateFertilizer, type CropOption, type FertilizerResult } from "@/lib/supabase/fertilizer"
 import FertilizerBlend from "./FertilizerBlend"
+import FertilizerPlanTable from "@/components/fertilizer/FertilizerPlanTable"
 
 type AnalysisRecord = Awaited<ReturnType<typeof getAnalysis>>
 
@@ -17,9 +18,7 @@ function ResultContent() {
 
   const [record, setRecord] = useState<AnalysisRecord | null>(null)
   const [crops, setCrops] = useState<CropOption[]>([])
-  const [selectedCropId, setSelectedCropId] = useState<string>("")
   const [calculation, setCalculation] = useState<FertilizerResult | null>(null)
-  const [calculating, setCalculating] = useState(false)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
@@ -30,50 +29,25 @@ function ResultContent() {
       return
     }
     Promise.all([getAnalysis(id), listCrops()])
-      .then(([data, cropList]) => {
+      .then(async ([data, cropList]) => {
         setRecord(data)
         setCrops(cropList)
-        if (data?.crop_id) setSelectedCropId(data.crop_id)
-        // If a result already exists, hydrate the calculation state
-        const existing = data?.analysis_results?.[0]
-        if (existing) {
-          setCalculation({
-            target_n: existing.recommended_n,
-            target_p2o5: existing.recommended_p2o5,
-            target_k2o: existing.recommended_k2o,
-            unit: existing.unit ?? "g/tree/year",
-            matched: {
-              om: existing.recommended_n !== null,
-              p:  existing.recommended_p2o5 !== null,
-              k:  existing.recommended_k2o !== null,
-            },
-            notes: [],
-          })
+        if (data?.crop_id) {
+          // ผลที่บันทึก = คำนวณจากพืช+ค่าดินที่บันทึกโดยตรง (ไม่ต้องเลือก/กดใหม่)
+          try {
+            const calc = await calculateFertilizer({
+              crop_id: data.crop_id,
+              om_value: data.om_value,
+              p_value: data.p_value,
+              k_value: data.k_value,
+            })
+            setCalculation(calc)
+          } catch { /* ไม่มีตารางคำแนะนำสำหรับพืชนี้ */ }
         }
       })
       .catch((e) => setError(e instanceof Error ? e.message : String(e)))
       .finally(() => setLoading(false))
   }, [id])
-
-  async function runCalculation() {
-    if (!record || !selectedCropId) return
-    setCalculating(true)
-    setError(null)
-    try {
-      const result = await calculateAndSave({
-        analysis_id: record.id,
-        crop_id: selectedCropId,
-        om_value: record.om_value,
-        p_value:  record.p_value,
-        k_value:  record.k_value,
-      })
-      setCalculation(result)
-    } catch (e) {
-      setError(e instanceof Error ? e.message : String(e))
-    } finally {
-      setCalculating(false)
-    }
-  }
 
   if (loading) {
     return (
@@ -111,12 +85,6 @@ function ResultContent() {
   const omLevel = classify(om, 1, 3)
   const pLevel  = classify(p, 15, 45)
   const kLevel  = classify(k, 50, 100)
-
-  // Group crops by type for the dropdown
-  const cropsByType = crops.reduce<Record<string, CropOption[]>>((acc, c) => {
-    (acc[c.crop_type_name] = acc[c.crop_type_name] ?? []).push(c)
-    return acc
-  }, {})
 
   return (
     <div className="font-thai pb-24 relative pt-6 px-4 max-w-2xl mx-auto">
@@ -205,37 +173,12 @@ function ResultContent() {
           </div>
         )}
 
-        {/* Crop selection + calculate */}
-        <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 space-y-4">
-          <div className="flex items-center gap-2">
-            <h3 className="font-medium text-gray-800">เลือกพืชที่จะปลูก</h3>
-          </div>
-
-          <div className="relative">
-            <select
-              value={selectedCropId}
-              onChange={(e) => setSelectedCropId(e.target.value)}
-              className="w-full appearance-none bg-gray-50 border border-gray-100 rounded-full px-4 pr-10 h-11 text-sm text-gray-900 focus:outline-none focus:border-gray-400"
-            >
-              <option value="">-- เลือกพืช --</option>
-              {Object.entries(cropsByType).map(([type, list]) => (
-                <optgroup key={type} label={type}>
-                  {list.map(c => (
-                    <option key={c.id} value={c.id}>{c.name}</option>
-                  ))}
-                </optgroup>
-              ))}
-            </select>
-            <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
-          </div>
-
-          <button
-            onClick={runCalculation}
-            disabled={!selectedCropId || calculating}
-            className="w-full h-11 rounded-full bg-[#1A4D2E] hover:bg-[#143a22] text-white font-medium text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-          >
-            {calculating ? <><Loader2 className="w-4 h-4 animate-spin" />กำลังคำนวณ...</> : "คำนวณคำแนะนำปุ๋ย"}
-          </button>
+        {/* พืชที่บันทึก (แสดงอย่างเดียว — ผลนี้คำนวณจากพืช+ค่าดินที่บันทึกไว้) */}
+        <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 flex items-center gap-2">
+          <h3 className="font-medium text-gray-800">พืชที่ปลูก</h3>
+          <span className="ml-auto font-medium text-[#1A4D2E]">
+            {crops.find((c) => c.id === record.crop_id)?.name ?? "—"}
+          </span>
         </div>
 
         {/* Fertilizer recommendation */}
@@ -246,7 +189,7 @@ function ResultContent() {
 
           {!calculation ? (
             <div className="bg-white/10 rounded-xl p-4 text-center text-sm text-white/70 italic">
-              เลือกพืชด้านบนแล้วกด &quot;คำนวณคำแนะนำปุ๋ย&quot;
+              ไม่พบคำแนะนำสำหรับพืชนี้
             </div>
           ) : (
             <div className="bg-white/10 rounded-xl p-4 space-y-3">
@@ -281,7 +224,21 @@ function ResultContent() {
           )}
         </div>
 
-        {/* ขั้นที่ 2 — เลือกปุ๋ยจริง แล้วคำนวณปริมาณ */}
+        {/* แผนการใส่ปุ๋ยตามระยะ (คำแนะนำกรมฯ ตายตัว) — ตัวหลัก */}
+        {record.crop_id && (
+          <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100">
+            <h2 className="text-base font-medium text-gray-800 mb-1">แผนการใส่ปุ๋ยตามระยะ</h2>
+            <p className="text-xs text-gray-500 mb-3">คำแนะนำตายตัวของกรมวิชาการเกษตร ตามช่วงค่าดินที่บันทึก</p>
+            <FertilizerPlanTable
+              cropId={record.crop_id}
+              om={record.om_value}
+              p={record.p_value}
+              k={record.k_value}
+            />
+          </div>
+        )}
+
+        {/* ทางเลือก: เลือกปุ๋ยเอง (solver) */}
         {calculation && (
           <FertilizerBlend
             target={{
