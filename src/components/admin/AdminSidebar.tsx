@@ -9,25 +9,42 @@ import {
   Sprout,
   FlaskConical,
   Settings,
+  ShieldCheck,
   LogOut,
   ChevronLeft,
+  type LucideIcon,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { signOut } from "@/lib/supabase/auth"
 import { useRouter } from "next/navigation"
+import { ADMIN_MENUS, type MenuKey, type PermMap } from "@/lib/rbac"
 
-const NAV_ITEMS = [
-  { href: "/admin",          label: "ภาพรวม",  icon: LayoutDashboard },
-  { href: "/admin/users",    label: "ผู้ใช้",   icon: Users },
-  { href: "/admin/analyses", label: "ประวัติ",  icon: FileBarChart },
-  { href: "/admin/crops",    label: "พืช/ปุ๋ย", icon: Sprout },
-  { href: "/admin/fertilizers", label: "สูตรปุ๋ย", icon: FlaskConical },
-  { href: "/admin/settings", label: "ตั้งค่า",  icon: Settings },
-]
+const MENU_ICON: Record<MenuKey, LucideIcon> = {
+  dashboard: LayoutDashboard,
+  users: Users,
+  analyses: FileBarChart,
+  crops: Sprout,
+  fertilizers: FlaskConical,
+  settings: Settings,
+  roles: ShieldCheck,
+}
 
-export default function AdminSidebar({ user }: { user: { email: string; name: string } }) {
+export default function AdminSidebar({
+  user,
+  perms,
+}: {
+  user: { email: string; name: string }
+  perms: PermMap
+}) {
   const pathname = usePathname()
   const router = useRouter()
+
+  // โชว์เฉพาะเมนูที่มีสิทธิ view
+  const navItems = ADMIN_MENUS.filter((m) => perms[m.key]?.view).map((m) => ({
+    href: m.href,
+    label: m.label,
+    icon: MENU_ICON[m.key],
+  }))
 
   const handleSignOut = async () => {
     await signOut()
@@ -53,7 +70,7 @@ export default function AdminSidebar({ user }: { user: { email: string; name: st
         </div>
 
         <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
-          {NAV_ITEMS.map(({ href, label, icon: Icon }) => (
+          {navItems.map(({ href, label, icon: Icon }) => (
             <Link
               key={href}
               href={href}

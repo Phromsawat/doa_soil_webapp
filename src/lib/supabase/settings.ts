@@ -1,7 +1,7 @@
 "use server"
 
 import { createClient } from "@/lib/supabase/server"
-import { requireAdmin } from "@/lib/supabase/admin"
+import { requirePermission } from "@/lib/supabase/permissions"
 import { revalidatePath } from "next/cache"
 
 // =============================================================================
@@ -30,7 +30,7 @@ export async function getShowSoilMap(): Promise<boolean> {
 
 /** เปิด/ปิดการแสดงแผนที่ดิน (admin เท่านั้น) */
 export async function setShowSoilMap(value: boolean): Promise<void> {
-  await requireAdmin()
+  await requirePermission("settings", "edit")
   const supabase = await createClient()
   const { error } = await supabase
     .from("app_settings")

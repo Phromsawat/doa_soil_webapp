@@ -1,13 +1,14 @@
 "use client"
 
 import { useEffect, useState, useTransition } from "react"
-import { Users, Loader2, Search, ChevronLeft, ChevronRight, Trash2, ShieldCheck, User as UserIcon } from "lucide-react"
+import { Users, Loader2, Search, ChevronLeft, ChevronRight, Trash2 } from "lucide-react"
 import {
   adminListUsers,
   adminUpdateUserRole,
   adminDeleteUser,
   type AdminUserRow,
 } from "@/lib/supabase/admin"
+import { adminListRoles, type RoleRow } from "@/lib/supabase/roles"
 
 const ROLE_TABS = ["all", "admin", "user"] as const
 const ROLE_LABEL: Record<string, string> = {
@@ -38,6 +39,15 @@ export default function AdminUsersPage() {
 
   const [pendingId, setPendingId] = useState<string | null>(null)
   const [, startAction] = useTransition()
+  const [roles, setRoles] = useState<RoleRow[]>([])
+
+  useEffect(() => {
+    let cancelled = false
+    adminListRoles()
+      .then((r) => !cancelled && setRoles(r))
+      .catch(() => {})
+    return () => { cancelled = true }
+  }, [])
 
   const load = () => {
     setLoading(true)
@@ -61,11 +71,7 @@ export default function AdminUsersPage() {
     setSearch(searchInput.trim())
   }
 
-  const handleRoleChange = (userId: string, currentRole: string) => {
-    const newRole = currentRole === "admin" ? "user" : "admin"
-    const verb = newRole === "admin" ? "ตั้งให้เป็นแอดมิน" : "ถอนสิทธิ์แอดมิน"
-    if (!confirm(`${verb}ของผู้ใช้นี้?`)) return
-
+  const handleSetRole = (userId: string, newRole: string) => {
     setPendingId(userId)
     setActionError(null)
     startAction(async () => {
@@ -193,33 +199,25 @@ export default function AdminUsersPage() {
                       </td>
                       <td className="px-4 py-3 text-xs text-gray-600">{u.phone ?? "—"}</td>
                       <td className="px-4 py-3">
-                        {u.role === "admin" ? (
-                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#1A4D2E]/10 text-[#1A4D2E]">
-                            <ShieldCheck className="w-3 h-3" /> Admin
-                          </span>
-                        ) : (
-                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-gray-100 text-gray-600">
-                            <UserIcon className="w-3 h-3" /> User
-                          </span>
-                        )}
+                        <select
+                          value={u.role}
+                          disabled={isPending}
+                          onChange={(e) => handleSetRole(u.id, e.target.value)}
+                          className="rounded-lg border border-gray-200 px-2 py-1 text-xs focus:border-[#1A4D2E] focus:outline-none disabled:opacity-40"
+                        >
+                          {roles.map((r) => (
+                            <option key={r.id} value={r.key}>{r.name}</option>
+                          ))}
+                          {!roles.some((r) => r.key === u.role) && (
+                            <option value={u.role}>{u.role}</option>
+                          )}
+                        </select>
                       </td>
                       <td className="px-4 py-3 text-right text-xs font-mono">{u.analysis_count}</td>
                       <td className="px-4 py-3 text-xs text-gray-500">{formatDate(u.last_analysis_at)}</td>
                       <td className="px-4 py-3 text-xs text-gray-500">{formatDate(u.created_at)}</td>
                       <td className="px-4 py-3">
                         <div className="flex justify-end gap-1">
-                          <button
-                            type="button"
-                            disabled={isPending}
-                            onClick={() => handleRoleChange(u.id, u.role)}
-                            className={`px-2.5 py-1 rounded-lg text-[11px] font-bold transition-colors disabled:opacity-30 ${
-                              u.role === "admin"
-                                ? "text-gray-600 hover:bg-gray-100"
-                                : "text-[#1A4D2E] hover:bg-[#1A4D2E]/10"
-                            }`}
-                          >
-                            {u.role === "admin" ? "ถอน" : "ตั้งแอดมิน"}
-                          </button>
                           <button
                             type="button"
                             disabled={isPending}

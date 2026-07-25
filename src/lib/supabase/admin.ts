@@ -1,6 +1,7 @@
 "use server"
 
 import { createClient } from "@/lib/supabase/server"
+import { requirePermission } from "@/lib/supabase/permissions"
 
 // =============================================================================
 // ADMIN SERVER ACTIONS
@@ -45,7 +46,7 @@ export async function isCurrentUserAdmin(): Promise<boolean> {
  * Dashboard overview stats.
  */
 export async function getAdminStats() {
-  await requireAdmin()
+  await requirePermission("dashboard", "view")
   const supabase = await createClient()
 
   const [profilesQ, analysesQ, cropsQ, recsQ] = await Promise.all([
@@ -89,7 +90,7 @@ export async function adminListAnalyses(opts: {
   status?: "all" | "completed" | "pending" | "failed"
   search?: string
 } = {}) {
-  await requireAdmin()
+  await requirePermission("analyses", "view")
   const supabase = await createClient()
   const limit  = opts.limit ?? 20
   const offset = opts.offset ?? 0
@@ -142,7 +143,7 @@ export async function adminListAnalyses(opts: {
  * Fetch one analysis with full image set (admin can read any).
  */
 export async function adminGetAnalysis(analysisId: string) {
-  await requireAdmin()
+  await requirePermission("analyses", "view")
   const supabase = await createClient()
 
   const { data, error } = await supabase
@@ -177,7 +178,7 @@ export type AdminUserRow = {
   full_name: string | null
   nickname: string | null
   phone: string | null
-  role: "user" | "admin"
+  role: string
   created_at: string
   // Last activity = most recent analysis created_at (joined separately)
   last_analysis_at: string | null
@@ -194,7 +195,7 @@ export async function adminListUsers(opts: {
   role?: "all" | "user" | "admin"
   search?: string
 } = {}): Promise<{ rows: AdminUserRow[]; total: number }> {
-  await requireAdmin()
+  await requirePermission("users", "view")
   const supabase = await createClient()
   const limit  = opts.limit ?? 20
   const offset = opts.offset ?? 0
@@ -237,7 +238,7 @@ export async function adminListUsers(opts: {
     const s = stats.get(p.id)
     return {
       ...p,
-      role: (p.role === "admin" ? "admin" : "user"),
+      role: (p.role as string) ?? "user",
       last_analysis_at: s?.last ?? null,
       analysis_count: s?.count ?? 0,
     }
@@ -249,13 +250,10 @@ export async function adminListUsers(opts: {
 /**
  * Promote/demote a user. Cannot demote yourself.
  */
-export async function adminUpdateUserRole(
-  userId: string,
-  newRole: "user" | "admin"
-) {
-  const { user: currentUser } = await requireAdmin()
+export async function adminUpdateUserRole(userId: string, newRole: string) {
+  const { user: currentUser } = await requirePermission("users", "edit")
   if (userId === currentUser.id && newRole !== "admin") {
-    throw new Error("ไม่สามารถถอนสิทธิ์ admin ของตัวเองได้")
+    throw new Error("ไม่สามารถเปลี่ยน role ของตัวเองออกจาก admin ได้")
   }
   const supabase = await createClient()
   const { error } = await supabase
@@ -270,7 +268,7 @@ export async function adminUpdateUserRole(
  * NOTE: Uses the auth.admin API which requires SERVICE_ROLE key.
  */
 export async function adminDeleteUser(userId: string) {
-  const { user: currentUser } = await requireAdmin()
+  const { user: currentUser } = await requirePermission("users", "delete")
   if (userId === currentUser.id) {
     throw new Error("ไม่สามารถลบบัญชีตัวเองได้")
   }
@@ -324,7 +322,7 @@ export async function adminListCrops(opts: {
   crop_type_id?: string
   search?: string
 } = {}): Promise<{ rows: AdminCropRow[]; total: number }> {
-  await requireAdmin()
+  await requirePermission("crops", "view")
   const supabase = await createClient()
   const limit  = opts.limit ?? 50
   const offset = opts.offset ?? 0
@@ -380,7 +378,7 @@ export async function adminListCrops(opts: {
 }
 
 export async function adminListCropTypes() {
-  await requireAdmin()
+  await requirePermission("crops", "view")
   const supabase = await createClient()
   const { data, error } = await supabase
     .from("crop_types")
@@ -397,7 +395,7 @@ export async function adminCreateCrop(input: {
   crop_type_id: string
   description?: string | null
 }) {
-  await requireAdmin()
+  await requirePermission("crops", "create")
   const supabase = await createClient()
   const { data, error } = await supabase
     .from("crops")
@@ -423,14 +421,14 @@ export async function adminUpdateCrop(
     is_active?: boolean
   }
 ) {
-  await requireAdmin()
+  await requirePermission("crops", "edit")
   const supabase = await createClient()
   const { error } = await supabase.from("crops").update(input).eq("id", cropId)
   if (error) throw new Error(`adminUpdateCrop: ${error.message}`)
 }
 
 export async function adminDeleteCrop(cropId: string) {
-  await requireAdmin()
+  await requirePermission("crops", "delete")
   const supabase = await createClient()
   const { error } = await supabase.from("crops").delete().eq("id", cropId)
   if (error) throw new Error(`adminDeleteCrop: ${error.message}`)
@@ -458,7 +456,7 @@ export type AdminRecommendationRow = {
 }
 
 export async function adminListRecommendations(cropId: string) {
-  await requireAdmin()
+  await requirePermission("crops", "view")
   const supabase = await createClient()
   const { data, error } = await supabase
     .from("fertilizer_recommendations")
@@ -479,7 +477,7 @@ export async function adminCreateRecommendation(input: {
   target_unit: string
   notes?: string | null
 }) {
-  await requireAdmin()
+  await requirePermission("crops", "create")
   const supabase = await createClient()
   const { data, error } = await supabase
     .from("fertilizer_recommendations")
@@ -505,7 +503,7 @@ export async function adminUpdateRecommendation(
   recId: string,
   input: Partial<Omit<AdminRecommendationRow, "id" | "crop_id">>
 ) {
-  await requireAdmin()
+  await requirePermission("crops", "edit")
   const supabase = await createClient()
   const { error } = await supabase
     .from("fertilizer_recommendations")
@@ -515,7 +513,7 @@ export async function adminUpdateRecommendation(
 }
 
 export async function adminDeleteRecommendation(recId: string) {
-  await requireAdmin()
+  await requirePermission("crops", "delete")
   const supabase = await createClient()
   const { error } = await supabase
     .from("fertilizer_recommendations")
@@ -528,7 +526,7 @@ export async function adminDeleteRecommendation(recId: string) {
  * Delete an analysis (admin only). Also cleans up Storage files.
  */
 export async function adminDeleteAnalysis(analysisId: string) {
-  await requireAdmin()
+  await requirePermission("analyses", "delete")
   const supabase = await createClient()
 
   // First fetch the images to know storage paths

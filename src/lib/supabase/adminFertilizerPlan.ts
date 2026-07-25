@@ -1,7 +1,7 @@
 "use server"
 
 import { createClient } from "@/lib/supabase/server"
-import { requireAdmin } from "@/lib/supabase/admin"
+import { requirePermission } from "@/lib/supabase/permissions"
 import { revalidatePath } from "next/cache"
 import type { UseType } from "@/lib/supabase/fertilizerPlan"
 
@@ -29,7 +29,7 @@ const COLS =
 
 /** ทุกแถวของพืชหนึ่ง (ทุกโหมด) เรียงตาม โหมด → ระยะ */
 export async function adminListCropPlan(cropId: string): Promise<AdminPlanRow[]> {
-  await requireAdmin()
+  await requirePermission("crops", "view")
   const supabase = await createClient()
   const { data, error } = await supabase
     .from("crop_fertilizer_plan")
@@ -50,7 +50,7 @@ export type AdminPlanPatch = Partial<
 >
 
 export async function adminUpdatePlanRow(id: string, patch: AdminPlanPatch): Promise<void> {
-  await requireAdmin()
+  await requirePermission("crops", "edit")
   const supabase = await createClient()
   const { error } = await supabase.from("crop_fertilizer_plan").update(patch).eq("id", id)
   if (error) throw new Error(`adminUpdatePlanRow: ${error.message}`)
@@ -69,7 +69,7 @@ export async function adminCreatePlanRow(input: {
   amount: number
   unit: string
 }): Promise<string> {
-  await requireAdmin()
+  await requirePermission("crops", "create")
   const supabase = await createClient()
   const { data, error } = await supabase
     .from("crop_fertilizer_plan")
@@ -82,7 +82,7 @@ export async function adminCreatePlanRow(input: {
 }
 
 export async function adminDeletePlanRow(id: string): Promise<void> {
-  await requireAdmin()
+  await requirePermission("crops", "delete")
   const supabase = await createClient()
   const { error } = await supabase.from("crop_fertilizer_plan").delete().eq("id", id)
   if (error) throw new Error(`adminDeletePlanRow: ${error.message}`)

@@ -1,7 +1,7 @@
 "use server"
 
 import { createClient } from "@/lib/supabase/server"
-import { requireAdmin } from "@/lib/supabase/admin"
+import { requirePermission } from "@/lib/supabase/permissions"
 import { revalidatePath } from "next/cache"
 
 // =============================================================================
@@ -53,7 +53,7 @@ export async function listFertilizerFormulas(): Promise<FertilizerFormulaRow[]> 
 
 /** รายการทั้งหมด (รวมที่ปิดใช้งาน) — สำหรับหน้า admin */
 export async function adminListFormulas(): Promise<FertilizerFormulaRow[]> {
-  await requireAdmin()
+  await requirePermission("fertilizers", "view")
   const supabase = await createClient()
   const { data, error } = await supabase
     .from("fertilizer_formulas")
@@ -67,7 +67,7 @@ export async function adminListFormulas(): Promise<FertilizerFormulaRow[]> {
 export async function adminCreateFormula(
   input: FertilizerFormulaInput
 ): Promise<FertilizerFormulaRow> {
-  await requireAdmin()
+  await requirePermission("fertilizers", "create")
   const supabase = await createClient()
   const { data, error } = await supabase
     .from("fertilizer_formulas")
@@ -93,7 +93,7 @@ export async function adminUpdateFormula(
   id: string,
   patch: Partial<FertilizerFormulaInput>
 ): Promise<FertilizerFormulaRow> {
-  await requireAdmin()
+  await requirePermission("fertilizers", "edit")
   const supabase = await createClient()
   const { data, error } = await supabase
     .from("fertilizer_formulas")
@@ -117,7 +117,7 @@ export async function adminUpdateFormula(
 }
 
 export async function adminDeleteFormula(id: string): Promise<void> {
-  await requireAdmin()
+  await requirePermission("fertilizers", "delete")
   const supabase = await createClient()
   const { error } = await supabase
     .from("fertilizer_formulas")
