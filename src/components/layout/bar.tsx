@@ -372,6 +372,11 @@ export default function Bar() {
           <Link href="/" onClick={() => setIsProfileOpen(false)} className="text-[16px] font-thai text-[#1A1A1A] font-normal hover:text-primary transition-colors">
             หน้าหลัก
           </Link>
+          {!isAnonymous && (
+            <Link href="/history" onClick={() => setIsProfileOpen(false)} className="text-[16px] font-thai text-[#1A1A1A] font-normal hover:text-primary transition-colors">
+              ประวัติการวิเคราะห์
+            </Link>
+          )}
           {showSoilMap && (
             <Link href="/map" onClick={() => setIsProfileOpen(false)} className="text-[16px] font-thai text-[#1A1A1A] font-normal hover:text-primary transition-colors">
               แผนที่
