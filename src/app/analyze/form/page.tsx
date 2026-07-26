@@ -24,6 +24,7 @@ import CropPicker from "@/components/fertilizer/CropPicker"
 import FertilizerPicker from "@/components/fertilizer/FertilizerPicker"
 import BlendResultCard from "@/components/fertilizer/BlendResultCard"
 import FertilizerPlanTable from "@/components/fertilizer/FertilizerPlanTable"
+import CropNote from "@/components/fertilizer/CropNote"
 
 /** ช่องกรอกตัวเลข + ป้ายระดับ (ต่ำ/ปานกลาง/สูง) */
 function NutrientInput({
@@ -333,7 +334,7 @@ export default function AnalyzeForm() {
               title="แผนการใส่ปุ๋ยตามระยะ"
               hint="คำแนะนำตายตัวของกรมวิชาการเกษตร ตามช่วงค่าดิน"
             />
-            <FertilizerPlanTable cropId={cropId} om={omN} p={pN} k={kN} />
+            <FertilizerPlanTable cropId={cropId} om={omN} p={pN} k={kN} blend={blendResult} unit={calc.unit} />
           </div>
         )}
 
@@ -342,12 +343,15 @@ export default function AnalyzeForm() {
           <div className="mt-6 border-t border-gray-100 pt-5">
             <StepHeader
               n={6}
-              title="ทางเลือก: เลือกปุ๋ยเอง"
+              title="ทางเลือก : ปริมาณปุ๋ยที่ต้องใช้"
               hint="กรณีหาปุ๋ยตามตารางไม่ได้ — คำนวณจากสูตรที่เลือกในขั้นที่ 3"
             />
             <BlendResultCard result={blendResult} unit={calc.unit} />
           </div>
         )}
+
+        {/* หมายเหตุ (คำแนะนำเพิ่มเติมของกรมฯ) — ต่อจากขั้นที่ 6 ไม่มีเลขขั้น */}
+        {calc && <CropNote cropId={cropId} />}
 
         {/* บันทึก */}
         {error && (

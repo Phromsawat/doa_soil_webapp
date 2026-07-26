@@ -8,6 +8,7 @@ import { getAnalysis } from "@/lib/supabase/analyses"
 import { listCrops, calculateFertilizer, type CropOption, type FertilizerResult } from "@/lib/supabase/fertilizer"
 import FertilizerBlend from "./FertilizerBlend"
 import FertilizerPlanTable from "@/components/fertilizer/FertilizerPlanTable"
+import CropNote from "@/components/fertilizer/CropNote"
 
 type AnalysisRecord = Awaited<ReturnType<typeof getAnalysis>>
 
@@ -249,6 +250,9 @@ function ResultContent() {
             unit={calculation.unit}
           />
         )}
+
+        {/* หมายเหตุ (คำแนะนำเพิ่มเติมของกรมฯ) */}
+        {record.crop_id && <CropNote cropId={record.crop_id} />}
       </div>
 
       {/* Action Buttons */}

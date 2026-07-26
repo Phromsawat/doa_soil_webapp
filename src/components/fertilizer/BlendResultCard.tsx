@@ -1,6 +1,6 @@
 "use client"
 
-import type { BlendResult } from "@/lib/fertilizer/blend"
+import { compareGrade, type BlendResult } from "@/lib/fertilizer/blend"
 
 // แปลงหน่วยของ target (เช่น "g/tree/year", "kg/rai") เป็น label แสดงผล
 function unitParts(unit: string) {
@@ -26,6 +26,11 @@ export default function BlendResultCard({
 }) {
   const { mass, basis } = unitParts(unit)
 
+  // เรียง N-P-K ให้ตรงกับตารางแผนปุ๋ย (blend เดิมเรียงตาม P มาก่อน)
+  const items = [...result.items].sort((a, b) =>
+    compareGrade(a.formula.grade ?? a.formula.name, b.formula.grade ?? b.formula.name)
+  )
+
   if (result.items.length === 0) {
     return (
       <p className="mt-3 text-sm text-amber-600">
@@ -40,7 +45,7 @@ export default function BlendResultCard({
         ปริมาณปุ๋ยที่ต้องใช้ {basis}
       </div>
       <div className="space-y-1.5">
-        {result.items.map((it) => (
+        {items.map((it) => (
           <div
             key={it.formula.id}
             className="flex items-center justify-between text-sm"

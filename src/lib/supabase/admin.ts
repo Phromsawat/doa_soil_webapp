@@ -419,6 +419,8 @@ export async function adminUpdateCrop(
     crop_type_id?: string
     description?: string | null
     is_active?: boolean
+    fertilizer_note?: string | null
+    fertilizer_note_source?: string | null
   }
 ) {
   await requirePermission("crops", "edit")

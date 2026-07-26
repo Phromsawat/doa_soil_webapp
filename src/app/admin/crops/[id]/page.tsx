@@ -46,6 +46,8 @@ export default function EditCropPage({ params }: PageProps) {
   const [name, setName] = useState("")
   const [nameEn, setNameEn] = useState("")
   const [description, setDescription] = useState("")
+  const [note, setNote] = useState("")
+  const [noteSource, setNoteSource] = useState("")
   const [cropTypeId, setCropTypeId] = useState("")
   const [isActive, setIsActive] = useState(true)
   const [cropTypes, setCropTypes] = useState<CropType[]>([])
@@ -61,13 +63,15 @@ export default function EditCropPage({ params }: PageProps) {
   const loadCrop = async () => {
     const { data, error } = await supabase
       .from("crops")
-      .select("id, name, name_en, description, crop_type_id, is_active")
+      .select("id, name, name_en, description, crop_type_id, is_active, fertilizer_note, fertilizer_note_source")
       .eq("id", cropId)
       .single()
     if (error) { setError(error.message); return }
     setName(data.name)
     setNameEn(data.name_en ?? "")
     setDescription(data.description ?? "")
+    setNote(data.fertilizer_note ?? "")
+    setNoteSource(data.fertilizer_note_source ?? "")
     setCropTypeId(data.crop_type_id)
     setIsActive(data.is_active)
   }
@@ -101,6 +105,8 @@ export default function EditCropPage({ params }: PageProps) {
         description: description.trim() || null,
         crop_type_id: cropTypeId,
         is_active: isActive,
+        fertilizer_note: note.trim() || null,
+        fertilizer_note_source: noteSource.trim() || null,
       })
       setSuccessMsg("บันทึกข้อมูลพืชเรียบร้อย")
       setTimeout(() => setSuccessMsg(null), 3000)
@@ -247,6 +253,28 @@ export default function EditCropPage({ params }: PageProps) {
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             rows={2}
+            className="w-full px-4 py-2 rounded-xl bg-gray-50 border border-gray-100 text-sm focus:outline-none focus:ring-2 focus:ring-[#1A4D2E]/20 focus:border-[#1A4D2E]"
+          />
+        </div>
+
+        <div className="space-y-1.5">
+          <label className="text-xs font-semibold text-gray-600">หมายเหตุการใส่ปุ๋ย</label>
+          <textarea
+            value={note}
+            onChange={(e) => setNote(e.target.value)}
+            rows={6}
+            placeholder="เว้นบรรทัดเพื่อขึ้นข้อใหม่"
+            className="w-full px-4 py-2 rounded-xl bg-gray-50 border border-gray-100 text-sm leading-relaxed focus:outline-none focus:ring-2 focus:ring-[#1A4D2E]/20 focus:border-[#1A4D2E]"
+          />
+        </div>
+
+        <div className="space-y-1.5">
+          <label className="text-xs font-semibold text-gray-600">ที่มา (หมายเหตุ)</label>
+          <input
+            type="text"
+            value={noteSource}
+            onChange={(e) => setNoteSource(e.target.value)}
+            placeholder="เช่น ดัดแปลงจากกรมวิชาการเกษตร (2566)"
             className="w-full px-4 py-2 rounded-xl bg-gray-50 border border-gray-100 text-sm focus:outline-none focus:ring-2 focus:ring-[#1A4D2E]/20 focus:border-[#1A4D2E]"
           />
         </div>

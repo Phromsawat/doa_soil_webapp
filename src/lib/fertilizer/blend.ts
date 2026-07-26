@@ -18,6 +18,20 @@
 // น้ำหนักถ่วงต่อธาตุ [N, P2O5, K2O] — ต่างกันขั้นละ 100 เท่า ให้ลำดับ P > N > K เด็ดขาดแต่ยังปลอดภัยเชิงตัวเลข
 const WEIGHTS = [100, 10000, 1] as const
 
+// คีย์เรียงสูตรปุ๋ย: "N-P-K" เรียง N มาก→น้อย แล้ว P แล้ว K (46-0-0 → 18-46-0 → 0-0-60)
+// สูตรที่ไม่ใช่รูปแบบนี้ (เช่นปุ๋ยอินทรีย์) อยู่ท้ายสุด — ใช้ร่วมทั้งตารางแผนปุ๋ย/แบ่งระยะ/ทางเลือก
+function gradeKey(grade: string): [number, number, number, number] {
+  const m = grade.match(/^(\d+(?:\.\d+)?)-(\d+(?:\.\d+)?)-(\d+(?:\.\d+)?)$/)
+  if (!m) return [1, 0, 0, 0]
+  return [0, -Number(m[1]), -Number(m[2]), -Number(m[3])]
+}
+export function compareGrade(a: string, b: string): number {
+  const ka = gradeKey(a)
+  const kb = gradeKey(b)
+  for (let i = 0; i < ka.length; i++) if (ka[i] !== kb[i]) return ka[i] - kb[i]
+  return 0
+}
+
 export interface Formula {
   id: string
   name: string

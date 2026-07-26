@@ -43,6 +43,61 @@ function inRange(v: number, min: number | null, max: number | null): boolean {
   return true
 }
 
+// คีย์เรียงสูตรปุ๋ย: สูตรมาตรฐาน "N-P-K" มาก่อน เรียง N มาก→น้อย แล้ว P แล้ว K
+// (46-0-0 → 18-46-0 → 0-0-60); สูตรที่ไม่ใช่รูปแบบนี้ (เช่น ปุ๋ยอินทรีย์) อยู่ท้ายสุด
+function gradeKey(grade: string): [number, number, number, number] {
+  const m = grade.match(/^(\d+(?:\.\d+)?)-(\d+(?:\.\d+)?)-(\d+(?:\.\d+)?)$/)
+  if (!m) return [1, 0, 0, 0]
+  return [0, -Number(m[1]), -Number(m[2]), -Number(m[3])]
+}
+function cmpGradeKey(a: [number, number, number, number], b: [number, number, number, number]): number {
+  for (let i = 0; i < a.length; i++) if (a[i] !== b[i]) return a[i] - b[i]
+  return 0
+}
+
+/**
+ * ดึงสัดส่วนการแบ่งใส่ปุ๋ยตามระยะ (crop_stage_split) ของพืช — ใช้กับโหมดปุ๋ยผสม 100% ไม้ผล
+ * คืน [] ถ้าพืชนี้ไม่มีข้อมูลสัดส่วน
+ */
+export async function getCropStageSplit(cropId: string): Promise<
+  {
+    stage_order: number
+    stage_name: string
+    stage_desc: string | null
+    unit: string | null
+    n_frac: number
+    p_frac: number
+    k_frac: number
+  }[]
+> {
+  const supabase = await createClient()
+  const { data, error } = await supabase
+    .from("crop_stage_split")
+    .select("stage_order, stage_name, stage_desc, unit, n_frac, p_frac, k_frac")
+    .eq("crop_id", cropId)
+    .order("stage_order", { ascending: true })
+  if (error) return []
+  return data ?? []
+}
+
+/**
+ * ดึงหมายเหตุการใส่ปุ๋ยของพืช (แสดงต่อจากขั้นที่ 6) — คืน null ถ้าไม่มี
+ */
+export async function getCropNote(
+  cropId: string
+): Promise<{ note: string; source: string | null } | null> {
+  const supabase = await createClient()
+  const { data, error } = await supabase
+    .from("crops")
+    .select("fertilizer_note, fertilizer_note_source")
+    .eq("id", cropId)
+    .maybeSingle()
+  if (error || !data) return null
+  const row = data as { fertilizer_note: string | null; fertilizer_note_source: string | null }
+  if (!row.fertilizer_note) return null
+  return { note: row.fertilizer_note, source: row.fertilizer_note_source ?? null }
+}
+
 /** โหมดที่พืชนี้มีตาราง (straight / compound) — ไว้ตัดสินใจว่าจะโชว์ปุ่มสลับโหมดไหม */
 export async function getCropPlanUseTypes(cropId: string): Promise<UseType[]> {
   const supabase = await createClient()
@@ -106,6 +161,9 @@ export async function getFertilizerPlan(input: {
     s.items.push({ grade: r.grade, amount: r.amount, unit: r.unit })
   }
   const stages = [...byStage.values()].sort((a, b) => a.order - b.order)
+
+  // เรียงสูตรในแต่ละระยะ: 46-0-0, 18-46-0, 0-0-60 (N มากก่อน → P → K) อินทรีย์/สูตรอื่นท้ายสุด
+  for (const s of stages) s.items.sort((a, b) => cmpGradeKey(gradeKey(a.grade), gradeKey(b.grade)))
 
   return { use_type: useType, unit, stages }
 }
