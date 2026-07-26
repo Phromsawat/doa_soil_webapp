@@ -5,7 +5,6 @@ import {
   MapContainer,
   TileLayer,
   ImageOverlay,
-  GeoJSON,
   Marker,
   useMap,
   useMapEvents,
@@ -71,9 +70,9 @@ import { getSoilAtPoint, type SoilAtPoint } from "@/lib/supabase/soilGrid"
 import { createClient } from "@/lib/supabase/client"
 
 const BOUNDARY_LAYERS = [
-  { id: "provinces" as const, label: "จังหวัด", rpc: "get_provinces_geojson", color: "#111111", weight: 2 },
-  { id: "districts" as const, label: "อำเภอ", rpc: "get_districts_geojson", color: "#444444", weight: 1 },
-  { id: "subdistricts" as const, label: "ตำบล", rpc: "get_subdistricts_geojson", color: "#777777", weight: 0.5 },
+  { id: "provinces" as const, label: "จังหวัด", rpc: "get_provinces_geojson", staticFile: "provinces", color: "#111111", weight: 2.5 },
+  { id: "districts" as const, label: "อำเภอ", rpc: "get_districts_geojson", staticFile: "districts", color: "#444444", weight: 1 },
+  { id: "subdistricts" as const, label: "ตำบล", rpc: "get_subdistricts_geojson", staticFile: "subdistricts", color: "#777777", weight: 0.5 },
 ] as const
 type BoundaryId = typeof BOUNDARY_LAYERS[number]["id"]
 
@@ -91,6 +90,31 @@ function ClickHandler({ onPick }: { onPick: (lat: number, lng: number) => void }
       onPick(e.latlng.lat, e.latlng.lng)
     },
   })
+  return null
+}
+
+function BoundaryLayer({ data, color, weight, opacity }: {
+  data: FeatureCollection
+  color: string
+  weight: number
+  opacity: number
+}) {
+  const map = useMap()
+  const layerRef = useRef<L.GeoJSON | null>(null)
+
+  useEffect(() => {
+    const layer = L.geoJSON(data, {
+      style: { color, weight, opacity, fillOpacity: 0 },
+    })
+    layer.addTo(map)
+    layerRef.current = layer
+    return () => { map.removeLayer(layer) }
+  }, [map, data])
+
+  useEffect(() => {
+    layerRef.current?.setStyle({ color, weight, opacity, fillOpacity: 0 })
+  }, [color, weight, opacity])
+
   return null
 }
 
@@ -167,10 +191,14 @@ export default function SoilMaps() {
     }
     if (!boundaryData[id]) {
       setBoundaryLoading(prev => { const s = new Set(prev); s.add(id); return s })
-      const supabase = createClient()
       const layer = BOUNDARY_LAYERS.find(l => l.id === id)!
-      const { data } = await supabase.rpc(layer.rpc)
-      if (data) setBoundaryData(prev => ({ ...prev, [id]: data as FeatureCollection }))
+      try {
+        const supabase = createClient()
+        const { data } = await supabase.rpc(layer.rpc)
+        if (data) setBoundaryData(prev => ({ ...prev, [id]: data as FeatureCollection }))
+      } catch (err) {
+        console.error("Error loading boundary:", err)
+      }
       setBoundaryLoading(prev => { const s = new Set(prev); s.delete(id); return s })
     }
     next.add(id)
@@ -252,12 +280,12 @@ export default function SoilMaps() {
           const data = boundaryData[id]
           if (!activeBoundaries.has(id) || !data) return null
           return (
-            <GeoJSON
+            <BoundaryLayer
               key={id}
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              ref={(layer: any) => { if (layer) boundaryRefs.current[id] = layer }}
               data={data}
-              style={{ color, weight, opacity: getBoundaryOpacity(id), fillOpacity: 0 }}
+              color={color}
+              weight={weight}
+              opacity={getBoundaryOpacity(id)}
             />
           )
         })}
