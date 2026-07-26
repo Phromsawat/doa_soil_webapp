@@ -193,8 +193,20 @@ export default function SoilMaps() {
       setBoundaryLoading(prev => { const s = new Set(prev); s.add(id); return s })
       const layer = BOUNDARY_LAYERS.find(l => l.id === id)!
       try {
-        const supabase = createClient()
-        const { data } = await supabase.rpc(layer.rpc)
+        let data: FeatureCollection | null = null
+        // 1) ลองโหลดไฟล์ static ก่อน (ความละเอียดสูง + topology สะอาด ไม่มีเส้นเหลื่อม)
+        if (layer.staticFile) {
+          try {
+            const res = await fetch(`/boundaries/${layer.staticFile}.geojson`)
+            if (res.ok) data = (await res.json()) as FeatureCollection
+          } catch { /* ไม่มีไฟล์ -> fallback RPC ด้านล่าง */ }
+        }
+        // 2) fallback: Supabase RPC (อำเภอ/ตำบลยังไม่มีไฟล์ static)
+        if (!data) {
+          const supabase = createClient()
+          const { data: rpcData } = await supabase.rpc(layer.rpc)
+          if (rpcData) data = rpcData as FeatureCollection
+        }
         if (data) setBoundaryData(prev => ({ ...prev, [id]: data as FeatureCollection }))
       } catch (err) {
         console.error("Error loading boundary:", err)
