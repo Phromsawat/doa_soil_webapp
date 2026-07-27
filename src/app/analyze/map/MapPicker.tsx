@@ -10,7 +10,7 @@ const BASE_MAPS = [
   { id: "google_road",      label: "Google Maps",    url: "https://mt{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}", subdomains: "0123", preview: "https://mt0.google.com/vt/lyrs=m&x=24&y=14&z=5" },
   { id: "google_satellite", label: "Google Satellite", url: "https://mt{s}.google.com/vt/lyrs=s&x={x}&y={y}&z={z}", subdomains: "0123", preview: "https://mt0.google.com/vt/lyrs=s&x=24&y=14&z=5" },
   { id: "bing",             label: "Bing Map",       url: "https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}", subdomains: undefined, preview: "https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/5/14/24" },
-  { id: "osm",              label: "OpenStreetMap",  url: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", subdomains: "abc", preview: "https://tile.openstreetmap.org/5/24/14.png" },
+  { id: "osm",              label: "OpenStreetMap",  url: "/api/map-tiles/{z}/{x}/{y}", subdomains: undefined, preview: "https://tile.openstreetmap.org/5/24/14.png" },
 ] as const
 type BaseMapId = typeof BASE_MAPS[number]["id"]
 
@@ -38,7 +38,7 @@ export default function MapPicker({ onConfirm, onCancel, initialLat, initialLng 
   )
   const [locating, setLocating] = useState(false)
   const [bearing, setBearing] = useState(0)
-  const [activeBase, setActiveBase] = useState<BaseMapId>("google_road")
+  const [activeBase, setActiveBase] = useState<BaseMapId>("osm")
   const [showBasePanel, setShowBasePanel] = useState(false)
   const tileLayerRef = useRef<L.TileLayer | null>(null)
 
@@ -54,10 +54,10 @@ export default function MapPicker({ onConfirm, onCancel, initialLat, initialLng 
       zoomControl: false,
     })
 
-    const bm = BASE_MAPS.find((b) => b.id === "google_road")!
+    const bm = BASE_MAPS.find((b) => b.id === "osm")!
     tileLayerRef.current = L.tileLayer(bm.url, {
-      attribution: "© Google",
-      maxZoom: 20,
+      attribution: "© OpenStreetMap contributors",
+      maxZoom: 19,
       subdomains: bm.subdomains ?? "",
     }).addTo(map)
 
@@ -115,6 +115,7 @@ export default function MapPicker({ onConfirm, onCancel, initialLat, initialLng 
   useEffect(() => {
     if (!mapRef.current || !tileLayerRef.current) return
     const bm = BASE_MAPS.find((b) => b.id === activeBase)!
+    tileLayerRef.current.options.subdomains = bm.subdomains ?? ""
     tileLayerRef.current.setUrl(bm.url)
   }, [activeBase])
 

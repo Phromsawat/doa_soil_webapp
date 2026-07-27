@@ -45,8 +45,8 @@ const BASE_MAPS = [
   {
     id: "osm",
     label: "OpenStreetMap",
-    url: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
-    subdomains: "abc",
+    url: "/api/map-tiles/{z}/{x}/{y}",
+    subdomains: undefined,
     attribution: "© OpenStreetMap contributors",
     preview: "https://tile.openstreetmap.org/5/24/14.png",
   },
@@ -183,7 +183,7 @@ export default function SoilMaps() {
   const [outside, setOutside] = useState(false)
   const [errored, setErrored] = useState(false)
   const [mapInstance, setMapInstance] = useState<L.Map | null>(null)
-  const [activeBase, setActiveBase] = useState<BaseMapId>("google_road")
+  const [activeBase, setActiveBase] = useState<BaseMapId>("osm")
   const [showBasePanel, setShowBasePanel] = useState(false)
   const [showLayerPanel, setShowLayerPanel] = useState(false)
   const [compassHeading, setCompassHeading] = useState(0)
