@@ -1,7 +1,101 @@
 "use client"
 
-import { Plus, X, Loader2 } from "lucide-react"
+import { useEffect, useRef, useState } from "react"
+import { Plus, X, Loader2, ChevronDown, Search } from "lucide-react"
 import type { FertilizerFormulaRow } from "@/lib/supabase/fertilizerFormulas"
+
+function fmtLabel(f: FertilizerFormulaRow) {
+  return `${f.name}${f.grade ? ` (${f.grade})` : ""}`
+}
+
+/** ช่องเลือกปุ๋ยแบบพิมพ์ค้นหาได้ (combobox) */
+function FertilizerCombobox({
+  value,
+  options,
+  onSelect,
+}: {
+  value: string
+  options: FertilizerFormulaRow[]
+  onSelect: (id: string) => void
+}) {
+  const [query, setQuery] = useState("")
+  const [open, setOpen] = useState(false)
+  const wrapRef = useRef<HTMLDivElement>(null)
+
+  const selected = options.find((f) => f.id === value) ?? null
+  const q = query.trim().toLowerCase()
+  const filtered = q ? options.filter((f) => fmtLabel(f).toLowerCase().includes(q)) : options
+
+  // ปิด dropdown เมื่อคลิกนอกกล่อง
+  useEffect(() => {
+    function onDoc(e: MouseEvent) {
+      if (wrapRef.current && !wrapRef.current.contains(e.target as Node)) {
+        setOpen(false)
+        setQuery("")
+      }
+    }
+    document.addEventListener("mousedown", onDoc)
+    return () => document.removeEventListener("mousedown", onDoc)
+  }, [])
+
+  return (
+    <div ref={wrapRef} className="relative w-full">
+      <div className="relative">
+        {open && (
+          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+        )}
+        <input
+          type="text"
+          value={open ? query : selected ? fmtLabel(selected) : ""}
+          onChange={(e) => {
+            setQuery(e.target.value)
+            setOpen(true)
+          }}
+          onFocus={() => {
+            setQuery("")
+            setOpen(true)
+          }}
+          placeholder="ค้นหา / เลือกปุ๋ย…"
+          className={`w-full rounded-lg border border-gray-200 py-2 pr-9 text-sm focus:border-[#1A4D2E] focus:outline-none ${
+            open ? "pl-9" : "pl-3"
+          }`}
+        />
+        <ChevronDown
+          className={`pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400 transition ${
+            open ? "rotate-180" : ""
+          }`}
+        />
+      </div>
+
+      {open && (
+        <div className="absolute z-20 mt-1 max-h-60 w-full overflow-auto rounded-lg border border-gray-200 bg-white py-1 shadow-lg">
+          {filtered.length === 0 ? (
+            <div className="px-3 py-2 text-sm text-gray-400">ไม่พบปุ๋ยที่ค้นหา</div>
+          ) : (
+            filtered.map((f) => (
+              <button
+                key={f.id}
+                type="button"
+                onMouseDown={(e) => e.preventDefault()}
+                onClick={() => {
+                  onSelect(f.id)
+                  setOpen(false)
+                  setQuery("")
+                }}
+                className={`block w-full px-3 py-2 text-left text-sm hover:bg-[#F1F7F2] ${
+                  f.id === value ? "bg-[#F1F7F2] font-medium text-[#1A4D2E]" : "text-gray-700"
+                }`}
+              >
+                {f.name}
+                {f.grade ? <span className="text-gray-400"> ({f.grade})</span> : null}
+              </button>
+            ))
+          )}
+        </div>
+      )}
+    </div>
+  )
+}
 
 /**
  * ตัวเลือกสูตรปุ๋ย 1-3 สูตร (controlled) — เป็น input ล้วน ๆ ไม่คำนวณอะไร
@@ -40,19 +134,11 @@ export default function FertilizerPicker({
       <div className="space-y-2">
         {picked.map((id, i) => (
           <div key={i} className="flex items-center gap-2">
-            <select
+            <FertilizerCombobox
               value={id}
-              onChange={(e) => setSlot(i, e.target.value)}
-              className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-[#1A4D2E] focus:outline-none"
-            >
-              <option value="">— เลือกปุ๋ย —</option>
-              {optionsFor(id).map((f) => (
-                <option key={f.id} value={f.id}>
-                  {f.name}
-                  {f.grade ? ` (${f.grade})` : ""}
-                </option>
-              ))}
-            </select>
+              options={optionsFor(id)}
+              onSelect={(v) => setSlot(i, v)}
+            />
             {picked.length > 1 && (
               <button
                 type="button"
