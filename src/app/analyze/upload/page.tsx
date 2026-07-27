@@ -45,13 +45,23 @@ export default function AnalyzeUpload() {
   const [zipHint, setZipHint] = useState<string | null>(null)
   const [zipError, setZipError] = useState<string | null>(null)
   const [zipLoading, setZipLoading] = useState(false)
+  const [zipOptions, setZipOptions] = useState<Array<{ label: string; lat: string; lng: string }>>([])
   const zipDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const searchIndexRef = useRef<Array<{ t: string; nth: string; pth?: string; dth?: string; b: [number,number,number,number] }> | null>(null)
 
-  // ZIP → auto-fill lat/lng via Nominatim
+  async function ensureSearchIndex() {
+    if (searchIndexRef.current) return searchIndexRef.current
+    const res = await fetch("/boundaries/search-index.json")
+    searchIndexRef.current = await res.json()
+    return searchIndexRef.current!
+  }
+
+  // ZIP → Nominatim (get district/province) → filter search-index for all ตำบล in that district
   useEffect(() => {
     if (zipDebounceRef.current) clearTimeout(zipDebounceRef.current)
     setZipHint(null)
     setZipError(null)
+    setZipOptions([])
 
     if (!/^\d{5}$/.test(postalCode)) return
 
@@ -63,30 +73,80 @@ export default function AnalyzeUpload() {
           { headers: { "Accept-Language": "th" } }
         )
         const hits = await res.json() as Array<{ display_name: string; boundingbox: string[] }>
-        if (!hits.length) {
-          setZipError("ไม่พบรหัสไปรษณีย์")
-          return
-        }
-        const hit = hits[0]
-        const bb = hit.boundingbox // [south, north, west, east]
-        const centerLat = ((parseFloat(bb[0]) + parseFloat(bb[1])) / 2).toFixed(6)
-        const centerLng = ((parseFloat(bb[2]) + parseFloat(bb[3])) / 2).toFixed(6)
-        setLat(centerLat)
-        setLng(centerLng)
+        if (!hits.length) { setZipError("ไม่พบรหัสไปรษณีย์"); return }
 
-        // parse area name for hint
-        const parts = hit.display_name.split(", ")
+        const parts = hits[0].display_name.split(", ")
+
+        // parse province (must succeed before filtering)
         const prov =
           parts.find((p: string) => p.startsWith("จังหวัด"))?.replace("จังหวัด", "")
-          ?? (parts.includes("กรุงเทพมหานคร") ? "กรุงเทพมหานคร" : undefined)
-        const dist =
-          parts.find((p: string) => p.startsWith("อำเภอ"))?.replace("อำเภอ", "")
-          ?? parts.find((p: string) => p.startsWith("เขต"))?.replace("เขต", "")
-        const sub =
-          parts.find((p: string) => p.startsWith("ตำบล"))?.replace("ตำบล", "")
-          ?? parts.find((p: string) => p.startsWith("แขวง"))?.replace("แขวง", "")
-        const hintParts = [sub, dist && `อ.${dist}`, prov && `จ.${prov}`].filter(Boolean)
-        setZipHint(hintParts.join(" ") || parts.slice(1, 3).join(" "))
+          ?? (parts.some((p: string) => p === "กรุงเทพมหานคร" || p.startsWith("กรุงเทพมหานคร"))
+              ? "กรุงเทพมหานคร" : undefined)
+
+        const idx = await ensureSearchIndex()
+
+        // resolve district via reverse-lookup against index
+        // handles อำเภอ, เขต (BKK), กิ่งอำเภอ — each stored differently in display_name vs index
+        let dist: string | undefined
+        if (prov) {
+          const STRIP = ["อำเภอ", "เขต"]  // prefixes Nominatim adds but index doesn't store
+          for (const part of parts) {
+            // direct match — กิ่งอำเภอXXX stored as-is in index
+            if (idx.some(e => e.t === "dist" && e.pth === prov && e.nth === part)) {
+              dist = part; break
+            }
+            // stripped match — อำเภอXXX / เขตXXX → index stores XXX only
+            for (const prefix of STRIP) {
+              if (part.startsWith(prefix)) {
+                const stripped = part.replace(prefix, "")
+                if (idx.some(e => e.t === "dist" && e.pth === prov && e.nth === stripped)) {
+                  dist = stripped; break
+                }
+              }
+            }
+            if (dist) break
+          }
+        }
+
+        // require at least province to filter; without it fall back to bounding box
+        if (!prov) {
+          const bb = hits[0].boundingbox
+          setLat(((parseFloat(bb[0]) + parseFloat(bb[1])) / 2).toFixed(6))
+          setLng(((parseFloat(bb[2]) + parseFloat(bb[3])) / 2).toFixed(6))
+          return
+        }
+
+        const subs = idx.filter(e =>
+          e.t === "sub" &&
+          e.pth === prov &&
+          (!dist || e.dth === dist)
+        )
+
+        if (subs.length === 0) {
+          // fallback: use Nominatim bounding box centroid
+          const bb = hits[0].boundingbox
+          setLat(((parseFloat(bb[0]) + parseFloat(bb[1])) / 2).toFixed(6))
+          setLng(((parseFloat(bb[2]) + parseFloat(bb[3])) / 2).toFixed(6))
+          setZipHint([dist && `อ.${dist}`, prov && `จ.${prov}`].filter(Boolean).join(" "))
+          return
+        }
+
+        const options = subs.map(e => {
+          const [minLng, minLat, maxLng, maxLat] = e.b
+          return {
+            label: [e.nth, e.dth && `อ.${e.dth}`, e.pth && `จ.${e.pth}`].filter(Boolean).join(" "),
+            lat: ((minLat + maxLat) / 2).toFixed(6),
+            lng: ((minLng + maxLng) / 2).toFixed(6),
+          }
+        })
+
+        if (options.length === 1) {
+          setLat(options[0].lat)
+          setLng(options[0].lng)
+          setZipHint(options[0].label)
+        } else {
+          setZipOptions(options)
+        }
       } catch {
         setZipError("ไม่สามารถค้นหารหัสไปรษณีย์ได้")
       } finally {
@@ -264,6 +324,30 @@ export default function AnalyzeUpload() {
               />
               {zipLoading && <Loader2 className="w-4 h-4 animate-spin text-gray-400 shrink-0" />}
             </div>
+
+            {/* ตำบล selection list */}
+            {zipOptions.length > 0 && (
+              <div className="mt-1 border border-gray-100 rounded-2xl overflow-hidden shadow-sm">
+                <p className="text-xs text-gray-400 px-3 pt-2 pb-1">เลือกตำบล</p>
+                {zipOptions.map((opt, i) => (
+                  <button
+                    key={i}
+                    type="button"
+                    onClick={() => {
+                      setLat(opt.lat)
+                      setLng(opt.lng)
+                      setZipHint(opt.label)
+                      setZipOptions([])
+                    }}
+                    className="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-[#f0fdf4] flex items-center gap-2 border-t border-gray-50 first:border-0 transition-colors"
+                  >
+                    <span className="text-[10px] font-medium px-1.5 py-0.5 rounded-full bg-green-100 text-green-700 shrink-0">ตำบล</span>
+                    <span>{opt.label}</span>
+                  </button>
+                ))}
+              </div>
+            )}
+
             {zipHint && (
               <p className="text-xs text-[#1A4D2E] pl-2">{zipHint}</p>
             )}
