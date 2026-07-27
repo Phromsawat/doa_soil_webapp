@@ -57,59 +57,52 @@ export default function SearchBar({ onSelect, onClear, className }: Props) {
   async function doSearch(q: string) {
     if (!q.trim()) { setResults([]); return }
 
-    // ZIP code: 5 digits → Nominatim postalcode → match local index
+    // ZIP code: 5 digits → index first, Nominatim fallback for ~31 unmatched ตำบล
     if (/^\d{5}$/.test(q.trim())) {
       setLoading(true)
       try {
-        const res = await fetch(
-          `https://nominatim.openstreetmap.org/search?postalcode=${q.trim()}&countrycodes=th&format=json&limit=5`,
-          { headers: { "Accept-Language": "th" } }
-        )
-        const hits = await res.json() as Array<{ display_name: string; boundingbox: string[] }>
-        if (hits.length > 0) {
-          const idx = await ensureIndex()
-          const matched: SearchEntry[] = []
-          for (const hit of hits) {
-            // display_name: "35150, xxx, ตำบลชื่อ, อำเภอชื่อ, จังหวัดชื่อ, ประเทศไทย"
-            const parts = hit.display_name.split(", ")
-            const prov =
-              parts.find(p => p.startsWith("จังหวัด"))?.replace("จังหวัด", "")
-              ?? (parts.includes("กรุงเทพมหานคร") ? "กรุงเทพมหานคร" : undefined)
-            const dist =
-              parts.find(p => p.startsWith("อำเภอ"))?.replace("อำเภอ", "")
-              ?? parts.find(p => p.startsWith("เขต"))?.replace("เขต", "")
-            const sub =
-              parts.find(p => p.startsWith("ตำบล"))?.replace("ตำบล", "")
-              ?? parts.find(p => p.startsWith("แขวง"))?.replace("แขวง", "")
-              ?? (parts.length > 3 ? parts[2] : undefined)
-            if (idx) {
-              const found =
-                // 1) ตำบล exact match
-                (sub && (idx.find(e => e.t === "sub" && e.nth === sub && (!prov || e.pth === prov) && (!dist || e.dth === dist))
-                  ?? idx.find(e => e.t === "sub" && e.nth === sub && (!prov || e.pth === prov))))
-                // 2) fallback อำเภอ
-                ?? (dist && idx.find(e => e.t === "dist" && e.nth === dist && (!prov || e.pth === prov)))
-                // 3) fallback จังหวัด
-                ?? (prov && idx.find(e => e.t === "prov" && e.nth === prov))
-              if (found && !matched.find(m => m.i === found!.i && m.f === found!.f)) {
-                matched.push({ ...found, zip: q.trim() } as SearchEntry)
+        const idx = await ensureIndex()
+        if (idx) {
+          // 1. ค้นจาก index ก่อน
+          const matched = idx.filter(e => e.t === "sub" && e.zip === q.trim()).slice(0, 8)
+          if (matched.length > 0) { setResults(matched); return }
+
+          // 2. fallback Nominatim
+          try {
+            const res = await fetch(
+              `https://nominatim.openstreetmap.org/search?postalcode=${q.trim()}&countrycodes=th&format=json&limit=1`,
+              { headers: { "Accept-Language": "th" } }
+            )
+            const hits = await res.json() as Array<{ display_name: string; boundingbox: string[] }>
+            if (hits.length > 0) {
+              const parts = hits[0].display_name.split(", ")
+              const prov =
+                parts.find(p => p.startsWith("จังหวัด"))?.replace("จังหวัด", "")
+                ?? (parts.some(p => p === "กรุงเทพมหานคร") ? "กรุงเทพมหานคร" : undefined)
+              let dist: string | undefined
+              if (prov) {
+                const STRIP = ["อำเภอ", "เขต"]
+                for (const part of parts) {
+                  if (idx.some(e => e.t === "dist" && e.pth === prov && e.nth === part)) { dist = part; break }
+                  for (const prefix of STRIP) {
+                    if (part.startsWith(prefix)) {
+                      const stripped = part.replace(prefix, "")
+                      if (idx.some(e => e.t === "dist" && e.pth === prov && e.nth === stripped)) { dist = stripped; break }
+                    }
+                  }
+                  if (dist) break
+                }
+              }
+              if (prov) {
+                const fallback = idx
+                  .filter(e => e.t === "sub" && e.pth === prov && (!dist || e.dth === dist))
+                  .slice(0, 8)
+                if (fallback.length > 0) { setResults(fallback.map(e => ({ ...e, zip: q.trim() } as SearchEntry))); return }
               }
             }
-            // fallback: synthetic entry from bounding box
-            if (matched.length === 0 && idx) {
-              const bb = hit.boundingbox // [south, north, west, east]
-              const b: [number,number,number,number] = [
-                parseFloat(bb[2]), parseFloat(bb[0]),
-                parseFloat(bb[3]), parseFloat(bb[1]),
-              ]
-              matched.push({ t: "sub", nth: sub ?? q.trim(), pth: prov, dth: dist, b, f: "subdistrict", i: -1, zip: q.trim() } as SearchEntry)
-            }
-          }
-          setResults(matched.slice(0, 5))
-          return
+          } catch { /* silent */ }
         }
-      } catch { /* fall through to name search */ }
-      finally { setLoading(false) }
+      } finally { setLoading(false) }
     }
 
     const idx = await ensureIndex()

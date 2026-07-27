@@ -47,7 +47,7 @@ export default function AnalyzeUpload() {
   const [zipLoading, setZipLoading] = useState(false)
   const [zipOptions, setZipOptions] = useState<Array<{ label: string; lat: string; lng: string }>>([])
   const zipDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
-  const searchIndexRef = useRef<Array<{ t: string; nth: string; pth?: string; dth?: string; b: [number,number,number,number] }> | null>(null)
+  const searchIndexRef = useRef<Array<{ t: string; nth: string; pth?: string; dth?: string; b: [number,number,number,number]; zip?: string }> | null>(null)
 
   async function ensureSearchIndex() {
     if (searchIndexRef.current) return searchIndexRef.current
@@ -68,6 +68,28 @@ export default function AnalyzeUpload() {
     zipDebounceRef.current = setTimeout(async () => {
       setZipLoading(true)
       try {
+        // 1. ค้นจาก index ก่อน (99.6% ของตำบลมี zip)
+        const idx = await ensureSearchIndex()
+        const subs = idx.filter(e => e.t === "sub" && e.zip === postalCode)
+
+        if (subs.length > 0) {
+          const options = subs.map(e => {
+            const [minLng, minLat, maxLng, maxLat] = e.b
+            return {
+              label: [e.nth, e.dth && `อ.${e.dth}`, e.pth && `จ.${e.pth}`].filter(Boolean).join(" "),
+              lat: ((minLat + maxLat) / 2).toFixed(6),
+              lng: ((minLng + maxLng) / 2).toFixed(6),
+            }
+          })
+          if (options.length === 1) {
+            setLat(options[0].lat); setLng(options[0].lng); setZipHint(options[0].label)
+          } else {
+            setZipOptions(options)
+          }
+          return
+        }
+
+        // 2. fallback: Nominatim (31 ตำบลที่ชื่อ match ไม่ติดใน dataset)
         const res = await fetch(
           `https://nominatim.openstreetmap.org/search?postalcode=${postalCode}&countrycodes=th&format=json&limit=1`,
           { headers: { "Accept-Language": "th" } }
@@ -76,62 +98,32 @@ export default function AnalyzeUpload() {
         if (!hits.length) { setZipError("ไม่พบรหัสไปรษณีย์"); return }
 
         const parts = hits[0].display_name.split(", ")
-
-        // parse province (must succeed before filtering)
         const prov =
           parts.find((p: string) => p.startsWith("จังหวัด"))?.replace("จังหวัด", "")
-          ?? (parts.some((p: string) => p === "กรุงเทพมหานคร" || p.startsWith("กรุงเทพมหานคร"))
-              ? "กรุงเทพมหานคร" : undefined)
-
-        const idx = await ensureSearchIndex()
-
-        // resolve district via reverse-lookup against index
-        // handles อำเภอ, เขต (BKK), กิ่งอำเภอ — each stored differently in display_name vs index
+          ?? (parts.some((p: string) => p === "กรุงเทพมหานคร") ? "กรุงเทพมหานคร" : undefined)
         let dist: string | undefined
         if (prov) {
-          const STRIP = ["อำเภอ", "เขต"]  // prefixes Nominatim adds but index doesn't store
+          const STRIP = ["อำเภอ", "เขต"]
           for (const part of parts) {
-            // direct match — กิ่งอำเภอXXX stored as-is in index
-            if (idx.some(e => e.t === "dist" && e.pth === prov && e.nth === part)) {
-              dist = part; break
-            }
-            // stripped match — อำเภอXXX / เขตXXX → index stores XXX only
+            if (idx.some(e => e.t === "dist" && e.pth === prov && e.nth === part)) { dist = part; break }
             for (const prefix of STRIP) {
               if (part.startsWith(prefix)) {
                 const stripped = part.replace(prefix, "")
-                if (idx.some(e => e.t === "dist" && e.pth === prov && e.nth === stripped)) {
-                  dist = stripped; break
-                }
+                if (idx.some(e => e.t === "dist" && e.pth === prov && e.nth === stripped)) { dist = stripped; break }
               }
             }
             if (dist) break
           }
         }
-
-        // require at least province to filter; without it fall back to bounding box
         if (!prov) {
           const bb = hits[0].boundingbox
           setLat(((parseFloat(bb[0]) + parseFloat(bb[1])) / 2).toFixed(6))
           setLng(((parseFloat(bb[2]) + parseFloat(bb[3])) / 2).toFixed(6))
           return
         }
-
-        const subs = idx.filter(e =>
-          e.t === "sub" &&
-          e.pth === prov &&
-          (!dist || e.dth === dist)
-        )
-
-        if (subs.length === 0) {
-          // fallback: use Nominatim bounding box centroid
-          const bb = hits[0].boundingbox
-          setLat(((parseFloat(bb[0]) + parseFloat(bb[1])) / 2).toFixed(6))
-          setLng(((parseFloat(bb[2]) + parseFloat(bb[3])) / 2).toFixed(6))
-          setZipHint([dist && `อ.${dist}`, prov && `จ.${prov}`].filter(Boolean).join(" "))
-          return
-        }
-
-        const options = subs.map(e => {
+        const fallbackSubs = idx.filter(e => e.t === "sub" && e.pth === prov && (!dist || e.dth === dist))
+        if (fallbackSubs.length === 0) { setZipError("ไม่พบรหัสไปรษณีย์"); return }
+        const options = fallbackSubs.map(e => {
           const [minLng, minLat, maxLng, maxLat] = e.b
           return {
             label: [e.nth, e.dth && `อ.${e.dth}`, e.pth && `จ.${e.pth}`].filter(Boolean).join(" "),
@@ -139,11 +131,8 @@ export default function AnalyzeUpload() {
             lng: ((minLng + maxLng) / 2).toFixed(6),
           }
         })
-
         if (options.length === 1) {
-          setLat(options[0].lat)
-          setLng(options[0].lng)
-          setZipHint(options[0].label)
+          setLat(options[0].lat); setLng(options[0].lng); setZipHint(options[0].label)
         } else {
           setZipOptions(options)
         }
