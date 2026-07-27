@@ -9,11 +9,11 @@ import {
   useMap,
   useMapEvents,
 } from "react-leaflet"
-import type { FeatureCollection } from "geojson"
+import type { FeatureCollection, Feature } from "geojson"
 import L from "leaflet"
 import "leaflet/dist/leaflet.css"
 import { Plus, Minus, Map, Layers, X } from "lucide-react"
-import SearchBar from "./SearchBar"
+import SearchBar, { type SearchEntry } from "./SearchBar"
 
 // --- Base Map Definitions ---
 // Preview tiles show Thailand area (tile x=24,y=14 at z=5)
@@ -69,12 +69,19 @@ import {
 import { getSoilAtPoint, type SoilAtPoint } from "@/lib/supabase/soilGrid"
 import { createClient } from "@/lib/supabase/client"
 
-const BOUNDARY_LAYERS = [
-  { id: "provinces" as const, label: "จังหวัด", rpc: "get_provinces_geojson", staticFile: "provinces", color: "#111111", weight: 2.5 },
-  { id: "districts" as const, label: "อำเภอ", rpc: "get_districts_geojson", staticFile: "districts", color: "#444444", weight: 1 },
-  { id: "subdistricts" as const, label: "ตำบล", rpc: "get_subdistricts_geojson", staticFile: "subdistricts", color: "#777777", weight: 0.5 },
-] as const
-type BoundaryId = typeof BOUNDARY_LAYERS[number]["id"]
+type BoundaryId = "provinces" | "districts" | "subdistricts"
+const BOUNDARY_LAYERS: Array<{
+  id: BoundaryId
+  label: string
+  rpc?: string
+  staticFile?: string
+  color: string
+  weight: number
+}> = [
+  { id: "provinces", label: "จังหวัด", staticFile: "provinces", color: "#111111", weight: 2.5 },
+  { id: "districts", label: "อำเภอ", staticFile: "amphoe", color: "#111111", weight: 2.5 },
+  { id: "subdistricts", label: "ตำบล", staticFile: "subdistrict", color: "#111111", weight: 2.5 },
+]
 
 
 const pinIcon = L.divIcon({
@@ -90,6 +97,30 @@ function ClickHandler({ onPick }: { onPick: (lat: number, lng: number) => void }
       onPick(e.latlng.lat, e.latlng.lng)
     },
   })
+  return null
+}
+
+const FILE_TO_BOUNDARY_ID: Record<string, BoundaryId> = {
+  provinces: "provinces",
+  amphoe: "districts",
+  subdistrict: "subdistricts",
+}
+
+function HighlightLayer({ feature }: { feature: Feature }) {
+  const map = useMap()
+  useEffect(() => {
+    const layer = L.geoJSON(feature, {
+      style: {
+        color: "#3b82f6",
+        weight: 3,
+        opacity: 1,
+        fillColor: "#3b82f6",
+        fillOpacity: 0.22,
+      },
+    })
+    layer.addTo(map)
+    return () => { map.removeLayer(layer) }
+  }, [map, feature])
   return null
 }
 
@@ -162,8 +193,10 @@ export default function SoilMaps() {
   const [soilOpacity, setSoilOpacity] = useState(0.85)
   const [boundaryData, setBoundaryData] = useState<Partial<Record<BoundaryId, FeatureCollection>>>({})
   const [boundaryLoading, setBoundaryLoading] = useState<Set<BoundaryId>>(new Set())
+  const [highlightFeature, setHighlightFeature] = useState<Feature | null>(null)
   const boundaryRefs = useRef<Partial<Record<BoundaryId, L.GeoJSON>>>({})
-  const handleMapReady = useCallback((map: L.Map) => setMapInstance(map), [])
+  const mapRef = useRef<L.Map | null>(null)
+  const handleMapReady = useCallback((map: L.Map) => { setMapInstance(map); mapRef.current = map }, [])
 
   function getBoundaryOpacity(_id: BoundaryId) { return boundaryOpacity }
   function updateBoundaryOpacity(val: number) {
@@ -201,8 +234,8 @@ export default function SoilMaps() {
             if (res.ok) data = (await res.json()) as FeatureCollection
           } catch { /* ไม่มีไฟล์ -> fallback RPC ด้านล่าง */ }
         }
-        // 2) fallback: Supabase RPC (อำเภอ/ตำบลยังไม่มีไฟล์ static)
-        if (!data) {
+        // 2) fallback: Supabase RPC
+        if (!data && layer.rpc) {
           const supabase = createClient()
           const { data: rpcData } = await supabase.rpc(layer.rpc)
           if (rpcData) data = rpcData as FeatureCollection
@@ -220,6 +253,36 @@ export default function SoilMaps() {
   function resetNorth() {
     if (!mapInstance) return
     mapInstance.fitBounds(SOIL_BOUNDS, { padding: [20, 20] })
+  }
+
+  async function handleSearchSelect(entry: SearchEntry) {
+    const [minLng, minLat, maxLng, maxLat] = entry.b
+    mapRef.current?.fitBounds([[minLat, minLng], [maxLat, maxLng]], { padding: [40, 40], maxZoom: 14 })
+
+    // ดึงค่าดินที่จุดกลางพื้นที่
+    const centerLat = (minLat + maxLat) / 2
+    const centerLng = (minLng + maxLng) / 2
+    handlePick(centerLat, centerLng)
+
+    const boundaryId = FILE_TO_BOUNDARY_ID[entry.f]
+    let geojson = boundaryData[boundaryId]
+
+    if (!geojson) {
+      try {
+        const res = await fetch(`/boundaries/${entry.f}.geojson`)
+        if (res.ok) {
+          geojson = (await res.json()) as FeatureCollection
+          setBoundaryData((prev) => ({ ...prev, [boundaryId]: geojson! }))
+        }
+      } catch { /* ignore */ }
+    }
+
+    if (entry.i >= 0) {
+      const feat = geojson?.features[entry.i]
+      setHighlightFeature(feat ?? null)
+    } else {
+      setHighlightFeature(null)
+    }
   }
 
   const currentBase = BASE_MAPS.find((b) => b.id === activeBase)!
@@ -288,6 +351,7 @@ export default function SoilMaps() {
             className="soil-overlay"
           />
         )}
+        {highlightFeature && <HighlightLayer key={JSON.stringify(highlightFeature.id ?? highlightFeature.properties)} feature={highlightFeature} />}
         {BOUNDARY_LAYERS.map(({ id, color, weight }) => {
           const data = boundaryData[id]
           if (!activeBoundaries.has(id) || !data) return null
@@ -540,7 +604,7 @@ export default function SoilMaps() {
 
 
       {/* Search bar — top left */}
-      <SearchBar onSelect={(lat, lng) => { mapInstance?.setView([lat, lng], 12); handlePick(lat, lng) }} />
+      <SearchBar onSelect={handleSearchSelect} onClear={() => setHighlightFeature(null)} />
 
       {/* legend — ซ้ายบน แสดงเฉพาะเมื่อมี layer เปิดอยู่ */}
       {meta && (
