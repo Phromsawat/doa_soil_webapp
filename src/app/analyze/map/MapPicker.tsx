@@ -14,11 +14,10 @@ const BASE_MAPS = [
 ] as const
 type BaseMapId = typeof BASE_MAPS[number]["id"]
 
-const pinIcon = L.divIcon({
-  className: "",
-  html: `<div style="width:13px;height:13px;border-radius:50%;background:#1A4D2E;"></div>`,
-  iconSize: [13, 13],
-  iconAnchor: [6.5, 6.5],
+const pinIcon = L.icon({
+  iconUrl: "/img/three.svg",
+  iconSize: [36, 42],
+  iconAnchor: [18, 38],
 })
 
 interface Props {
