@@ -166,10 +166,10 @@ export default function MapPicker({ onConfirm, onCancel, initialLat, initialLng 
       {/* Map */}
       <div ref={containerRef} className="flex-1 w-full" />
 
-      {/* Search bar — full width at top, leave 52px gap on right for controls */}
-      <div className="absolute left-3 top-3 right-[52px] z-[1001]">
+      {/* Search bar — fixed width from left, right controls sit beside it */}
+      <div className="absolute left-3 top-3 z-[1001]">
         <SearchBar
-          className="w-full"
+          className="w-[220px] max-w-[calc(100vw-5rem)]"
           onSelect={(entry) => {
             const [minLng, minLat, maxLng, maxLat] = entry.b
             const lat = (minLat + maxLat) / 2
@@ -186,8 +186,8 @@ export default function MapPicker({ onConfirm, onCancel, initialLat, initialLng 
         />
       </div>
 
-      {/* Right controls — start below search bar (top-16 = 64px) */}
-      <div className="absolute right-3 top-16 z-[1000] flex flex-col gap-2.5 items-center">
+      {/* Right controls — vertically centered in map area (above bottom bar) */}
+      <div className="absolute right-3 top-0 bottom-[56px] z-[1000] flex flex-col gap-2.5 items-center justify-center">
 
         {/* Compass */}
         <button
@@ -258,39 +258,37 @@ export default function MapPicker({ onConfirm, onCancel, initialLat, initialLng 
 
       </div>
 
-      {/* Info bar */}
-      <div className="bg-white border-t border-gray-100 px-4 py-3 shadow-lg z-[1000] flex items-center justify-between gap-3">
-        <div className="flex-1 min-w-0">
-          {pinned ? (
-            <div className="flex items-center gap-2 text-sm text-gray-700">
-              <MapPin className="w-4 h-4 text-[#1A4D2E] shrink-0" />
-              <span className="font-medium truncate">
-                {pinned.lat.toFixed(6)}, {pinned.lng.toFixed(6)}
-              </span>
-            </div>
-          ) : (
-            <p className="text-sm text-gray-400">แตะบนแผนที่เพื่อปักหมุดพิกัด</p>
-          )}
+      {/* Coordinates pill — floats above bottom bar on the map */}
+      {pinned ? (
+        <div className="absolute bottom-[68px] left-1/2 -translate-x-1/2 z-[1000] bg-gray-100 rounded-full px-4 py-2 pointer-events-none whitespace-nowrap">
+          <span className="text-sm text-gray-500 tabular-nums">
+            {pinned.lat.toFixed(5)}, {pinned.lng.toFixed(5)}
+          </span>
         </div>
-
-        <div className="flex gap-2 shrink-0">
-          <button
-            onClick={onCancel}
-            className="flex items-center justify-center gap-1.5 h-9 px-4 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-full text-sm font-medium transition-colors"
-          >
-            <X className="w-3.5 h-3.5" />
-            ยกเลิก
-          </button>
-
-          <button
-            onClick={() => pinned && onConfirm(pinned.lat, pinned.lng, zipRef.current ?? undefined)}
-            disabled={!pinned}
-            className="flex items-center justify-center gap-1.5 h-9 px-4 bg-[#1A4D2E] hover:bg-[#143a22] text-white rounded-full text-sm font-medium transition-colors disabled:opacity-40 disabled:cursor-not-allowed shadow-sm"
-          >
-            <Check className="w-3.5 h-3.5" />
-            ยืนยันพิกัด
-          </button>
+      ) : (
+        <div className="absolute bottom-[68px] left-1/2 -translate-x-1/2 z-[1000] bg-white/80 backdrop-blur-sm rounded-full px-3 py-1.5 shadow-sm pointer-events-none">
+          <span className="text-xs text-gray-400">แตะบนแผนที่เพื่อปักหมุด</span>
         </div>
+      )}
+
+      {/* Bottom bar — action buttons only */}
+      <div className="bg-white border-t border-gray-100 px-4 py-3 shadow-lg z-[1000] flex items-center justify-center gap-2">
+        <button
+          onClick={onCancel}
+          className="flex items-center justify-center gap-1.5 h-9 px-4 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-full text-sm font-medium transition-colors"
+        >
+          <X className="w-3.5 h-3.5" />
+          ยกเลิก
+        </button>
+
+        <button
+          onClick={() => pinned && onConfirm(pinned.lat, pinned.lng, zipRef.current ?? undefined)}
+          disabled={!pinned}
+          className="flex items-center justify-center gap-1.5 h-9 px-4 bg-[#1A4D2E] hover:bg-[#143a22] text-white rounded-full text-sm font-medium transition-colors disabled:opacity-40 disabled:cursor-not-allowed shadow-sm"
+        >
+          <Check className="w-3.5 h-3.5" />
+          ยืนยันพิกัด
+        </button>
       </div>
     </div>
   )

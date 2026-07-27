@@ -169,7 +169,7 @@ export default function SearchBar({ onSelect, onClear, className }: Props) {
         </div>
 
         {results.length > 0 && (
-          <div className="absolute top-full mt-1.5 left-0 right-0 bg-white rounded-2xl shadow-xl ring-1 ring-black/8 overflow-hidden">
+          <div className="absolute top-full mt-1.5 left-0 right-0 bg-white rounded-2xl shadow-xl ring-1 ring-black/8 overflow-hidden max-h-[260px] overflow-y-auto [&::-webkit-scrollbar]:hidden [scrollbar-width:none]">
             {results.map((r, i) => {
               const sub = subtitle(r)
               return (
