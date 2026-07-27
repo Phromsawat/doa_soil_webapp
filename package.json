@@ -40,6 +40,8 @@
     "eslint": "^9",
     "eslint-config-next": "16.2.7",
     "tailwindcss": "^4",
+    "topojson-client": "^3.1.0",
+    "topojson-server": "^3.0.1",
     "typescript": "^5"
   },
   "ignoreScripts": [

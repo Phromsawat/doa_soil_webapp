@@ -22,7 +22,7 @@ const pinIcon = L.divIcon({
 })
 
 interface Props {
-  onConfirm: (lat: number, lng: number) => void
+  onConfirm: (lat: number, lng: number, zip?: string) => void
   onCancel: () => void
   initialLat?: number
   initialLng?: number
@@ -32,6 +32,7 @@ export default function MapPicker({ onConfirm, onCancel, initialLat, initialLng 
   const mapRef = useRef<L.Map | null>(null)
   const markerRef = useRef<L.Marker | null>(null)
   const containerRef = useRef<HTMLDivElement>(null)
+  const zipRef = useRef<string | null>(null)
   const hasInitial = initialLat != null && initialLng != null && !isNaN(initialLat) && !isNaN(initialLng)
   const [pinned, setPinned] = useState<{ lat: number; lng: number } | null>(
     hasInitial ? { lat: initialLat!, lng: initialLng! } : null
@@ -62,7 +63,7 @@ export default function MapPicker({ onConfirm, onCancel, initialLat, initialLng 
     }).addTo(map)
 
     if (hasInitial) {
-      markerRef.current = L.marker([initialLat!, initialLng!]).addTo(map)
+      markerRef.current = L.marker([initialLat!, initialLng!], { icon: pinIcon }).addTo(map)
     }
 
     map.on("click", (e: L.LeafletMouseEvent) => {
@@ -85,7 +86,7 @@ export default function MapPicker({ onConfirm, onCancel, initialLat, initialLng 
           mapRef.current.setView([latitude, longitude], 15)
           setPinned({ lat: latitude, lng: longitude })
           if (!markerRef.current) {
-            markerRef.current = L.marker([latitude, longitude]).addTo(mapRef.current)
+            markerRef.current = L.marker([latitude, longitude], { icon: pinIcon }).addTo(mapRef.current)
           } else {
             markerRef.current.setLatLng([latitude, longitude])
           }
@@ -118,6 +119,23 @@ export default function MapPicker({ onConfirm, onCancel, initialLat, initialLng 
     tileLayerRef.current.setUrl(bm.url)
   }, [activeBase])
 
+  // reverse geocode whenever user pins a location
+  useEffect(() => {
+    if (!pinned) return
+    const timer = setTimeout(async () => {
+      try {
+        const res = await fetch(
+          `https://nominatim.openstreetmap.org/reverse?lat=${pinned.lat}&lon=${pinned.lng}&format=json`,
+          { headers: { "Accept-Language": "th" } }
+        )
+        const data = await res.json()
+        const postcode = data?.address?.postcode as string | undefined
+        if (postcode) zipRef.current = postcode
+      } catch { /* silent */ }
+    }, 500)
+    return () => clearTimeout(timer)
+  }, [pinned])
+
   function goToMyLocation() {
     setLocating(true)
     navigator.geolocation.getCurrentPosition(
@@ -144,23 +162,32 @@ export default function MapPicker({ onConfirm, onCancel, initialLat, initialLng 
   const btnBase = "w-10 h-10 bg-white shadow-md rounded-full flex items-center justify-center text-gray-700 hover:bg-gray-50 active:bg-gray-100 transition-colors border border-gray-100"
 
   return (
-    <div className="flex flex-col h-[calc(100dvh-64px)] font-thai relative">
+    <div className="flex flex-col h-[75vh] font-thai relative">
       {/* Map */}
       <div ref={containerRef} className="flex-1 w-full" />
 
-      {/* Search bar — top left */}
-      <SearchBar onSelect={(lat, lng) => {
-        mapRef.current?.setView([lat, lng], 12)
-        setPinned({ lat, lng })
-        if (markerRef.current) {
-          markerRef.current.setLatLng([lat, lng])
-        } else if (mapRef.current) {
-          markerRef.current = L.marker([lat, lng], { icon: pinIcon }).addTo(mapRef.current)
-        }
-      }} />
+      {/* Search bar — full width at top, leave 52px gap on right for controls */}
+      <div className="absolute left-3 top-3 right-[52px] z-[1001]">
+        <SearchBar
+          className="w-full"
+          onSelect={(entry) => {
+            const [minLng, minLat, maxLng, maxLat] = entry.b
+            const lat = (minLat + maxLat) / 2
+            const lng = (minLng + maxLng) / 2
+            if (entry.zip) zipRef.current = entry.zip
+            mapRef.current?.fitBounds([[minLat, minLng], [maxLat, maxLng]], { padding: [40, 40], maxZoom: 14 })
+            setPinned({ lat, lng })
+            if (markerRef.current) {
+              markerRef.current.setLatLng([lat, lng])
+            } else if (mapRef.current) {
+              markerRef.current = L.marker([lat, lng], { icon: pinIcon }).addTo(mapRef.current)
+            }
+          }}
+        />
+      </div>
 
-      {/* Right-center map controls */}
-      <div className="absolute right-3 top-1/2 -translate-y-1/2 z-[1000] flex flex-col gap-3 items-center">
+      {/* Right controls — start below search bar (top-16 = 64px) */}
+      <div className="absolute right-3 top-16 z-[1000] flex flex-col gap-2.5 items-center">
 
         {/* Compass */}
         <button
@@ -256,7 +283,7 @@ export default function MapPicker({ onConfirm, onCancel, initialLat, initialLng 
           </button>
 
           <button
-            onClick={() => pinned && onConfirm(pinned.lat, pinned.lng)}
+            onClick={() => pinned && onConfirm(pinned.lat, pinned.lng, zipRef.current ?? undefined)}
             disabled={!pinned}
             className="flex items-center justify-center gap-1.5 h-9 px-4 bg-[#1A4D2E] hover:bg-[#143a22] text-white rounded-full text-sm font-medium transition-colors disabled:opacity-40 disabled:cursor-not-allowed shadow-sm"
           >

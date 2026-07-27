@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { useRouter } from "next/navigation"
 import dynamic from "next/dynamic"
 import * as Dialog from "@radix-ui/react-dialog"
@@ -42,6 +42,58 @@ export default function AnalyzeUpload() {
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [isMapOpen, setIsMapOpen] = useState(false)
+  const [zipHint, setZipHint] = useState<string | null>(null)
+  const [zipError, setZipError] = useState<string | null>(null)
+  const [zipLoading, setZipLoading] = useState(false)
+  const zipDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  // ZIP → auto-fill lat/lng via Nominatim
+  useEffect(() => {
+    if (zipDebounceRef.current) clearTimeout(zipDebounceRef.current)
+    setZipHint(null)
+    setZipError(null)
+
+    if (!/^\d{5}$/.test(postalCode)) return
+
+    zipDebounceRef.current = setTimeout(async () => {
+      setZipLoading(true)
+      try {
+        const res = await fetch(
+          `https://nominatim.openstreetmap.org/search?postalcode=${postalCode}&countrycodes=th&format=json&limit=1`,
+          { headers: { "Accept-Language": "th" } }
+        )
+        const hits = await res.json() as Array<{ display_name: string; boundingbox: string[] }>
+        if (!hits.length) {
+          setZipError("ไม่พบรหัสไปรษณีย์")
+          return
+        }
+        const hit = hits[0]
+        const bb = hit.boundingbox // [south, north, west, east]
+        const centerLat = ((parseFloat(bb[0]) + parseFloat(bb[1])) / 2).toFixed(6)
+        const centerLng = ((parseFloat(bb[2]) + parseFloat(bb[3])) / 2).toFixed(6)
+        setLat(centerLat)
+        setLng(centerLng)
+
+        // parse area name for hint
+        const parts = hit.display_name.split(", ")
+        const prov =
+          parts.find((p: string) => p.startsWith("จังหวัด"))?.replace("จังหวัด", "")
+          ?? (parts.includes("กรุงเทพมหานคร") ? "กรุงเทพมหานคร" : undefined)
+        const dist =
+          parts.find((p: string) => p.startsWith("อำเภอ"))?.replace("อำเภอ", "")
+          ?? parts.find((p: string) => p.startsWith("เขต"))?.replace("เขต", "")
+        const sub =
+          parts.find((p: string) => p.startsWith("ตำบล"))?.replace("ตำบล", "")
+          ?? parts.find((p: string) => p.startsWith("แขวง"))?.replace("แขวง", "")
+        const hintParts = [sub, dist && `อ.${dist}`, prov && `จ.${prov}`].filter(Boolean)
+        setZipHint(hintParts.join(" ") || parts.slice(1, 3).join(" "))
+      } catch {
+        setZipError("ไม่สามารถค้นหารหัสไปรษณีย์ได้")
+      } finally {
+        setZipLoading(false)
+      }
+    }, 400)
+  }, [postalCode])
 
   // Legacy: pick up lat/lng if user came back from /analyze/map (the standalone page)
   useEffect(() => {
@@ -55,9 +107,10 @@ export default function AnalyzeUpload() {
     }
   }, [])
 
-  const handleMapConfirm = (pickedLat: number, pickedLng: number) => {
+  const handleMapConfirm = (pickedLat: number, pickedLng: number, pickedZip?: string) => {
     setLat(String(pickedLat))
     setLng(String(pickedLng))
+    if (pickedZip) setPostalCode(pickedZip)
     setIsMapOpen(false)
   }
 
@@ -197,17 +250,26 @@ export default function AnalyzeUpload() {
             <span>สถานที่เก็บตัวอย่าง</span>
           </div>
 
-          <div className="space-y-2">
+          <div className="space-y-1.5">
             <label className="block text-sm font-semibold text-gray-700">รหัสไปรษณีย์</label>
-            <input
-              type="text"
-              inputMode="numeric"
-              maxLength={5}
-              placeholder="เช่น 10900"
-              value={postalCode}
-              onChange={(e) => setPostalCode(e.target.value.replace(/\D/g, ""))}
-              className="w-32 bg-gray-50 border border-gray-100 rounded-full px-4 h-10 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#1A4D2E]/20 focus:border-[#1A4D2E] transition-all"
-            />
+            <div className="flex items-center gap-2">
+              <input
+                type="text"
+                inputMode="numeric"
+                maxLength={5}
+                placeholder="เช่น 10900"
+                value={postalCode}
+                onChange={(e) => setPostalCode(e.target.value.replace(/\D/g, ""))}
+                className="w-32 bg-gray-50 border border-gray-100 rounded-full px-4 h-10 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#1A4D2E]/20 focus:border-[#1A4D2E] transition-all"
+              />
+              {zipLoading && <Loader2 className="w-4 h-4 animate-spin text-gray-400 shrink-0" />}
+            </div>
+            {zipHint && (
+              <p className="text-xs text-[#1A4D2E] pl-2">{zipHint}</p>
+            )}
+            {zipError && (
+              <p className="text-xs text-red-500 pl-2">{zipError}</p>
+            )}
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
@@ -288,6 +350,8 @@ export default function AnalyzeUpload() {
               <MapPicker
                 onConfirm={handleMapConfirm}
                 onCancel={() => setIsMapOpen(false)}
+                initialLat={lat ? Number(lat) : undefined}
+                initialLng={lng ? Number(lng) : undefined}
               />
             )}
           </Dialog.Content>
