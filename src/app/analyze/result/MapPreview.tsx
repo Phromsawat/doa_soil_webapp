@@ -6,11 +6,10 @@ import { Plus, Minus, Expand } from "lucide-react"
 import L from "leaflet"
 import "leaflet/dist/leaflet.css"
 
-delete (L.Icon.Default.prototype as any)._getIconUrl
-L.Icon.Default.mergeOptions({
-  iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
-  iconRetinaUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png",
-  shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
+const pinIcon = L.icon({
+  iconUrl: "/img/three.svg",
+  iconSize: [36, 42],
+  iconAnchor: [18, 38],
 })
 
 interface Props {
@@ -42,7 +41,7 @@ export default function MapPreview({ lat, lng }: Props) {
       subdomains: "abcd",
     }).addTo(map)
 
-    L.marker([lat, lng]).addTo(map)
+    L.marker([lat, lng], { icon: pinIcon }).addTo(map)
 
     mapRef.current = map
 
