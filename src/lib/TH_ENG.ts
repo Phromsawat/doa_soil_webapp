@@ -71,6 +71,8 @@ export const translations = {
     changePassword: "เปลี่ยนรหัสผ่าน",
     languageLabel: "ภาษา",
     signOutBtn: "ออกจากระบบ",
+    adminMenu: "จัดการระบบ (Admin)",
+    userName: "ผู้ใช้",
 
     // History
     historyMenu: "ประวัติ",
@@ -149,6 +151,8 @@ export const translations = {
     changePassword: "Change Password",
     languageLabel: "Language",
     signOutBtn: "Sign Out",
+    adminMenu: "System Admin",
+    userName: "User",
 
     // History
     historyMenu: "History",

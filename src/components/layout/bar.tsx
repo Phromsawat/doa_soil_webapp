@@ -365,33 +365,33 @@ export default function Bar() {
               {displayName ? displayName.charAt(0).toUpperCase() : isAnonymous ? "?" : "O"}
             </div>
             <span className="font-medium text-[#1A1A1A] text-[16px] font-thai truncate">
-              {displayName ?? (isAnonymous ? "ผู้ใช้ทั่วไป" : "ผู้ใช้")}
+              {displayName ?? (isAnonymous ? t('anonymousUserName') : t('userName'))}
             </span>
           </div>
 
           <Link href="/" onClick={() => setIsProfileOpen(false)} className="text-[16px] font-thai text-[#1A1A1A] font-normal hover:text-primary transition-colors">
-            หน้าหลัก
+            {t('homeMenu')}
           </Link>
           {!isAnonymous && (
             <Link href="/history" onClick={() => setIsProfileOpen(false)} className="text-[16px] font-thai text-[#1A1A1A] font-normal hover:text-primary transition-colors">
-              ประวัติการวิเคราะห์
+              {t('analysisHistory')}
             </Link>
           )}
           {showSoilMap && (
             <Link href="/map" onClick={() => setIsProfileOpen(false)} className="text-[16px] font-thai text-[#1A1A1A] font-normal hover:text-primary transition-colors">
-              แผนที่
+              {t('mapMenu')}
             </Link>
           )}
           {mounted && isAdmin && (
             <Link href="/admin" onClick={() => setIsProfileOpen(false)} className="text-[16px] font-thai text-primary font-medium hover:opacity-80 transition-opacity">
-              จัดการระบบ (Admin)
+              {t('adminMenu')}
             </Link>
           )}
           <Link href="/profile" onClick={() => setIsProfileOpen(false)} className="text-[16px] font-thai text-[#1A1A1A] font-normal hover:text-primary transition-colors">
-            แก้ไขโปรไฟล์
+            {t('editProfile')}
           </Link>
           <Link href="/profile/change-password" onClick={() => setIsProfileOpen(false)} className="text-[16px] font-thai text-[#1A1A1A] font-normal hover:text-primary transition-colors">
-            เปลี่ยนรหัสผ่าน
+            {t('changePassword')}
           </Link>
 
           <button
@@ -414,12 +414,12 @@ export default function Bar() {
             }}
             className="flex items-center justify-center w-full py-2 bg-[#FEE9D6] hover:bg-[#fddcc0] text-[#C05C00] rounded-full font-medium transition-all shadow-sm text-[15px] font-thai"
           >
-            ออกจากระบบ
+            {t('signOutBtn')}
           </button>
         </div>
 
         <div className="pt-10 text-center">
-          <p className="text-[12px] text-gray-400">เวอร์ชัน : 2.1.10 d255cc0c วันที่ : 13 พฤษภาคม 2026 เวลา 17:56</p>
+          <p className="text-[12px] text-gray-400">version 2.2.0</p>
         </div>
       </div>
     </>
