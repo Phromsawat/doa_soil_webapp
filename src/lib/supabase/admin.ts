@@ -9,6 +9,15 @@ import { requirePermission } from "@/lib/supabase/permissions"
 // =============================================================================
 
 /**
+ * ทำความสะอาดคำค้นก่อนยัดเข้า PostgREST `.or()` filter string.
+ * ตัดอักขระที่มีความหมายในไวยากรณ์ filter (comma, วงเล็บ, `*`, `\`)
+ * เพื่อกันไม่ให้คำค้นแทรกเงื่อนไขเพิ่ม (filter injection). คืน "" ถ้าไม่เหลืออะไร
+ */
+function sanitizeFilterTerm(s: string | undefined | null): string {
+  return (s ?? "").replace(/[,()*\\]/g, " ").trim()
+}
+
+/**
  * Throw if the current user is not an admin.
  * Use at the top of every admin server action.
  */
@@ -112,8 +121,8 @@ export async function adminListAnalyses(opts: {
   if (opts.status && opts.status !== "all") {
     q = q.eq("status", opts.status)
   }
-  if (opts.search?.trim()) {
-    const s = opts.search.trim()
+  const s = sanitizeFilterTerm(opts.search)
+  if (s) {
     q = q.or(
       `notes.ilike.%${s}%,province.ilike.%${s}%,amphur.ilike.%${s}%,district.ilike.%${s}%`
     )
@@ -210,8 +219,8 @@ export async function adminListUsers(opts: {
 
   if (opts.role && opts.role !== "all") q = q.eq("role", opts.role)
 
-  if (opts.search?.trim()) {
-    const s = opts.search.trim()
+  const s = sanitizeFilterTerm(opts.search)
+  if (s) {
     q = q.or(`email.ilike.%${s}%,full_name.ilike.%${s}%,nickname.ilike.%${s}%`)
   }
 
@@ -283,12 +292,17 @@ export async function adminDeleteUser(userId: string) {
 
   // Cleanup Storage first (best-effort)
   const supabase = await createClient()
-  const { data: images } = await supabase
-    .from("analysis_images")
-    .select("storage_path")
-    .eq("analysis_id",
-      (await supabase.from("analyses").select("id").eq("user_id", userId)).data?.map(a => a.id) ?? []
-    )
+  const { data: userAnalyses } = await supabase
+    .from("analyses")
+    .select("id")
+    .eq("user_id", userId)
+  const analysisIds = (userAnalyses ?? []).map((a) => a.id)
+  const { data: images } = analysisIds.length
+    ? await supabase
+        .from("analysis_images")
+        .select("storage_path")
+        .in("analysis_id", analysisIds)
+    : { data: [] as { storage_path: string }[] }
   const paths = (images ?? []).map((i) => i.storage_path).filter(Boolean)
   if (paths.length > 0) {
     await admin.storage.from("soil-images").remove(paths)
@@ -338,8 +352,8 @@ export async function adminListCrops(opts: {
     .range(offset, offset + limit - 1)
 
   if (opts.crop_type_id) q = q.eq("crop_type_id", opts.crop_type_id)
-  if (opts.search?.trim()) {
-    const s = opts.search.trim()
+  const s = sanitizeFilterTerm(opts.search)
+  if (s) {
     q = q.or(`name.ilike.%${s}%,name_en.ilike.%${s}%`)
   }
 

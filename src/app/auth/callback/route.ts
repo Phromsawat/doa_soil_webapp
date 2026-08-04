@@ -9,7 +9,12 @@ import { createClient } from "@/lib/supabase/server"
 export async function GET(request: NextRequest) {
   const { searchParams, origin } = new URL(request.url)
   const code = searchParams.get("code")
-  const redirectTo = searchParams.get("redirect") ?? "/"
+  // รับเฉพาะ path ภายในเว็บ (ขึ้นต้น "/" เดี่ยว) กัน open redirect ไปเว็บนอก
+  const redirectParam = searchParams.get("redirect")
+  const redirectTo =
+    redirectParam && redirectParam.startsWith("/") && !redirectParam.startsWith("//")
+      ? redirectParam
+      : "/"
 
   if (code) {
     const supabase = await createClient()
