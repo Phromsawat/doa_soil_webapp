@@ -102,10 +102,14 @@ export async function uploadAnalysisImage(
  */
 export async function completeAnalysis(analysisId: string) {
   const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) throw new Error("Not authenticated")
+
   const { error } = await supabase
     .from("analyses")
     .update({ status: "completed" })
     .eq("id", analysisId)
+    .eq("user_id", user.id)     // จำกัดเฉพาะของตัวเอง (RLS เปิดให้ admin แก้ได้ทุกแถว)
   if (error) throw new Error(`completeAnalysis: ${error.message}`)
   revalidatePath("/history")
 }
@@ -124,6 +128,7 @@ export async function saveManualAnalysis(input: {
   amphur?: string | null
   district?: string | null
   notes?: string | null
+  blend_formula_ids?: string[]      // สูตรปุ๋ยที่เลือกไว้ตอนกรอกฟอร์ม (สูงสุด 3)
 }) {
   return createAnalysis({
     crop_id: input.crop_id ?? null,
@@ -139,18 +144,27 @@ export async function saveManualAnalysis(input: {
     latitude: null,
     longitude: null,
     notes: input.notes ?? null,
+    blend_formula_ids: (input.blend_formula_ids ?? []).filter(Boolean).slice(0, 3),
   })
 }
 
 /**
- * Fetch a single analysis (with images) — only the owner can read it (RLS).
+ * Fetch one of the current user's own analyses (with images).
+ *
+ * กรอง user_id ตรงนี้ด้วย ไม่พึ่ง RLS อย่างเดียว — policy "analyses: own read"
+ * เปิดให้ admin อ่านได้ทุกแถว (auth.uid() = user_id OR is_admin()) ถ้าไม่กรอง
+ * บัญชี admin จะเปิดผลของคนอื่นผ่านหน้าผู้ใช้ได้ ฝั่ง admin มี adminGetAnalysis แยกอยู่แล้ว
  */
 export async function getAnalysis(analysisId: string) {
   const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) throw new Error("Not authenticated")
+
   const { data, error } = await supabase
     .from("analyses")
     .select("*, analysis_images(*), analysis_results(*)")
     .eq("id", analysisId)
+    .eq("user_id", user.id)
     .single()
   if (error) throw new Error(`getAnalysis: ${error.message}`)
   return data
@@ -158,12 +172,18 @@ export async function getAnalysis(analysisId: string) {
 
 /**
  * List the current user's recent analyses.
+ * กรอง user_id เสมอ (ดูเหตุผลใน getAnalysis) — หน้าประวัติต้องเห็นเฉพาะของตัวเอง
+ * แม้บัญชีนั้นจะเป็น admin ก็ตาม
  */
 export async function listMyAnalyses(limit = 20) {
   const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) throw new Error("Not authenticated")
+
   const { data, error } = await supabase
     .from("analyses")
     .select("*, analysis_images(nutrient_code, public_url)")
+    .eq("user_id", user.id)
     .order("created_at", { ascending: false })
     .limit(limit)
   if (error) throw new Error(`listMyAnalyses: ${error.message}`)
