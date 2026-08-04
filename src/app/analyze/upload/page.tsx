@@ -29,6 +29,34 @@ const NUTRIENT_FIELDS: Array<{ label: string; code: NutrientCode }> = [
   { label: "โพแทสเซียม",  code: "K"  },
 ]
 
+/** ตัวเลือกตำบลจากรหัสไปรษณีย์ — เก็บชื่อพื้นที่แยกส่วนไว้บันทึกลง DB ด้วย */
+type ZipOption = {
+  label: string
+  lat: string
+  lng: string
+  province: string | null   // จังหวัด
+  amphur: string | null     // อำเภอ
+  district: string | null   // ตำบล
+}
+
+/** entry ตำบลจาก search-index → ตัวเลือกพร้อมพิกัดกึ่งกลาง */
+function toZipOption(e: {
+  nth: string
+  dth?: string
+  pth?: string
+  b: [number, number, number, number]
+}): ZipOption {
+  const [minLng, minLat, maxLng, maxLat] = e.b
+  return {
+    label: [e.nth, e.dth && `อ.${e.dth}`, e.pth && `จ.${e.pth}`].filter(Boolean).join(" "),
+    lat: ((minLat + maxLat) / 2).toFixed(6),
+    lng: ((minLng + maxLng) / 2).toFixed(6),
+    province: e.pth ?? null,
+    amphur: e.dth ?? null,
+    district: e.nth ?? null,
+  }
+}
+
 export default function AnalyzeUpload() {
   const router = useRouter()
   const [files, setFiles] = useState<Record<NutrientCode, File | null>>({
@@ -45,7 +73,9 @@ export default function AnalyzeUpload() {
   const [zipHint, setZipHint] = useState<string | null>(null)
   const [zipError, setZipError] = useState<string | null>(null)
   const [zipLoading, setZipLoading] = useState(false)
-  const [zipOptions, setZipOptions] = useState<Array<{ label: string; lat: string; lng: string }>>([])
+  const [zipOptions, setZipOptions] = useState<ZipOption[]>([])
+  // ชื่อพื้นที่ที่ได้จากรหัสไปรษณีย์/หมุดแผนที่ — บันทึกลง record เพื่อให้หน้าผลแสดง "พื้นที่เพาะปลูก"
+  const [area, setArea] = useState<Pick<ZipOption, "province" | "amphur" | "district"> | null>(null)
   const zipDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const searchIndexRef = useRef<Array<{ t: string; nth: string; pth?: string; dth?: string; b: [number,number,number,number]; zip?: string }> | null>(null)
 
@@ -62,6 +92,7 @@ export default function AnalyzeUpload() {
     setZipHint(null)
     setZipError(null)
     setZipOptions([])
+    setArea(null)
 
     if (!/^\d{5}$/.test(postalCode)) return
 
@@ -73,16 +104,11 @@ export default function AnalyzeUpload() {
         const subs = idx.filter(e => e.t === "sub" && e.zip === postalCode)
 
         if (subs.length > 0) {
-          const options = subs.map(e => {
-            const [minLng, minLat, maxLng, maxLat] = e.b
-            return {
-              label: [e.nth, e.dth && `อ.${e.dth}`, e.pth && `จ.${e.pth}`].filter(Boolean).join(" "),
-              lat: ((minLat + maxLat) / 2).toFixed(6),
-              lng: ((minLng + maxLng) / 2).toFixed(6),
-            }
-          })
+          const options = subs.map(toZipOption)
           if (options.length === 1) {
-            setLat(options[0].lat); setLng(options[0].lng); setZipHint(options[0].label)
+            const o = options[0]
+            setLat(o.lat); setLng(o.lng); setZipHint(o.label)
+            setArea({ province: o.province, amphur: o.amphur, district: o.district })
           } else {
             setZipOptions(options)
           }
@@ -123,16 +149,11 @@ export default function AnalyzeUpload() {
         }
         const fallbackSubs = idx.filter(e => e.t === "sub" && e.pth === prov && (!dist || e.dth === dist))
         if (fallbackSubs.length === 0) { setZipError("ไม่พบรหัสไปรษณีย์"); return }
-        const options = fallbackSubs.map(e => {
-          const [minLng, minLat, maxLng, maxLat] = e.b
-          return {
-            label: [e.nth, e.dth && `อ.${e.dth}`, e.pth && `จ.${e.pth}`].filter(Boolean).join(" "),
-            lat: ((minLat + maxLat) / 2).toFixed(6),
-            lng: ((minLng + maxLng) / 2).toFixed(6),
-          }
-        })
+        const options = fallbackSubs.map(toZipOption)
         if (options.length === 1) {
-          setLat(options[0].lat); setLng(options[0].lng); setZipHint(options[0].label)
+          const o = options[0]
+          setLat(o.lat); setLng(o.lng); setZipHint(o.label)
+          setArea({ province: o.province, amphur: o.amphur, district: o.district })
         } else {
           setZipOptions(options)
         }
@@ -187,9 +208,9 @@ export default function AnalyzeUpload() {
         p_value: null,
         k_value: null,
         ph_value: null,
-        province: null,
-        amphur: null,
-        district: postalCode || null,
+        province: area?.province ?? null,
+        amphur: area?.amphur ?? null,
+        district: area?.district ?? null,
         latitude: lat ? Number(lat) : null,
         longitude: lng ? Number(lng) : null,
         notes: sampleCode ? `รหัสตัวอย่าง: ${sampleCode}${phone ? ` · ${phone}` : ""}` : null,
@@ -326,6 +347,7 @@ export default function AnalyzeUpload() {
                       setLat(opt.lat)
                       setLng(opt.lng)
                       setZipHint(opt.label)
+                      setArea({ province: opt.province, amphur: opt.amphur, district: opt.district })
                       setZipOptions([])
                     }}
                     className="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-[#f0fdf4] flex items-center gap-2 border-t border-gray-50 first:border-0 transition-colors"

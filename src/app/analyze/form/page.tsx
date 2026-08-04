@@ -200,6 +200,7 @@ export default function AnalyzeForm() {
         amphur: null,
         district: null,
         notes: crop ? `พืช: ${crop.name}` : null,
+        blend_formula_ids: picked.filter(Boolean),   // ปุ๋ยที่เลือกในขั้นที่ 3
       })
       try {
         await calculateAndSave({

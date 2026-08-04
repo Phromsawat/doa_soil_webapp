@@ -1,7 +1,6 @@
 "use client"
 
 import { useEffect, useMemo, useState } from "react"
-import { Plus, X, Loader2 } from "lucide-react"
 import {
   listFertilizerFormulas,
   type FertilizerFormulaRow,
@@ -15,25 +14,34 @@ interface Target {
   k2o: number | null
 }
 
+/**
+ * แสดง "ปุ๋ยที่เลือกใช้" ของการวิเคราะห์ครั้งนี้ — อ่านอย่างเดียว
+ * หน้า result คือผลที่บันทึกแล้ว จึงไม่มีช่องให้เลือกปุ๋ยใหม่
+ * ถ้ายังไม่มีปุ๋ยที่บันทึกไว้ → ไม่แสดงอะไรเลย
+ */
 export default function FertilizerBlend({
   target,
   unit,
-  embedded = false, // true = ไม่มีการ์ด/หัวข้อของตัวเอง (ใช้ตอนฝังในหน้าที่มีหัวข้ออยู่แล้ว)
+  picked,                   // fertilizer_formulas.id ที่บันทึกไว้กับ record นี้
+  embedded = false,         // true = ไม่มีการ์ด/หัวข้อของตัวเอง (ใช้ตอนฝังในหน้าที่มีหัวข้ออยู่แล้ว)
 }: {
   target: Target
   unit: string
+  picked?: string[]
   embedded?: boolean
 }) {
   const [formulas, setFormulas] = useState<FertilizerFormulaRow[]>([])
   const [loading, setLoading] = useState(true)
-  const [picked, setPicked] = useState<string[]>([""]) // สูงสุด 3 สูตร
+
+  const pickedIds = useMemo(() => (picked ?? []).filter(Boolean), [picked])
 
   useEffect(() => {
+    if (pickedIds.length === 0) { setLoading(false); return }
     listFertilizerFormulas()
       .then(setFormulas)
       .catch(() => {})
       .finally(() => setLoading(false))
-  }, [])
+  }, [pickedIds])
 
   const tgt = {
     n: target.n ?? 0,
@@ -44,7 +52,7 @@ export default function FertilizerBlend({
 
   const selectedFormulas = useMemo<Formula[]>(
     () =>
-      picked
+      pickedIds
         .map((id) => formulas.find((f) => f.id === id))
         .filter((f): f is FertilizerFormulaRow => !!f)
         .map((f) => ({
@@ -55,7 +63,7 @@ export default function FertilizerBlend({
           p2o5: f.p2o5_percent,
           k2o: f.k2o_percent,
         })),
-    [picked, formulas]
+    [pickedIds, formulas]
   )
 
   const result = useMemo(
@@ -67,21 +75,8 @@ export default function FertilizerBlend({
     [selectedFormulas, hasTarget, tgt.n, tgt.p2o5, tgt.k2o]
   )
 
-  function setSlot(i: number, value: string) {
-    setPicked((prev) => prev.map((v, idx) => (idx === i ? value : v)))
-  }
-  function addSlot() {
-    setPicked((prev) => (prev.length < 3 ? [...prev, ""] : prev))
-  }
-  function removeSlot(i: number) {
-    setPicked((prev) => (prev.length > 1 ? prev.filter((_, idx) => idx !== i) : prev))
-  }
-
-  if (!hasTarget) return null
-
-  // ตัวเลือกปุ๋ยที่ยังไม่ถูกเลือกในช่องอื่น
-  const optionsFor = (currentId: string) =>
-    formulas.filter((f) => f.id === currentId || !picked.includes(f.id))
+  // ไม่มีเป้าธาตุอาหาร / ยังโหลดไม่เสร็จ / ไม่เคยบันทึกปุ๋ยไว้ → ซ่อนทั้งบล็อก
+  if (!hasTarget || loading || selectedFormulas.length === 0) return null
 
   return (
     <div
@@ -92,64 +87,20 @@ export default function FertilizerBlend({
       }
     >
       {!embedded && (
-        <>
-          <h2 className="text-base font-semibold text-gray-800">
-            ขั้นที่ 2 · เลือกปุ๋ยที่จะใช้
-          </h2>
-          <p className="mb-3 text-xs text-gray-500">
-            เลือกปุ๋ยที่หาซื้อได้ 1–3 สูตร ระบบจะคำนวณให้ว่าต้องใช้แต่ละตัวเท่าไร
-          </p>
-        </>
+        <h2 className="mb-3 text-base font-semibold text-gray-800">ปุ๋ยที่เลือกใช้</h2>
       )}
 
-      {loading ? (
-        <div className="flex items-center gap-2 py-4 text-sm text-gray-500">
-          <Loader2 className="h-4 w-4 animate-spin" /> กำลังโหลดรายการปุ๋ย…
-        </div>
-      ) : (
-        <>
-          <div className="space-y-2">
-            {picked.map((id, i) => (
-              <div key={i} className="flex items-center gap-2">
-                <select
-                  value={id}
-                  onChange={(e) => setSlot(i, e.target.value)}
-                  className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-[#1A4D2E] focus:outline-none"
-                >
-                  <option value="">— เลือกปุ๋ย —</option>
-                  {optionsFor(id).map((f) => (
-                    <option key={f.id} value={f.id}>
-                      {f.name}
-                      {f.grade ? ` (${f.grade})` : ""}
-                    </option>
-                  ))}
-                </select>
-                {picked.length > 1 && (
-                  <button
-                    onClick={() => removeSlot(i)}
-                    className="rounded-lg p-2 text-gray-400 hover:bg-gray-100"
-                    aria-label="ลบปุ๋ย"
-                  >
-                    <X className="h-4 w-4" />
-                  </button>
-                )}
-              </div>
-            ))}
+      <div className="space-y-1.5">
+        {selectedFormulas.map((f) => (
+          <div key={f.id} className="flex items-center gap-2 text-sm text-gray-700">
+            <span className="h-1.5 w-1.5 rounded-full bg-[#1A4D2E]" />
+            <span className="font-medium">{f.name}</span>
+            {f.grade && <span className="text-xs text-gray-400">({f.grade})</span>}
           </div>
+        ))}
+      </div>
 
-          {picked.length < 3 && (
-            <button
-              onClick={addSlot}
-              className="mt-2 flex items-center gap-1 text-sm font-medium text-[#1A4D2E] hover:opacity-80"
-            >
-              <Plus className="h-4 w-4" /> เพิ่มปุ๋ยอีกสูตร
-            </button>
-          )}
-
-          {/* ผลลัพธ์ */}
-          {result && <div className="mt-4"><BlendResultCard result={result} unit={unit} /></div>}
-        </>
-      )}
+      {result && <div className="mt-4"><BlendResultCard result={result} unit={unit} /></div>}
     </div>
   )
 }

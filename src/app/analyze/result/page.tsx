@@ -76,7 +76,9 @@ function ResultContent() {
   const p = record.p_value ?? 0
   const k = record.k_value ?? 0
   const ph = record.ph_value ?? 6.0
-  const province = record.province ?? "ไม่ระบุ"
+  // แสดงพื้นที่เต็ม "ตำบล อำเภอ จังหวัด" เท่าที่มี (เหมือนหน้าประวัติ)
+  const areaLabel =
+    [record.district, record.amphur, record.province].filter(Boolean).join(" ") || "ไม่ระบุ"
 
   const classify = (val: number, low: number, high: number) => {
     if (val < low)  return { label: "ต่ำ",      textColor: "#ff000d", barColor: "#ff000d", pct: 30 }
@@ -157,7 +159,7 @@ function ResultContent() {
         )}
 
         {/* Location */}
-        {(province !== "ไม่ระบุ" || record.latitude) && (
+        {(areaLabel !== "ไม่ระบุ" || record.latitude) && (
           <div className="relative rounded-2xl overflow-hidden h-28 shadow-sm bg-gradient-to-r from-green-700 to-green-900">
             <div className="absolute inset-0 flex items-center p-5">
               <div className="text-white">
@@ -165,7 +167,7 @@ function ResultContent() {
                   <MapPin className="w-4 h-4 text-green-300" />
                   <span className="text-xs font-medium text-gray-200">พื้นที่เพาะปลูก</span>
                 </div>
-                <h3 className="text-lg font-medium">{province}</h3>
+                <h3 className="text-lg font-medium">{areaLabel}</h3>
                 {record.latitude && record.longitude && (
                   <p className="text-xs text-gray-300 mt-0.5">{Number(record.latitude).toFixed(4)}, {Number(record.longitude).toFixed(4)}</p>
                 )}
@@ -239,7 +241,7 @@ function ResultContent() {
           </div>
         )}
 
-        {/* ทางเลือก: เลือกปุ๋ยเอง (solver) */}
+        {/* ปุ๋ยที่เลือกใช้ (อ่านอย่างเดียว) — ไม่มีปุ๋ยที่บันทึกไว้ = ไม่แสดง */}
         {calculation && (
           <FertilizerBlend
             target={{
@@ -248,6 +250,7 @@ function ResultContent() {
               k2o: calculation.target_k2o,
             }}
             unit={calculation.unit}
+            picked={record.blend_formula_ids ?? []}
           />
         )}
 
