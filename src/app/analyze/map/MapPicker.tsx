@@ -20,8 +20,16 @@ const pinIcon = L.icon({
   iconAnchor: [18, 38],
 })
 
+/** พื้นที่ของหมุดที่ปัก — ได้จาก /api/reverse-geocode หรือจากผลค้นหา */
+export interface PickedArea {
+  province: string | null
+  amphur: string | null
+  district: string | null
+  zip: string | null
+}
+
 interface Props {
-  onConfirm: (lat: number, lng: number, zip?: string) => void
+  onConfirm: (lat: number, lng: number, area?: PickedArea) => void
   onCancel: () => void
   initialLat?: number
   initialLng?: number
@@ -31,7 +39,7 @@ export default function MapPicker({ onConfirm, onCancel, initialLat, initialLng 
   const mapRef = useRef<L.Map | null>(null)
   const markerRef = useRef<L.Marker | null>(null)
   const containerRef = useRef<HTMLDivElement>(null)
-  const zipRef = useRef<string | null>(null)
+  const areaRef = useRef<PickedArea | null>(null)
   const hasInitial = initialLat != null && initialLng != null && !isNaN(initialLat) && !isNaN(initialLng)
   const [pinned, setPinned] = useState<{ lat: number; lng: number } | null>(
     hasInitial ? { lat: initialLat!, lng: initialLng! } : null
@@ -119,21 +127,21 @@ export default function MapPicker({ onConfirm, onCancel, initialLat, initialLng 
     tileLayerRef.current.setUrl(bm.url)
   }, [activeBase])
 
-  // reverse geocode whenever user pins a location
+  // หาพื้นที่ของหมุดจากข้อมูลขอบเขตของเราเอง (ไม่เรียกบริการภายนอก)
   useEffect(() => {
     if (!pinned) return
+    const ctrl = new AbortController()
     const timer = setTimeout(async () => {
       try {
         const res = await fetch(
-          `https://nominatim.openstreetmap.org/reverse?lat=${pinned.lat}&lon=${pinned.lng}&format=json`,
-          { headers: { "Accept-Language": "th" } }
+          `/api/reverse-geocode?lat=${pinned.lat}&lng=${pinned.lng}`,
+          { signal: ctrl.signal }
         )
-        const data = await res.json()
-        const postcode = data?.address?.postcode as string | undefined
-        if (postcode) zipRef.current = postcode
-      } catch { /* silent */ }
+        if (!res.ok) return
+        areaRef.current = (await res.json()) as PickedArea
+      } catch { /* silent — ยืนยันพิกัดได้อยู่แม้หาพื้นที่ไม่เจอ */ }
     }, 500)
-    return () => clearTimeout(timer)
+    return () => { clearTimeout(timer); ctrl.abort() }
   }, [pinned])
 
   function goToMyLocation() {
@@ -174,7 +182,12 @@ export default function MapPicker({ onConfirm, onCancel, initialLat, initialLng 
             const [minLng, minLat, maxLng, maxLat] = entry.b
             const lat = (minLat + maxLat) / 2
             const lng = (minLng + maxLng) / 2
-            if (entry.zip) zipRef.current = entry.zip
+            areaRef.current = {
+              province: entry.pth ?? null,
+              amphur: entry.dth ?? null,
+              district: entry.t === "sub" ? entry.nth : null,
+              zip: entry.zip ?? null,
+            }
             mapRef.current?.fitBounds([[minLat, minLng], [maxLat, maxLng]], { padding: [40, 40], maxZoom: 14 })
             setPinned({ lat, lng })
             if (markerRef.current) {
@@ -282,7 +295,7 @@ export default function MapPicker({ onConfirm, onCancel, initialLat, initialLng 
         </button>
 
         <button
-          onClick={() => pinned && onConfirm(pinned.lat, pinned.lng, zipRef.current ?? undefined)}
+          onClick={() => pinned && onConfirm(pinned.lat, pinned.lng, areaRef.current ?? undefined)}
           disabled={!pinned}
           className="flex items-center justify-center gap-1.5 h-9 px-4 bg-[#1A4D2E] hover:bg-[#143a22] text-white rounded-full text-sm font-medium transition-colors disabled:opacity-40 disabled:cursor-not-allowed shadow-sm"
         >

@@ -57,50 +57,15 @@ export default function SearchBar({ onSelect, onClear, className }: Props) {
   async function doSearch(q: string) {
     if (!q.trim()) { setResults([]); return }
 
-    // ZIP code: 5 digits → index first, Nominatim fallback for ~31 unmatched ตำบล
+    // ZIP code: 5 หลัก → ค้นจาก search-index (ครอบคลุม 8,074 จาก 8,105 ตำบล)
     if (/^\d{5}$/.test(q.trim())) {
       setLoading(true)
       try {
         const idx = await ensureIndex()
         if (idx) {
-          // 1. ค้นจาก index ก่อน
           const matched = idx.filter(e => e.t === "sub" && e.zip === q.trim()).slice(0, 8)
-          if (matched.length > 0) { setResults(matched); return }
-
-          // 2. fallback Nominatim
-          try {
-            const res = await fetch(
-              `https://nominatim.openstreetmap.org/search?postalcode=${q.trim()}&countrycodes=th&format=json&limit=1`,
-              { headers: { "Accept-Language": "th" } }
-            )
-            const hits = await res.json() as Array<{ display_name: string; boundingbox: string[] }>
-            if (hits.length > 0) {
-              const parts = hits[0].display_name.split(", ")
-              const prov =
-                parts.find(p => p.startsWith("จังหวัด"))?.replace("จังหวัด", "")
-                ?? (parts.some(p => p === "กรุงเทพมหานคร") ? "กรุงเทพมหานคร" : undefined)
-              let dist: string | undefined
-              if (prov) {
-                const STRIP = ["อำเภอ", "เขต"]
-                for (const part of parts) {
-                  if (idx.some(e => e.t === "dist" && e.pth === prov && e.nth === part)) { dist = part; break }
-                  for (const prefix of STRIP) {
-                    if (part.startsWith(prefix)) {
-                      const stripped = part.replace(prefix, "")
-                      if (idx.some(e => e.t === "dist" && e.pth === prov && e.nth === stripped)) { dist = stripped; break }
-                    }
-                  }
-                  if (dist) break
-                }
-              }
-              if (prov) {
-                const fallback = idx
-                  .filter(e => e.t === "sub" && e.pth === prov && (!dist || e.dth === dist))
-                  .slice(0, 8)
-                if (fallback.length > 0) { setResults(fallback.map(e => ({ ...e, zip: q.trim() } as SearchEntry))); return }
-              }
-            }
-          } catch { /* silent */ }
+          setResults(matched)
+          return
         }
       } finally { setLoading(false) }
     }

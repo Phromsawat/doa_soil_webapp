@@ -12,6 +12,7 @@ import {
 } from "@/lib/supabase/analyses"
 import { ensureSession } from "@/lib/supabase/auth"
 import type { NutrientCode } from "@/types/database"
+import type { PickedArea } from "@/app/analyze/map/MapPicker"
 
 // Leaflet must be client-side only
 const MapPicker = dynamic(() => import("@/app/analyze/map/MapPicker"), {
@@ -77,6 +78,8 @@ export default function AnalyzeUpload() {
   // ชื่อพื้นที่ที่ได้จากรหัสไปรษณีย์/หมุดแผนที่ — บันทึกลง record เพื่อให้หน้าผลแสดง "พื้นที่เพาะปลูก"
   const [area, setArea] = useState<Pick<ZipOption, "province" | "amphur" | "district"> | null>(null)
   const zipDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  // รหัสไปรษณีย์ที่ได้จากการปักหมุด — กัน effect ค้นซ้ำแล้วล้างพื้นที่ที่ได้มาแล้ว
+  const mapZipRef = useRef<string | null>(null)
   const searchIndexRef = useRef<Array<{ t: string; nth: string; pth?: string; dth?: string; b: [number,number,number,number]; zip?: string }> | null>(null)
 
   async function ensureSearchIndex() {
@@ -86,9 +89,13 @@ export default function AnalyzeUpload() {
     return searchIndexRef.current!
   }
 
-  // ZIP → Nominatim (get district/province) → filter search-index for all ตำบล in that district
+  // ZIP → ค้นตำบลจาก search-index (ข้อมูลของเราเอง ไม่เรียกบริการภายนอก)
   useEffect(() => {
     if (zipDebounceRef.current) clearTimeout(zipDebounceRef.current)
+
+    // รหัสที่มาจากการปักหมุด — ได้พื้นที่ครบแล้ว ไม่ต้องค้นซ้ำ
+    if (postalCode && postalCode === mapZipRef.current) return
+
     setZipHint(null)
     setZipError(null)
     setZipOptions([])
@@ -99,57 +106,14 @@ export default function AnalyzeUpload() {
     zipDebounceRef.current = setTimeout(async () => {
       setZipLoading(true)
       try {
-        // 1. ค้นจาก index ก่อน (99.6% ของตำบลมี zip)
         const idx = await ensureSearchIndex()
         const subs = idx.filter(e => e.t === "sub" && e.zip === postalCode)
-
-        if (subs.length > 0) {
-          const options = subs.map(toZipOption)
-          if (options.length === 1) {
-            const o = options[0]
-            setLat(o.lat); setLng(o.lng); setZipHint(o.label)
-            setArea({ province: o.province, amphur: o.amphur, district: o.district })
-          } else {
-            setZipOptions(options)
-          }
+        if (subs.length === 0) {
+          setZipError("ไม่พบรหัสไปรษณีย์ — เลือกพิกัดจากแผนที่ได้")
           return
         }
 
-        // 2. fallback: Nominatim (31 ตำบลที่ชื่อ match ไม่ติดใน dataset)
-        const res = await fetch(
-          `https://nominatim.openstreetmap.org/search?postalcode=${postalCode}&countrycodes=th&format=json&limit=1`,
-          { headers: { "Accept-Language": "th" } }
-        )
-        const hits = await res.json() as Array<{ display_name: string; boundingbox: string[] }>
-        if (!hits.length) { setZipError("ไม่พบรหัสไปรษณีย์"); return }
-
-        const parts = hits[0].display_name.split(", ")
-        const prov =
-          parts.find((p: string) => p.startsWith("จังหวัด"))?.replace("จังหวัด", "")
-          ?? (parts.some((p: string) => p === "กรุงเทพมหานคร") ? "กรุงเทพมหานคร" : undefined)
-        let dist: string | undefined
-        if (prov) {
-          const STRIP = ["อำเภอ", "เขต"]
-          for (const part of parts) {
-            if (idx.some(e => e.t === "dist" && e.pth === prov && e.nth === part)) { dist = part; break }
-            for (const prefix of STRIP) {
-              if (part.startsWith(prefix)) {
-                const stripped = part.replace(prefix, "")
-                if (idx.some(e => e.t === "dist" && e.pth === prov && e.nth === stripped)) { dist = stripped; break }
-              }
-            }
-            if (dist) break
-          }
-        }
-        if (!prov) {
-          const bb = hits[0].boundingbox
-          setLat(((parseFloat(bb[0]) + parseFloat(bb[1])) / 2).toFixed(6))
-          setLng(((parseFloat(bb[2]) + parseFloat(bb[3])) / 2).toFixed(6))
-          return
-        }
-        const fallbackSubs = idx.filter(e => e.t === "sub" && e.pth === prov && (!dist || e.dth === dist))
-        if (fallbackSubs.length === 0) { setZipError("ไม่พบรหัสไปรษณีย์"); return }
-        const options = fallbackSubs.map(toZipOption)
+        const options = subs.map(toZipOption)
         if (options.length === 1) {
           const o = options[0]
           setLat(o.lat); setLng(o.lng); setZipHint(o.label)
@@ -177,10 +141,27 @@ export default function AnalyzeUpload() {
     }
   }, [])
 
-  const handleMapConfirm = (pickedLat: number, pickedLng: number, pickedZip?: string) => {
+  const handleMapConfirm = (pickedLat: number, pickedLng: number, pickedArea?: PickedArea) => {
     setLat(String(pickedLat))
     setLng(String(pickedLng))
-    if (pickedZip) setPostalCode(pickedZip)
+    if (pickedArea) {
+      setArea({
+        province: pickedArea.province,
+        amphur: pickedArea.amphur,
+        district: pickedArea.district,
+      })
+      setZipHint(
+        [pickedArea.district, pickedArea.amphur && `อ.${pickedArea.amphur}`, pickedArea.province && `จ.${pickedArea.province}`]
+          .filter(Boolean).join(" ") || null
+      )
+      setZipError(null)
+      setZipOptions([])
+      if (pickedArea.zip) {
+        // จำไว้ว่ารหัสนี้มาจากหมุด — effect จะได้ไม่ล้างพื้นที่ที่เพิ่งได้มา
+        mapZipRef.current = pickedArea.zip
+        setPostalCode(pickedArea.zip)
+      }
+    }
     setIsMapOpen(false)
   }
 
