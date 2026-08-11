@@ -4,35 +4,14 @@ import { createClient } from "@/lib/supabase/server"
 import { requirePermission } from "@/lib/supabase/permissions"
 import { revalidatePath } from "next/cache"
 import { DEFAULT_CONTENT } from "@/lib/content/defaults"
-import { PAGE_SLUGS, type Block, type PageContent, type PageSlug } from "@/types/content"
+import { isValidSlug } from "@/lib/content/getPageContent"
+import { PAGE_SLUGS, type Block, type PageSlug } from "@/types/content"
 
 // =============================================================================
-// เนื้อหาหน้าข้อมูล — อ่าน: ทุกคน / เขียน: ต้องมีสิทธิ์เมนู "content"
-// ยังไม่มีแถวใน DB = ใช้เนื้อหาตั้งต้นจากโค้ด (หน้าไม่มีทางว่าง)
+// เนื้อหาหน้าข้อมูล — ฝั่งเขียน/แอดมิน (ต้องมีสิทธิ์เมนู "content")
+// ฝั่งอ่านสำหรับ render อยู่ที่ lib/content/getPageContent.ts (ไม่แตะ cookie
+// หน้าจึงเป็น static ได้)
 // =============================================================================
-
-function isValidSlug(slug: string): slug is PageSlug {
-  return (PAGE_SLUGS as readonly string[]).includes(slug)
-}
-
-/** เนื้อหาของหน้าเดียว — คืนค่าตั้งต้นถ้ายังไม่เคยบันทึก */
-export async function getPageContent(slug: string): Promise<PageContent> {
-  if (!isValidSlug(slug)) throw new Error(`ไม่รู้จักหน้า "${slug}"`)
-
-  const supabase = await createClient()
-  const { data } = await supabase
-    .from("page_contents")
-    .select("blocks, updated_at")
-    .eq("slug", slug)
-    .maybeSingle()
-
-  const blocks = (data?.blocks as Block[] | undefined) ?? null
-  return {
-    slug,
-    blocks: blocks && blocks.length > 0 ? blocks : DEFAULT_CONTENT[slug],
-    updated_at: data?.updated_at ?? null,
-  }
-}
 
 /** รายการหน้าทั้งหมด + เวลาที่แก้ล่าสุด — สำหรับหน้ารวมในแผงแอดมิน */
 export async function listPageContents(): Promise<

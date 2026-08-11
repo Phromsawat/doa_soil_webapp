@@ -1,8 +1,11 @@
 import ContentPageHeader from "@/components/content/ContentPageHeader"
 import PageBlocks from "@/components/content/PageBlocks"
-import { getPageContent } from "@/lib/supabase/pageContent"
+import { getPageContent } from "@/lib/content/getPageContent"
 
-// เนื้อหาแก้ได้จาก /admin/content — ยังไม่เคยแก้ = ใช้ค่าตั้งต้นใน lib/content/defaults.ts
+// เนื้อหาแก้ได้จาก /admin/content — static + revalidate เมื่อแอดมินบันทึก
+// (ดูคำอธิบายเต็มใน src/app/doa-kits/page.tsx)
+export const revalidate = 3600
+
 export default async function SoilSamplingPage() {
   const { blocks, updated_at } = await getPageContent("soil-sampling")
 

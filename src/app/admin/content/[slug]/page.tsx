@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation"
 import ContentEditor from "./ContentEditor"
-import { getPageContent } from "@/lib/supabase/pageContent"
+import { getPageContent } from "@/lib/content/getPageContent"
 import { getMyPermissions } from "@/lib/supabase/permissions"
 import { can } from "@/lib/rbac"
 import { PAGE_SLUGS, PAGE_TITLES, type PageSlug } from "@/types/content"
