@@ -8,6 +8,7 @@ import {
   FileBarChart,
   Sprout,
   FlaskConical,
+  FileText,
   Settings,
   ShieldCheck,
   LogOut,
@@ -25,6 +26,7 @@ const MENU_ICON: Record<MenuKey, LucideIcon> = {
   analyses: FileBarChart,
   crops: Sprout,
   fertilizers: FlaskConical,
+  content: FileText,
   settings: Settings,
   roles: ShieldCheck,
 }

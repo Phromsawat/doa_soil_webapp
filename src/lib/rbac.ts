@@ -6,6 +6,7 @@ export const ADMIN_MENUS = [
   { key: "analyses",    label: "ประวัติการวิเคราะห์", href: "/admin/analyses" },
   { key: "crops",       label: "พืช/ปุ๋ย",            href: "/admin/crops" },
   { key: "fertilizers", label: "สูตรปุ๋ย",            href: "/admin/fertilizers" },
+  { key: "content",     label: "จัดการเนื้อหา",       href: "/admin/content" },
   { key: "settings",    label: "ตั้งค่าระบบ",         href: "/admin/settings" },
   { key: "roles",       label: "จัดการสิทธิ",         href: "/admin/roles" },
 ] as const
