@@ -73,8 +73,7 @@ type BoundaryId = "provinces" | "districts" | "subdistricts"
 const BOUNDARY_LAYERS: Array<{
   id: BoundaryId
   label: string
-  rpc?: string
-  staticFile?: string
+  staticFile: string
   color: string
   weight: number
 }> = [
@@ -225,21 +224,11 @@ export default function SoilMaps() {
       setBoundaryLoading(prev => { const s = new Set(prev); s.add(id); return s })
       const layer = BOUNDARY_LAYERS.find(l => l.id === id)!
       try {
-        let data: FeatureCollection | null = null
-        // 1) ลองโหลดไฟล์ static ก่อน (ความละเอียดสูง + topology สะอาด ไม่มีเส้นเหลื่อม)
-        if (layer.staticFile) {
-          try {
-            const res = await fetch(`/boundaries/${layer.staticFile}.geojson`)
-            if (res.ok) data = (await res.json()) as FeatureCollection
-          } catch { /* ไม่มีไฟล์ -> fallback RPC ด้านล่าง */ }
-        }
-        // 2) fallback: Supabase RPC
-        if (!data && layer.rpc) {
-          const supabase = createClient()
-          const { data: rpcData } = await supabase.rpc(layer.rpc)
-          if (rpcData) data = rpcData as FeatureCollection
-        }
-        if (data) setBoundaryData(prev => ({ ...prev, [id]: data as FeatureCollection }))
+        // โหลดจากไฟล์ static (ความละเอียดสูง + topology สะอาด ไม่มีเส้นเหลื่อม)
+        const res = await fetch(`/boundaries/${layer.staticFile}.geojson`)
+        if (!res.ok) throw new Error(`โหลด ${layer.staticFile}.geojson ไม่สำเร็จ (${res.status})`)
+        const data = (await res.json()) as FeatureCollection
+        setBoundaryData(prev => ({ ...prev, [id]: data }))
       } catch (err) {
         console.error("Error loading boundary:", err)
       }

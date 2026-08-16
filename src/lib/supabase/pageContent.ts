@@ -53,6 +53,37 @@ export async function savePageContent(slug: string, blocks: Block[]) {
   revalidatePath("/admin/content")
 }
 
+const IMAGE_BUCKET = "page-images"
+const MAX_IMAGE_BYTES = 5 * 1024 * 1024
+const ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif", "image/svg+xml"]
+
+/**
+ * อัปโหลดรูปสำหรับใช้ในเนื้อหา แล้วคืน URL สาธารณะไปใส่ในบล็อก
+ * จำกัดชนิดและขนาดไฟล์ที่นี่อีกชั้น (นอกเหนือจาก policy ของ bucket)
+ */
+export async function uploadContentImage(formData: FormData): Promise<string> {
+  await requirePermission("content", "edit")
+
+  const file = formData.get("file")
+  if (!(file instanceof File)) throw new Error("ไม่พบไฟล์ที่อัปโหลด")
+  if (file.size > MAX_IMAGE_BYTES) throw new Error("ไฟล์ใหญ่เกิน 5 MB")
+  if (!ALLOWED_IMAGE_TYPES.includes(file.type)) {
+    throw new Error("รองรับเฉพาะไฟล์รูปภาพ (JPG, PNG, WebP, GIF, SVG)")
+  }
+
+  const ext = file.name.split(".").pop()?.toLowerCase().replace(/[^a-z0-9]/g, "") || "jpg"
+  const path = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`
+
+  const supabase = await createClient()
+  const { error } = await supabase.storage
+    .from(IMAGE_BUCKET)
+    .upload(path, file, { contentType: file.type, upsert: false })
+  if (error) throw new Error(`อัปโหลดไม่สำเร็จ: ${error.message}`)
+
+  const { data } = supabase.storage.from(IMAGE_BUCKET).getPublicUrl(path)
+  return data.publicUrl
+}
+
 /** คืนค่าหน้าให้กลับไปใช้เนื้อหาตั้งต้น (ลบแถวใน DB ทิ้ง) */
 export async function resetPageContent(slug: string) {
   if (!isValidSlug(slug)) throw new Error(`ไม่รู้จักหน้า "${slug}"`)

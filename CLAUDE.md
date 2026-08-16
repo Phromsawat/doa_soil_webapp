@@ -65,8 +65,8 @@ Map เปิดขึ้นจะ zoom + ปักหมุดที่พิ�
 ```
 
 ## Types
-`src/types/index.ts` — `SoilAnalysis` มี optional fields:
-- `nImage?`, `pImage?`, `kImage?` — base64/URL สำหรับรูปผลทำนาย
+- `src/types/database.ts` — โครงตารางใน Supabase (`Analysis`, `Profile`, `Crop`, ...)
+- `src/types/content.ts` — บล็อกเนื้อหาหน้าข้อมูล (แก้ได้จาก `/admin/content`)
 
 ## Components เพิ่มเติม
 - `src/app/analyze/result/MapPreview.tsx` — Leaflet read-only map สำหรับแสดงพิกัดในหน้า result

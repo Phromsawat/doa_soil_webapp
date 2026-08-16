@@ -25,20 +25,3 @@ export async function createClient() {
     }
   )
 }
-
-export function createAdminClient() {
-  return createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SECRET_KEY!,
-    {
-      cookies: {
-        getAll() {
-          return []
-        },
-        setAll() {
-          // Admin client doesn't persist sessions
-        },
-      },
-    }
-  )
-}
