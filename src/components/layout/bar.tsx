@@ -60,11 +60,7 @@ export default function Bar() {
   const isAnalyze = pathname.startsWith("/analyze")
   const isHistory = pathname.startsWith("/history")
 
-  if (
-    pathname === "/login" || 
-    pathname === "/login/phone" || 
-    pathname === "/login/otp"
-  ) {
+  if (pathname === "/login") {
     return null
   }
 

@@ -11,20 +11,6 @@ export const translations = {
     // Login
     loginSubtitle1: "ระบบวิเคราะห์ดิน",
     loginSubtitle2: "และคำแนะนำการใช้ปุ๋ย",
-    continueWithPhone: "ดำเนินการต่อด้วยเบอร์โทรศัพท์",
-    continueWithGoogle: "ดำเนินการต่อด้วย google",
-    continueWithApple: "ดำเนินการต่อด้วย apple",
-    continueWithEmail: "ดำเนินการต่อด้วยอีเมล",
-    phoneLoginDesc: "กรุณากรอกเบอร์โทรศัพท์ของคุณเพื่อรับรหัส OTP สำหรับเข้าสู่ระบบ",
-    phoneNumberLabel: "เบอร์โทรศัพท์",
-    getOtpBtn: "รับรหัส OTP",
-    otpSimulateSuccess: "ระบบจำลอง: ส่งรหัส OTP ไปที่เบอร์ ",
-    success: " สำเร็จ",
-    otpTitle: "กรุณากรอกรหัส OTP เพื่อยืนยันตัวตน",
-    confirmBtn: "ยืนยัน",
-    resendWait: "กรุณารอ {time} วินาทีเพื่อส่งใหม่อีกครั้ง",
-    resendNow: "ส่งรหัสใหม่อีกครั้ง",
-    checkInbox: "โปรดตรวจสอบกล่องข้อความของคุณ",
 
     // Menus
     homeMenu: "หน้าหลัก",
@@ -91,20 +77,6 @@ export const translations = {
     // Login
     loginSubtitle1: "Soil analysis system",
     loginSubtitle2: "and fertilizer recommendation",
-    continueWithPhone: "Continue with phone number",
-    continueWithGoogle: "Continue with Google",
-    continueWithApple: "Continue with Apple",
-    continueWithEmail: "Continue with email",
-    phoneLoginDesc: "Please enter your phone number to receive an OTP for logging in",
-    phoneNumberLabel: "Phone Number",
-    getOtpBtn: "Get OTP",
-    otpSimulateSuccess: "Simulation: OTP sent to ",
-    success: " successfully",
-    otpTitle: "Please enter the OTP to verify your identity",
-    confirmBtn: "Confirm",
-    resendWait: "Please wait {time} seconds to resend",
-    resendNow: "Resend code",
-    checkInbox: "Please check your message box",
 
     // Menus
     homeMenu: "Home",

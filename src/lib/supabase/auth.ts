@@ -9,48 +9,13 @@ import { createClient } from "@/lib/supabase/client"
 /**
  * Sign in as an anonymous user.
  * Creates a temporary user identity tied to the current browser session.
- * The user can later link this identity to Google/email to make it permanent.
+ * The user can later sign up with email to make it permanent.
  */
 export async function signInAnonymously() {
   const supabase = createClient()
   const { data, error } = await supabase.auth.signInAnonymously()
   if (error) throw error
   return data.user
-}
-
-/**
- * Sign in with Google OAuth.
- * Redirects to Google's consent screen, then back to /auth/callback.
- */
-export async function signInWithGoogle(redirectTo?: string) {
-  const supabase = createClient()
-  const origin = window.location.origin
-  const callback = `${origin}/auth/callback${redirectTo ? `?redirect=${encodeURIComponent(redirectTo)}` : ""}`
-
-  const { data, error } = await supabase.auth.signInWithOAuth({
-    provider: "google",
-    options: {
-      redirectTo: callback,
-    },
-  })
-  if (error) throw error
-  return data
-}
-
-/**
- * Link the current anonymous user to a Google account.
- * Keeps all the anonymous user's data intact under the new identity.
- */
-export async function linkGoogleIdentity() {
-  const supabase = createClient()
-  const { data, error } = await supabase.auth.linkIdentity({
-    provider: "google",
-    options: {
-      redirectTo: `${window.location.origin}/auth/callback`,
-    },
-  })
-  if (error) throw error
-  return data
 }
 
 /**

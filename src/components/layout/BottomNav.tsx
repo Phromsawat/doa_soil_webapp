@@ -25,7 +25,7 @@ export default function BottomNav() {
     return () => window.removeEventListener("mobile-menu-state", handleMenuState)
   }, [])
 
-  if (pathname === "/login" || pathname === "/login/phone" || pathname.startsWith("/login/") || pathname === "/signup") {
+  if (pathname === "/login" || pathname === "/signup") {
     return null
   }
 
