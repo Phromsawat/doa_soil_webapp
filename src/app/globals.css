@@ -16,15 +16,10 @@
   --radius-card: 12px;
   --radius-button: 8px;
 
-  --spacing-lg: 24px;
-  --spacing-container-margin: 16px;
-  --spacing-sm: 8px;
-  --spacing-base: 4px;
-  --spacing-xs: 4px;
-  --spacing-gutter: 16px;
-  --spacing-xl: 32px;
-  --spacing-md: 16px;
-  --spacing-safe: env(safe-area-inset-bottom);
+  /* หมายเหตุ: อย่านิยาม --spacing-xs/sm/md/lg/xl ที่นี่
+     Tailwind v4 ใช้ชื่อชุดเดียวกันนี้กับสเกลความกว้าง (max-w-sm/md/lg/xl)
+     การตั้งค่าทับจะทำให้ max-w-md กลายเป็น 16px แทน 28rem และ modal/การ์ดถูกบีบจนใช้ไม่ได้
+     ถ้าต้องการ token ระยะห่างของตัวเอง ให้ตั้งชื่อที่ไม่ชนกัน เช่น --spacing-gutter */
 
   --font-data-lg: var(--font-app-thai);
   --font-headline-md: var(--font-app-thai);
