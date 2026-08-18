@@ -12,6 +12,7 @@ import {
 import { listFertilizerFormulas } from "@/lib/supabase/fertilizerFormulas"
 import { blendFertilizer, compareGrade, type Formula } from "@/lib/fertilizer/blend"
 import { classify, LEVEL_LABEL_TH } from "@/lib/soil/grid"
+import type { ReportData } from "@/lib/pdf/reportPdf"
 
 export const dynamic = "force-dynamic"
 
@@ -128,9 +129,63 @@ export default async function PrintReportPage({
     { key: "k" as const, label: "โพแทสเซียมที่แลกเปลี่ยนได้ (K)", value: record.k_value, unit: "มก./กก." },
   ]
 
+  const inputModeText =
+    record.input_mode === "image_upload" ? "วิเคราะห์จากรูปแผ่นทดสอบ" : "กรอกค่าเอง"
+
+  // ข้อมูลชุดเดียวกับที่แสดงบนจอ ส่งให้ปุ่มดาวน์โหลดเอาไปสร้างไฟล์ PDF
+  const pdfData: ReportData = {
+    cropName,
+    dateText: thaiDate(record.created_at),
+    area,
+    coords,
+    inputModeText,
+    ph: record.ph_value ?? null,
+    nutrients: nutrients.map((n) => {
+      const lv = classify(n.key, n.value)
+      return {
+        label: n.label,
+        value: n.value,
+        unit: n.unit,
+        levelText: lv ? LEVEL_LABEL_TH[lv] : null,
+        levelColor: lv ? LEVEL_COLOR[lv] : null,
+      }
+    }),
+    target: calculation
+      ? {
+          n: calculation.target_n,
+          p2o5: calculation.target_p2o5,
+          k2o: calculation.target_k2o,
+          unit: calculation.unit,
+        }
+      : null,
+    plans: plans.map((plan) => ({
+      title: USE_TYPE_LABEL[plan.use_type],
+      unit: plan.unit,
+      rows: plan.stages.flatMap((s) =>
+        s.items.map((it) => ({ stage: s.stage, grade: it.grade, amount: it.amount }))
+      ),
+    })),
+    blend: blend
+      ? {
+          unitText: `${mass}${basis ? ` ${basis}` : ""}`,
+          rows: [...blend.items]
+            .sort((a, b) =>
+              compareGrade(a.formula.grade ?? a.formula.name, b.formula.grade ?? b.formula.name)
+            )
+            .map((it) => ({
+              name: `${it.formula.name}${it.formula.grade ? ` (${it.formula.grade})` : ""}`,
+              amount: it.kg,
+            })),
+        }
+      : null,
+    note: note ? { lines: note.note.split("\n").filter(Boolean), source: note.source ?? null } : null,
+  }
+
+  const pdfFilename = `ผลวิเคราะห์ดิน-${cropName}-${record.created_at.slice(0, 10)}.pdf`
+
   return (
     <div className="report-root font-thai">
-      <PrintActions />
+      <PrintActions data={pdfData} filename={pdfFilename} />
 
       <div className="sheet">
         {/* ---------- หัวรายงาน ---------- */}
