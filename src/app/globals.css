@@ -109,3 +109,149 @@ input[type=number] {
   -moz-appearance: textfield !important;
   appearance: textfield !important;
 }
+
+/* =============================================================================
+   หน้ารายงาน PDF (/analyze/result/print)
+   ออกแบบเป็นกระดาษ A4 ใช้ได้ทั้งบนจอและตอนสั่งพิมพ์/บันทึกเป็น PDF
+   ============================================================================= */
+.report-root {
+  --ink: #1a1a1a;
+  --muted: #6b7280;
+  --line: #e5e7eb;
+  --brand: #1a4d2e;
+  --tint: #f1f7f2;
+  background: #f3f4f6;
+  padding: 16px 0 48px;
+  color: var(--ink);
+}
+.report-root .sheet {
+  width: 210mm;
+  max-width: 100%;
+  min-height: 297mm;
+  margin: 0 auto;
+  padding: 16mm 14mm;
+  background: #fff;
+  box-shadow: 0 4px 24px rgb(0 0 0 / 8%);
+  box-sizing: border-box;
+}
+
+/* หัวรายงาน */
+.report-root .head {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding-bottom: 10px;
+  border-bottom: 3px solid var(--brand);
+}
+.report-root .head .logo { width: 46px; height: 46px; object-fit: contain; }
+.report-root .head h1 { margin: 0; font-size: 19px; font-weight: 700; color: var(--brand); }
+.report-root .head .sub { margin: 3px 0 0; font-size: 11.5px; color: var(--muted); }
+
+/* ตารางข้อมูลตัวอย่าง */
+.report-root .meta {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px 20px;
+  margin: 14px 0 4px;
+}
+.report-root .meta > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 5px 0;
+  border-bottom: 1px dotted var(--line);
+  font-size: 12.5px;
+}
+.report-root .meta span { color: var(--muted); }
+.report-root .meta strong { font-weight: 600; text-align: right; }
+
+.report-root .h2 {
+  margin: 20px 0 8px;
+  padding-left: 9px;
+  border-left: 4px solid var(--brand);
+  font-size: 14.5px;
+  font-weight: 700;
+  color: var(--brand);
+}
+.report-root .h3 {
+  margin: 12px 0 5px;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: #374151;
+}
+
+/* ระดับธาตุอาหาร */
+.report-root .levels { display: grid; gap: 9px; }
+.report-root .level-top {
+  display: flex; justify-content: space-between; align-items: baseline;
+  font-size: 12.5px; margin-bottom: 4px;
+}
+.report-root .level-label { color: #374151; }
+.report-root .level-val { font-weight: 600; }
+.report-root .level-val em { font-style: normal; font-weight: 400; color: var(--muted); font-size: 11px; }
+.report-root .level-val b { margin-left: 5px; }
+.report-root .bar { height: 7px; border-radius: 99px; background: #f3f4f6; overflow: hidden; }
+.report-root .bar i { display: block; height: 100%; border-radius: 99px; }
+
+/* N-P-K */
+.report-root .npk { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+.report-root .npk > div {
+  padding: 11px 8px; text-align: center;
+  background: var(--tint); border: 1px solid #dbe8de; border-radius: 10px;
+}
+.report-root .npk span { display: block; font-size: 11px; color: var(--muted); margin-bottom: 3px; }
+.report-root .npk strong { font-size: 21px; font-weight: 700; color: var(--brand); }
+.report-root .unit-note { margin: 6px 0 0; text-align: center; font-size: 11.5px; color: var(--muted); }
+
+/* ตาราง */
+.report-root .tbl { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+.report-root .tbl th {
+  background: var(--tint); color: var(--brand);
+  text-align: left; font-weight: 700; font-size: 11.5px;
+  padding: 7px 10px; border: 1px solid #dbe8de;
+}
+.report-root .tbl td { padding: 6px 10px; border: 1px solid var(--line); }
+.report-root .tbl .right { text-align: right; }
+.report-root .tbl .stage { background: #fafafa; font-weight: 600; vertical-align: middle; width: 32%; }
+.report-root .plan { break-inside: avoid; }
+
+/* หมายเหตุ */
+.report-root .note {
+  margin-top: 20px; padding: 12px 14px;
+  background: #fff8e6; border: 1px solid #fbe192; border-radius: 10px;
+  break-inside: avoid;
+}
+.report-root .note h3 { margin: 0 0 6px; font-size: 12.5px; font-weight: 700; color: #8a6d3b; }
+.report-root .note p { margin: 0 0 5px; font-size: 12px; line-height: 1.65; color: #8a6d3b; }
+.report-root .note .src { margin-top: 8px; font-size: 10.5px; opacity: .75; }
+
+.report-root .foot {
+  display: flex; justify-content: space-between;
+  margin-top: 22px; padding-top: 9px;
+  border-top: 1px solid var(--line);
+  font-size: 10.5px; color: var(--muted);
+}
+
+/* ---------- ตอนสั่งพิมพ์ / บันทึก PDF ---------- */
+@media print {
+  @page { size: A4; margin: 12mm; }
+
+  /* ซ่อนเปลือกแอปทั้งหมด เหลือแค่ตัวรายงาน */
+  .no-print { display: none !important; }
+  nav, header.sticky, footer.app-footer { display: none !important; }
+
+  html, body { background: #fff !important; }
+  .report-root { background: #fff; padding: 0; }
+  .report-root .sheet {
+    width: auto; min-height: 0; margin: 0; padding: 0;
+    box-shadow: none;
+  }
+
+  /* ให้สีพื้น/แถบสีติดไปในไฟล์ PDF ด้วย */
+  .report-root, .report-root * {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  .report-root .h2, .report-root .tbl thead { break-after: avoid; }
+  .report-root .tbl tr, .report-root .level { break-inside: avoid; }
+}

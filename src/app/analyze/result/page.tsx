@@ -2,7 +2,7 @@
 
 import { Suspense, useEffect, useState } from "react"
 import { useSearchParams, useRouter } from "next/navigation"
-import { Share2, Loader2, MapPin } from "lucide-react"
+import { FileDown, Loader2, MapPin } from "lucide-react"
 import { Button } from "@/components/ui/Button"
 import { getAnalysis } from "@/lib/supabase/analyses"
 import { listCrops, calculateFertilizer, type CropOption, type FertilizerResult } from "@/lib/supabase/fertilizer"
@@ -264,8 +264,12 @@ function ResultContent() {
           <button onClick={() => router.push("/analyze")} className="text-sm font-medium text-text-secondary px-2 hover:text-primary transition-colors whitespace-nowrap">
             วิเคราะห์ใหม่
           </button>
-          <Button variant="outline" className="flex-1 rounded-full border-gray-200 font-medium h-12 text-text-primary bg-white hover:bg-gray-50 flex items-center gap-2">
-            <Share2 className="w-4 h-4" /> แชร์ผล
+          <Button
+            variant="outline"
+            onClick={() => router.push(`/analyze/result/print?id=${record.id}&auto=1`)}
+            className="flex-1 rounded-full border-gray-200 font-medium h-12 text-text-primary bg-white hover:bg-gray-50 flex items-center gap-2"
+          >
+            <FileDown className="w-4 h-4" /> บันทึก PDF
           </Button>
           <Button onClick={() => router.push("/history")} className="flex-1 rounded-full bg-primary hover:bg-primary/90 text-white font-medium h-12">
             ดูประวัติ
