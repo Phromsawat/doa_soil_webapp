@@ -45,10 +45,15 @@ function unitParts(unit: string) {
 export default async function PrintReportPage({
   searchParams,
 }: {
-  searchParams: Promise<{ id?: string; auto?: string }>
+  searchParams: Promise<{ id?: string; use?: string }>
 }) {
-  const { id, auto } = await searchParams
+  const { id, use } = await searchParams
   if (!id) notFound()
+
+  // โหมดที่ผู้ใช้เลือกอยู่บนหน้าผล — รายงานจะพิมพ์เฉพาะโหมดนี้
+  // ไม่ได้ส่งมา (เช่นเปิดลิงก์ตรง ๆ) = พิมพ์ทุกโหมดที่มีข้อมูล
+  const ALL_USE_TYPES: UseType[] = ["straight", "compound", "organic70"]
+  const selectedUseType = ALL_USE_TYPES.find((t) => t === use) ?? null
 
   const record = await getAnalysis(id).catch(() => null)
   if (!record) notFound()
@@ -69,12 +74,15 @@ export default async function PrintReportPage({
     listFertilizerFormulas().catch(() => []),
   ])
 
-  // ดึงแผนของทุกโหมดที่พืชนี้มีข้อมูลจริง — โหมดที่ไม่มีข้อมูลจะไม่พิมพ์ออกมาเลย
-  // (ต่างจากรายงานเดิมที่พิมพ์ตารางเปล่าเต็มไปด้วย "-")
+  // พิมพ์เฉพาะโหมดที่เลือกมา และเฉพาะที่มีข้อมูลจริง
+  // (ไม่พิมพ์ตารางเปล่าที่เต็มไปด้วย "-" เหมือนรายงานแบบเดิม)
+  const wantedTypes = selectedUseType
+    ? useTypes.filter((t) => t === selectedUseType)
+    : useTypes
   const plans: FertilizerPlan[] = cropId
     ? (
         await Promise.all(
-          useTypes.map((t) =>
+          wantedTypes.map((t) =>
             getFertilizerPlan({
               crop_id: cropId,
               om: record.om_value,
@@ -122,7 +130,7 @@ export default async function PrintReportPage({
 
   return (
     <div className="report-root font-thai">
-      <PrintActions autoPrint={auto === "1"} />
+      <PrintActions />
 
       <div className="sheet">
         {/* ---------- หัวรายงาน ---------- */}
@@ -190,7 +198,35 @@ export default async function PrintReportPage({
           </>
         )}
 
-        {/* ---------- ปุ๋ยที่เลือกใช้ ---------- */}
+        {/* ---------- แผนการใส่ปุ๋ยตามระยะ ---------- */}
+        {plans.length > 0 && (
+          <>
+            <h2 className="h2">แผนการใส่ปุ๋ยตามระยะการเจริญเติบโต</h2>
+            {plans.map((plan) => (
+              <div className="plan" key={plan.use_type}>
+                <h3 className="h3">{USE_TYPE_LABEL[plan.use_type]}</h3>
+                <table className="tbl">
+                  <thead>
+                    <tr><th>ระยะ</th><th>สูตรปุ๋ย</th><th className="right">ปริมาณ ({plan.unit})</th></tr>
+                  </thead>
+                  <tbody>
+                    {plan.stages.map((s) =>
+                      s.items.map((it, i) => (
+                        <tr key={`${s.stage}-${it.grade}`}>
+                          {i === 0 && <td rowSpan={s.items.length} className="stage">{s.stage}</td>}
+                          <td>{it.grade}</td>
+                          <td className="right"><strong>{it.amount.toLocaleString()}</strong></td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            ))}
+          </>
+        )}
+
+        {/* ---------- ปริมาณปุ๋ยที่ต้องใช้ (วางหลังตารางแผน) ---------- */}
         {blend && (
           <>
             <h2 className="h2">ปริมาณปุ๋ยที่ต้องใช้ (จากสูตรที่เลือก)</h2>
@@ -222,34 +258,6 @@ export default async function PrintReportPage({
                   ))}
               </tbody>
             </table>
-          </>
-        )}
-
-        {/* ---------- แผนการใส่ปุ๋ยตามระยะ ---------- */}
-        {plans.length > 0 && (
-          <>
-            <h2 className="h2">แผนการใส่ปุ๋ยตามระยะการเจริญเติบโต</h2>
-            {plans.map((plan) => (
-              <div className="plan" key={plan.use_type}>
-                <h3 className="h3">{USE_TYPE_LABEL[plan.use_type]}</h3>
-                <table className="tbl">
-                  <thead>
-                    <tr><th>ระยะ</th><th>สูตรปุ๋ย</th><th className="right">ปริมาณ ({plan.unit})</th></tr>
-                  </thead>
-                  <tbody>
-                    {plan.stages.map((s) =>
-                      s.items.map((it, i) => (
-                        <tr key={`${s.stage}-${it.grade}`}>
-                          {i === 0 && <td rowSpan={s.items.length} className="stage">{s.stage}</td>}
-                          <td>{it.grade}</td>
-                          <td className="right"><strong>{it.amount.toLocaleString()}</strong></td>
-                        </tr>
-                      ))
-                    )}
-                  </tbody>
-                </table>
-              </div>
-            ))}
           </>
         )}
 

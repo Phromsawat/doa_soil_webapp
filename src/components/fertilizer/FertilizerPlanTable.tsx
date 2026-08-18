@@ -50,6 +50,7 @@ export default function FertilizerPlanTable({
   k,
   blend,
   unit,
+  onUseTypeChange,
 }: {
   cropId: string
   om: number | null
@@ -57,6 +58,8 @@ export default function FertilizerPlanTable({
   k: number | null
   blend?: BlendResult | null
   unit?: string
+  /** แจ้งโหมดที่กำลังดูอยู่ให้หน้าแม่ (ใช้ตอนออกรายงานให้ตรงกับที่เห็นบนจอ) */
+  onUseTypeChange?: (t: UseType) => void
 }) {
   const [types, setTypes] = useState<UseType[] | null>(null)
   const [useType, setUseType] = useState<UseType>("straight")
@@ -147,7 +150,7 @@ export default function FertilizerPlanTable({
           <button
             key={t}
             type="button"
-            onClick={() => setUseType(t)}
+            onClick={() => { setUseType(t); onUseTypeChange?.(t) }}
             className={`rounded-full px-3 py-1 text-xs font-medium transition ${
               useType === t
                 ? "bg-[#1A4D2E] text-white shadow"

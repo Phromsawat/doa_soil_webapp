@@ -9,6 +9,7 @@ import { listCrops, calculateFertilizer, type CropOption, type FertilizerResult 
 import FertilizerBlend from "./FertilizerBlend"
 import FertilizerPlanTable from "@/components/fertilizer/FertilizerPlanTable"
 import CropNote from "@/components/fertilizer/CropNote"
+import type { UseType } from "@/lib/supabase/fertilizerPlan"
 
 type AnalysisRecord = Awaited<ReturnType<typeof getAnalysis>>
 
@@ -22,6 +23,8 @@ function ResultContent() {
   const [calculation, setCalculation] = useState<FertilizerResult | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  // โหมดแผนปุ๋ยที่กำลังดูอยู่ — ส่งต่อให้รายงานพิมพ์เฉพาะโหมดนี้ (ค่าเริ่มต้นตรงกับแถบแรก)
+  const [planUseType, setPlanUseType] = useState<UseType>("straight")
 
   useEffect(() => {
     if (!id) {
@@ -237,6 +240,7 @@ function ResultContent() {
               om={record.om_value}
               p={record.p_value}
               k={record.k_value}
+              onUseTypeChange={setPlanUseType}
             />
           </div>
         )}
@@ -266,7 +270,7 @@ function ResultContent() {
           </button>
           <Button
             variant="outline"
-            onClick={() => router.push(`/analyze/result/print?id=${record.id}&auto=1`)}
+            onClick={() => router.push(`/analyze/result/print?id=${record.id}&use=${planUseType}`)}
             className="flex-1 rounded-full border-gray-200 font-medium h-12 text-text-primary bg-white hover:bg-gray-50 flex items-center gap-2"
           >
             <FileDown className="w-4 h-4" /> บันทึก PDF
