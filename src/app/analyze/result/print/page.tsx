@@ -148,6 +148,7 @@ export default async function PrintReportPage({
         unit: n.unit,
         levelText: lv ? LEVEL_LABEL_TH[lv] : null,
         levelColor: lv ? LEVEL_COLOR[lv] : null,
+        levelPct: lv ? LEVEL_PCT[lv] : null,
       }
     }),
     target: calculation
