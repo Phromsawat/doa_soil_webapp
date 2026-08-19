@@ -5,10 +5,12 @@ import { listCrops, calculateFertilizer } from "@/lib/supabase/fertilizer"
 import {
   getFertilizerPlan,
   getCropPlanUseTypes,
+  getCropStageSplit,
   getCropNote,
   type UseType,
   type FertilizerPlan,
 } from "@/lib/supabase/fertilizerPlan"
+import { splitBlendByStage } from "@/lib/fertilizer/stageSplit"
 import { listFertilizerFormulas } from "@/lib/supabase/fertilizerFormulas"
 import { blendFertilizer, compareGrade, type Formula } from "@/lib/fertilizer/blend"
 import { classify, LEVEL_LABEL_TH } from "@/lib/soil/grid"
@@ -74,29 +76,15 @@ export default async function PrintReportPage({
     cropId ? getCropNote(cropId).catch(() => null) : Promise.resolve(null),
     listFertilizerFormulas().catch(() => []),
   ])
+  const splitRows = cropId ? await getCropStageSplit(cropId).catch(() => []) : []
 
   // พิมพ์เฉพาะโหมดที่เลือกมา และเฉพาะที่มีข้อมูลจริง
   // (ไม่พิมพ์ตารางเปล่าที่เต็มไปด้วย "-" เหมือนรายงานแบบเดิม)
   const wantedTypes = selectedUseType
     ? useTypes.filter((t) => t === selectedUseType)
     : useTypes
-  const plans: FertilizerPlan[] = cropId
-    ? (
-        await Promise.all(
-          wantedTypes.map((t) =>
-            getFertilizerPlan({
-              crop_id: cropId,
-              om: record.om_value,
-              p: record.p_value,
-              k: record.k_value,
-              use_type: t,
-            }).catch(() => null)
-          )
-        )
-      ).filter((p): p is FertilizerPlan => !!p && p.stages.length > 0)
-    : []
-
-  // ปุ๋ยที่ผู้ใช้เลือกไว้ + ปริมาณที่ต้องใช้
+  // ปุ๋ยที่ผู้ใช้เลือกไว้ + ปริมาณที่ต้องใช้ (ต้องคำนวณก่อน เพราะแผน "ปุ๋ยผสม 100%"
+  // ของไม้ผลไม่มีตารางตายตัว ต้องแบ่งจากค่านี้ตามสัดส่วนของแต่ละระยะ)
   const pickedIds: string[] = (record.blend_formula_ids ?? []).filter(Boolean)
   const picked: Formula[] = pickedIds
     .map((fid) => formulas.find((f) => f.id === fid))
@@ -116,6 +104,49 @@ export default async function PrintReportPage({
       : null
 
   const { mass, basis } = unitParts(calculation?.unit ?? "")
+
+  // แผนตายตัวตามค่าดิน (แม่ปุ๋ย / 70%+อินทรีย์ / ปุ๋ยผสมของพืชไร่)
+  const staticPlans: FertilizerPlan[] = cropId
+    ? (
+        await Promise.all(
+          wantedTypes.map((t) =>
+            getFertilizerPlan({
+              crop_id: cropId,
+              om: record.om_value,
+              p: record.p_value,
+              k: record.k_value,
+              use_type: t,
+            }).catch(() => null)
+          )
+        )
+      ).filter((p): p is FertilizerPlan => !!p && p.stages.length > 0)
+    : []
+
+  // "ปุ๋ยผสม 100%" ของไม้ผลไม่มีตารางตายตัว — แบ่งจากปุ๋ยที่เลือกตามสัดส่วนของแต่ละระยะ
+  // (ตรรกะเดียวกับที่ FertilizerPlanTable ทำบนหน้าจอ) ไม่งั้นรายงานจะไม่มีตารางเลย
+  const wantsCompound = !selectedUseType || selectedUseType === "compound"
+  const hasStaticCompound = staticPlans.some((p) => p.use_type === "compound")
+  const computedCompound: FertilizerPlan | null =
+    wantsCompound && !hasStaticCompound && blend && splitRows.length > 0
+      ? {
+          use_type: "compound",
+          unit: mass,
+          stages: splitBlendByStage(blend, splitRows).map((s) => ({
+            stage: s.stage_desc ? `${s.stage_name} (${s.stage_desc})` : s.stage_name,
+            order: s.order,
+            items: s.items.map((it) => ({
+              grade: it.grade,
+              amount: Math.round(it.amount),
+              unit: mass,
+            })),
+          })),
+        }
+      : null
+
+  const plans: FertilizerPlan[] = computedCompound
+    ? [...staticPlans, computedCompound]
+    : staticPlans
+
   const cropName = crops.find((c) => c.id === cropId)?.name ?? "ไม่ระบุ"
   const area = [record.district, record.amphur, record.province].filter(Boolean).join(" ")
   const coords =

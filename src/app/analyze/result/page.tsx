@@ -1,11 +1,13 @@
 "use client"
 
-import { Suspense, useEffect, useState } from "react"
+import { Suspense, useEffect, useMemo, useState } from "react"
 import { useSearchParams, useRouter } from "next/navigation"
 import { FileDown, Loader2, MapPin } from "lucide-react"
 import { Button } from "@/components/ui/Button"
 import { getAnalysis } from "@/lib/supabase/analyses"
 import { listCrops, calculateFertilizer, type CropOption, type FertilizerResult } from "@/lib/supabase/fertilizer"
+import { listFertilizerFormulas, type FertilizerFormulaRow } from "@/lib/supabase/fertilizerFormulas"
+import { blendFertilizer, type Formula } from "@/lib/fertilizer/blend"
 import FertilizerBlend from "./FertilizerBlend"
 import FertilizerPlanTable from "@/components/fertilizer/FertilizerPlanTable"
 import CropNote from "@/components/fertilizer/CropNote"
@@ -20,6 +22,7 @@ function ResultContent() {
 
   const [record, setRecord] = useState<AnalysisRecord | null>(null)
   const [crops, setCrops] = useState<CropOption[]>([])
+  const [formulas, setFormulas] = useState<FertilizerFormulaRow[]>([])
   const [calculation, setCalculation] = useState<FertilizerResult | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -32,10 +35,11 @@ function ResultContent() {
       setError("ไม่พบรหัสการวิเคราะห์")
       return
     }
-    Promise.all([getAnalysis(id), listCrops()])
-      .then(async ([data, cropList]) => {
+    Promise.all([getAnalysis(id), listCrops(), listFertilizerFormulas().catch(() => [])])
+      .then(async ([data, cropList, formulaList]) => {
         setRecord(data)
         setCrops(cropList)
+        setFormulas(formulaList)
         if (data?.crop_id) {
           // ผลที่บันทึก = คำนวณจากพืช+ค่าดินที่บันทึกโดยตรง (ไม่ต้องเลือก/กดใหม่)
           try {
@@ -52,6 +56,27 @@ function ResultContent() {
       .catch((e) => setError(e instanceof Error ? e.message : String(e)))
       .finally(() => setLoading(false))
   }, [id])
+
+  // ปุ๋ยที่บันทึกไว้ + ปริมาณที่ต้องใช้
+  // โหมด "ปุ๋ยผสม 100%" ของไม้ผลคำนวณสดจากค่านี้ ถ้าไม่ส่งให้ตารางแผน
+  // จะขึ้นว่า "เลือกปุ๋ยที่จะใช้แล้วกดคำนวณ" ทั้งที่บันทึกปุ๋ยไว้แล้ว
+  const blendResult = useMemo(() => {
+    const ids: string[] = record?.blend_formula_ids ?? []
+    const picked: Formula[] = ids
+      .map((fid) => formulas.find((f: FertilizerFormulaRow) => f.id === fid))
+      .filter((f): f is FertilizerFormulaRow => !!f)
+      .map((f: FertilizerFormulaRow) => ({
+        id: f.id, name: f.name, grade: f.grade,
+        n: f.n_percent, p2o5: f.p2o5_percent, k2o: f.k2o_percent,
+      }))
+    const target = {
+      n: calculation?.target_n ?? 0,
+      p2o5: calculation?.target_p2o5 ?? 0,
+      k2o: calculation?.target_k2o ?? 0,
+    }
+    const hasTarget = target.n > 0 || target.p2o5 > 0 || target.k2o > 0
+    return picked.length > 0 && hasTarget ? blendFertilizer(target, picked) : null
+  }, [record, formulas, calculation])
 
   if (loading) {
     return (
@@ -240,6 +265,8 @@ function ResultContent() {
               om={record.om_value}
               p={record.p_value}
               k={record.k_value}
+              blend={blendResult}
+              unit={calculation?.unit}
               onUseTypeChange={setPlanUseType}
             />
           </div>
