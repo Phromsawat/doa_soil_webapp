@@ -8,6 +8,7 @@ import { signUpWithEmail } from "@/lib/supabase/auth"
 
 export default function SignUpPage() {
   const router = useRouter()
+  const [fullName, setFullName] = useState("")
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [confirmPassword, setConfirmPassword] = useState("")
@@ -20,6 +21,10 @@ export default function SignUpPage() {
     e.preventDefault()
     setError(null)
 
+    if (!fullName.trim()) {
+      setError("กรุณากรอกชื่อ-นามสกุล")
+      return
+    }
     if (password !== confirmPassword) {
       setError("รหัสผ่านไม่ตรงกัน")
       return
@@ -31,7 +36,7 @@ export default function SignUpPage() {
 
     setLoading(true)
     try {
-      const data = await signUpWithEmail(email, password)
+      const data = await signUpWithEmail(email, password, fullName)
       if (data.session) {
         router.push("/")
       } else {
@@ -95,6 +100,20 @@ export default function SignUpPage() {
 
         <form onSubmit={handleSignUp} className="space-y-4">
           <div className="space-y-1.5">
+            <label className="text-xs font-semibold text-gray-600 pl-4">ชื่อ-นามสกุล</label>
+            <input
+              type="text"
+              placeholder="ระบุชื่อ-นามสกุล"
+              value={fullName}
+              onChange={(e) => setFullName(e.target.value)}
+              required
+              maxLength={100}
+              autoComplete="name"
+              className="w-full h-11 px-4 rounded-full bg-gray-50 border border-gray-100 text-sm text-gray-900 focus:outline-none focus:border-[#1A4D2E] transition-colors"
+            />
+          </div>
+
+          <div className="space-y-1.5">
             <label className="text-xs font-semibold text-gray-600 pl-4">อีเมล</label>
             <input
               type="email"
@@ -147,7 +166,7 @@ export default function SignUpPage() {
 
           <button
             type="submit"
-            disabled={loading || !email || !password || !confirmPassword}
+            disabled={loading || !fullName.trim() || !email || !password || !confirmPassword}
             className="w-full h-11 rounded-full bg-[#1A4D2E] hover:bg-[#143a22] text-white font-medium text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
           >
             {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : "สมัครสมาชิก"}

@@ -48,5 +48,18 @@ export async function updateMyProfile(input: {
     .eq("id", user.id)
 
   if (error) throw new Error(`updateMyProfile: ${error.message}`)
+
+  // ซิงก์ชื่อกลับไปที่ user_metadata ด้วย — useUser() อ่านชื่อจากตรงนั้น
+  // (คำทักทายหน้าแรก/ตัวย่อในเมนู) ถ้าไม่อัปเดตจะค้างเป็นชื่อตอนสมัคร
+  if (input.full_name !== undefined || input.nickname !== undefined) {
+    const { error: metaErr } = await supabase.auth.updateUser({
+      data: {
+        ...(input.full_name !== undefined ? { full_name: input.full_name ?? null } : {}),
+        ...(input.nickname !== undefined ? { nickname: input.nickname ?? null } : {}),
+      },
+    })
+    if (metaErr) console.warn(`updateMyProfile: sync metadata failed — ${metaErr.message}`)
+  }
+
   revalidatePath("/profile")
 }

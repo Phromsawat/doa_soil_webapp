@@ -22,14 +22,20 @@ export async function signInAnonymously() {
  * Sign up with email + password.
  * If "Confirm email" is disabled in Supabase, user is signed in immediately.
  * Otherwise, user receives a verification email and must click the link.
+ *
+ * fullName เก็บลง user_metadata.full_name — ทริกเกอร์ handle_new_user จะคัดลอก
+ * ต่อไปยัง profiles.full_name ให้เอง (migration 027) แอปจึงแสดงชื่อที่ผู้ใช้ตั้ง
+ * แทนการเดาจากอีเมล
  */
-export async function signUpWithEmail(email: string, password: string) {
+export async function signUpWithEmail(email: string, password: string, fullName?: string) {
   const supabase = createClient()
+  const name = fullName?.trim()
   const { data, error } = await supabase.auth.signUp({
     email,
     password,
     options: {
       emailRedirectTo: `${window.location.origin}/auth/callback`,
+      ...(name ? { data: { full_name: name } } : {}),
     },
   })
   if (error) throw error
