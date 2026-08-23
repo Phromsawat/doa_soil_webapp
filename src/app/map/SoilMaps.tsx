@@ -104,6 +104,67 @@ const FILE_TO_BOUNDARY_ID: Record<string, BoundaryId> = {
   subdistrict: "subdistricts",
 }
 
+type SearchBoundaryConfig = {
+  file: "amphoe" | "subdistrict"
+  boundaryId: BoundaryId
+  matches: (feature: Feature) => boolean
+}
+
+type BoundarySegment = {
+  start: [number, number]
+  end: [number, number]
+  count: number
+}
+
+// Show only shared edges between child areas. The selected parent area supplies
+// the outer edge, so two sources can never draw slightly different outer lines.
+function getInternalBoundaryLines(features: Feature[]): FeatureCollection {
+  const segments = new globalThis.Map<string, BoundarySegment>()
+
+  function coordinateKey([lng, lat]: [number, number]) {
+    return `${lng.toFixed(7)},${lat.toFixed(7)}`
+  }
+
+  for (const feature of features) {
+    const geometry = feature.geometry
+    const rings = geometry?.type === "Polygon"
+      ? geometry.coordinates
+      : geometry?.type === "MultiPolygon"
+        ? geometry.coordinates.flat()
+        : []
+
+    for (const ring of rings) {
+      for (let index = 1; index < ring.length; index += 1) {
+        const previous = ring[index - 1]
+        const current = ring[index]
+        const start: [number, number] = [previous[0], previous[1]]
+        const end: [number, number] = [current[0], current[1]]
+        const startKey = coordinateKey(start)
+        const endKey = coordinateKey(end)
+        const key = startKey < endKey ? `${startKey}|${endKey}` : `${endKey}|${startKey}`
+        const segment = segments.get(key)
+
+        if (segment) {
+          segment.count += 1
+        } else {
+          segments.set(key, { start, end, count: 1 })
+        }
+      }
+    }
+  }
+
+  return {
+    type: "FeatureCollection",
+    features: Array.from(segments.values())
+      .filter((segment) => segment.count > 1)
+      .map((segment) => ({
+        type: "Feature",
+        properties: {},
+        geometry: { type: "LineString", coordinates: [segment.start, segment.end] },
+      })),
+  }
+}
+
 function HighlightLayer({ feature }: { feature: Feature }) {
   const map = useMap()
   useEffect(() => {
@@ -122,23 +183,47 @@ function HighlightLayer({ feature }: { feature: Feature }) {
   return null
 }
 
-function BoundaryLayer({ data, color, weight, opacity }: {
+function BoundaryLayer({ data, color, weight, opacity, labelProperty, smoothFactor = 1 }: {
   data: FeatureCollection
   color: string
   weight: number
   opacity: number
+  labelProperty?: string
+  smoothFactor?: number
 }) {
   const map = useMap()
   const layerRef = useRef<L.GeoJSON | null>(null)
 
   useEffect(() => {
+    const labeledNames = new Set<string>()
     const layer = L.geoJSON(data, {
-      style: { color, weight, opacity, fillOpacity: 0 },
+      style: {
+        color,
+        weight,
+        opacity,
+        fillOpacity: 0,
+        lineCap: "round",
+        lineJoin: "round",
+      },
+      onEachFeature(feature, featureLayer) {
+        if (featureLayer instanceof L.Polyline) {
+          featureLayer.options.smoothFactor = smoothFactor
+        }
+        const label = labelProperty ? feature.properties?.[labelProperty] : null
+        if (typeof label === "string" && label && !labeledNames.has(label)) {
+          labeledNames.add(label)
+          featureLayer.bindTooltip(label, {
+            permanent: true,
+            direction: "center",
+            className: "boundary-name-label",
+          })
+        }
+      },
     })
     layer.addTo(map)
     layerRef.current = layer
     return () => { map.removeLayer(layer) }
-  }, [map, data])
+  }, [map, data, color, weight, opacity, labelProperty, smoothFactor])
 
   useEffect(() => {
     layerRef.current?.setStyle({ color, weight, opacity, fillOpacity: 0 })
@@ -150,6 +235,43 @@ function BoundaryLayer({ data, color, weight, opacity }: {
 function MapRef({ onReady }: { onReady: (map: L.Map) => void }) {
   const map = useMap()
   useEffect(() => { onReady(map) }, [map, onReady])
+  return null
+}
+
+// Safari changes the visual viewport as its address bar appears or collapses.
+// Leaflet otherwise keeps the dimensions captured at mount and leaves blank tiles.
+function MapSizeInvalidator() {
+  const map = useMap()
+
+  useEffect(() => {
+    let frame = 0
+    const invalidate = () => {
+      cancelAnimationFrame(frame)
+      frame = requestAnimationFrame(() => {
+        map.invalidateSize({ pan: false, debounceMoveend: true })
+      })
+    }
+
+    const containerObserver = typeof ResizeObserver === "undefined"
+      ? null
+      : new ResizeObserver(invalidate)
+    containerObserver?.observe(map.getContainer())
+    const viewport = window.visualViewport
+    viewport?.addEventListener("resize", invalidate)
+    window.addEventListener("orientationchange", invalidate)
+
+    invalidate()
+    const initialTimer = window.setTimeout(invalidate, 250)
+
+    return () => {
+      cancelAnimationFrame(frame)
+      window.clearTimeout(initialTimer)
+      containerObserver?.disconnect()
+      viewport?.removeEventListener("resize", invalidate)
+      window.removeEventListener("orientationchange", invalidate)
+    }
+  }, [map])
+
   return null
 }
 
@@ -192,8 +314,12 @@ export default function SoilMaps() {
   const [boundaryData, setBoundaryData] = useState<Partial<Record<BoundaryId, FeatureCollection>>>({})
   const [boundaryLoading, setBoundaryLoading] = useState<Set<BoundaryId>>(new Set())
   const [highlightFeature, setHighlightFeature] = useState<Feature | null>(null)
+  const [searchBoundaryData, setSearchBoundaryData] = useState<FeatureCollection | null>(null)
+  const [searchBoundaryLines, setSearchBoundaryLines] = useState<FeatureCollection | null>(null)
+  const [searchBoundaryLabelProperty, setSearchBoundaryLabelProperty] = useState<string | null>(null)
   const boundaryRefs = useRef<Partial<Record<BoundaryId, L.GeoJSON>>>({})
   const mapRef = useRef<L.Map | null>(null)
+  const searchRequestRef = useRef(0)
   const handleMapReady = useCallback((map: L.Map) => { setMapInstance(map); mapRef.current = map }, [])
 
   function getBoundaryOpacity(_id: BoundaryId) { return boundaryOpacity }
@@ -244,6 +370,7 @@ export default function SoilMaps() {
   }
 
   async function handleSearchSelect(entry: SearchEntry) {
+    const requestId = ++searchRequestRef.current
     const [minLng, minLat, maxLng, maxLat] = entry.b
     mapRef.current?.fitBounds([[minLat, minLng], [maxLat, maxLng]], { padding: [40, 40], maxZoom: 14 })
 
@@ -271,6 +398,60 @@ export default function SoilMaps() {
     } else {
       setHighlightFeature(null)
     }
+
+    const childBoundary: SearchBoundaryConfig | null = entry.t === "prov"
+      ? {
+          file: "amphoe",
+          boundaryId: "districts",
+          matches: (feature) => feature.properties?.P_NAME_T === entry.nth,
+        }
+      : entry.t === "dist" && entry.pth
+        ? {
+            file: "subdistrict",
+            boundaryId: "subdistricts",
+            matches: (feature) =>
+              feature.properties?.P_NAME_T === entry.pth &&
+              feature.properties?.A_NAME_T === entry.nth,
+          }
+        : null
+
+    setSearchBoundaryData(null)
+    setSearchBoundaryLines(null)
+    setSearchBoundaryLabelProperty(null)
+    if (!childBoundary) return
+
+    let childGeojson = boundaryData[childBoundary.boundaryId]
+    if (!childGeojson) {
+      try {
+        const res = await fetch(`/boundaries/${childBoundary.file}.geojson`)
+        if (res.ok) {
+          childGeojson = (await res.json()) as FeatureCollection
+          setBoundaryData((prev) => ({ ...prev, [childBoundary.boundaryId]: childGeojson! }))
+        }
+      } catch {
+        return
+      }
+    }
+
+    // Ignore a slow prior search after the user has selected a different area.
+    if (requestId !== searchRequestRef.current || !childGeojson) return
+    const childFeatures = childGeojson.features.filter(childBoundary.matches)
+    setSearchBoundaryData({
+      type: "FeatureCollection",
+      features: childFeatures,
+    })
+    setSearchBoundaryLines(getInternalBoundaryLines(childFeatures))
+    setSearchBoundaryLabelProperty(
+      entry.t === "prov" ? "A_NAME_T" : entry.t === "dist" ? "T_NAME_T" : null
+    )
+  }
+
+  function clearSearchBoundaries() {
+    searchRequestRef.current += 1
+    setHighlightFeature(null)
+    setSearchBoundaryData(null)
+    setSearchBoundaryLines(null)
+    setSearchBoundaryLabelProperty(null)
   }
 
   const currentBase = BASE_MAPS.find((b) => b.id === activeBase)!
@@ -315,7 +496,21 @@ export default function SoilMaps() {
   return (
     <div className="relative h-[calc(100dvh-4rem)] w-full overflow-hidden">
       {/* ให้ overlay สีกลืนกับ basemap แทนที่จะลอยทับ */}
-      <style>{`.leaflet-image-layer.soil-overlay{mix-blend-mode:multiply}`}</style>
+      <style>{`
+        .leaflet-image-layer.soil-overlay{mix-blend-mode:multiply}
+        .leaflet-tooltip.boundary-name-label{
+          background:transparent;
+          border:0;
+          box-shadow:none;
+          color:#4b5563;
+          font-family:var(--font-thai),sans-serif;
+          font-size:12px;
+          font-weight:700;
+          text-shadow:1px 1px 0 #fff,-1px -1px 0 #fff,1px -1px 0 #fff,-1px 1px 0 #fff;
+          white-space:nowrap;
+        }
+        .leaflet-tooltip.boundary-name-label::before{display:none}
+      `}</style>
 
       <MapContainer
         center={[13.2, 101]}
@@ -340,6 +535,26 @@ export default function SoilMaps() {
           />
         )}
         {highlightFeature && <HighlightLayer key={JSON.stringify(highlightFeature.id ?? highlightFeature.properties)} feature={highlightFeature} />}
+        {searchBoundaryData && (
+          <BoundaryLayer
+            key={`search-${searchBoundaryData.features.length}`}
+            data={searchBoundaryData}
+            color="#3b82f6"
+            weight={0}
+            opacity={0}
+            labelProperty={searchBoundaryLabelProperty ?? undefined}
+          />
+        )}
+        {searchBoundaryLines && (
+          <BoundaryLayer
+            key={`search-lines-${searchBoundaryLines.features.length}`}
+            data={searchBoundaryLines}
+            color="#3b82f6"
+            weight={3}
+            opacity={1}
+            smoothFactor={1.25}
+          />
+        )}
         {BOUNDARY_LAYERS.map(({ id, color, weight }) => {
           const data = boundaryData[id]
           if (!activeBoundaries.has(id) || !data) return null
@@ -363,6 +578,7 @@ export default function SoilMaps() {
         <ClickHandler onPick={handlePick} />
         <FitThailand />
         <MapRef onReady={handleMapReady} />
+        <MapSizeInvalidator />
       </MapContainer>
 
       {/* Zoom + Location + Base Map */}
@@ -444,7 +660,7 @@ export default function SoilMaps() {
           </button>
 
           {showLayerPanel && (
-            <div className="absolute right-12 top-0 bg-white shadow-2xl ring-1 ring-black/8 rounded-2xl p-3 z-[1002] w-[200px] max-h-[70vh] overflow-y-auto">
+            <div className="absolute right-12 top-1/2 -translate-y-1/2 bg-white shadow-2xl ring-1 ring-black/8 rounded-2xl p-3 z-[1002] w-[200px] max-h-[calc(100dvh-8rem)] overflow-y-auto lg:top-0 lg:translate-y-0 lg:max-h-[70vh]">
               <div className="relative flex items-center justify-center mb-2.5">
                 <p className="font-semibold text-[13px] text-[#1A1A1A] leading-tight">ชั้นข้อมูล</p>
                 <button
@@ -592,7 +808,7 @@ export default function SoilMaps() {
 
 
       {/* Search bar — top left */}
-      <SearchBar onSelect={handleSearchSelect} onClear={() => setHighlightFeature(null)} />
+      <SearchBar onSelect={handleSearchSelect} onClear={clearSearchBoundaries} />
 
       {/* legend — ซ้ายบน แสดงเฉพาะเมื่อมี layer เปิดอยู่ */}
       {meta && (
