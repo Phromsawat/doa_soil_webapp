@@ -94,6 +94,10 @@ export default function Bar() {
     title = "แผนที่"
     showBack = true
     centerTitle = true
+  } else if (pathname === "/ledger") {
+    title = "สมุดบัญชี"
+    showBack = true
+    centerTitle = true
   }
 
   const navLinks = [
@@ -371,6 +375,11 @@ export default function Bar() {
           {!isAnonymous && (
             <Link href="/history" onClick={() => setIsProfileOpen(false)} className="text-[16px] font-thai text-[#1A1A1A] font-normal hover:text-primary transition-colors">
               {t('analysisHistory')}
+            </Link>
+          )}
+          {!isAnonymous && (
+            <Link href="/ledger" onClick={() => setIsProfileOpen(false)} className="text-[16px] font-thai text-[#1A1A1A] font-normal hover:text-primary transition-colors">
+              {t('ledgerMenu')}
             </Link>
           )}
           {showSoilMap && (

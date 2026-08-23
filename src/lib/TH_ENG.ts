@@ -63,6 +63,7 @@ export const translations = {
     // History
     historyMenu: "ประวัติ",
     analysisHistory: "ประวัติการวิเคราะห์",
+    ledgerMenu: "สมุดบัญชี",
     menuLabel: "เมนู"
   },
   en: {
@@ -129,6 +130,7 @@ export const translations = {
     // History
     historyMenu: "History",
     analysisHistory: "Analysis History",
+    ledgerMenu: "Ledger",
     menuLabel: "Menu"
   }
 }
