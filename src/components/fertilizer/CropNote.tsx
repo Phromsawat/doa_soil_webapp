@@ -5,7 +5,7 @@ import { getCropNote } from "@/lib/supabase/fertilizerPlan"
 
 /**
  * หมายเหตุการใส่ปุ๋ยของพืช (คำแนะนำเพิ่มเติมของกรมวิชาการเกษตร)
- * แสดงต่อจากขั้นที่ 6 — คืน null (ไม่แสดงอะไร) ถ้าพืชนี้ไม่มีหมายเหตุ
+ * แสดงต่อจากขั้นที่ 8 — คืน null (ไม่แสดงอะไร) ถ้าพืชนี้ไม่มีหมายเหตุ
  */
 export default function CropNote({ cropId }: { cropId: string }) {
   const [note, setNote] = useState<{ note: string; source: string | null } | null>(null)

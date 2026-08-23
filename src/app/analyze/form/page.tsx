@@ -25,6 +25,8 @@ import FertilizerPicker from "@/components/fertilizer/FertilizerPicker"
 import BlendResultCard from "@/components/fertilizer/BlendResultCard"
 import FertilizerPlanTable from "@/components/fertilizer/FertilizerPlanTable"
 import CropNote from "@/components/fertilizer/CropNote"
+import LeafStandardTable from "@/components/fertilizer/LeafStandardTable"
+import SoilRecommendationTable from "@/components/fertilizer/SoilRecommendationTable"
 
 /** ช่องกรอกตัวเลข + ป้ายระดับ (ต่ำ/ปานกลาง/สูง) */
 function NutrientInput({
@@ -127,6 +129,9 @@ export default function AnalyzeForm() {
   const pLevel = classify("p", pN)
   const kLevel = classify("k", kN)
 
+  // ชื่อพืชที่เลือก — ใช้เปิดตารางอ้างอิงในขั้นที่ 2-3 (ตารางผูกกับชื่อพืช ไม่ใช่ id)
+  const cropName = crops.find((c) => c.id === cropId)?.name ?? ""
+
   const hasSoil = omN != null || pN != null || kN != null
   const ready = !!cropId && hasSoil
 
@@ -200,7 +205,7 @@ export default function AnalyzeForm() {
         amphur: null,
         district: null,
         notes: crop ? `พืช: ${crop.name}` : null,
-        blend_formula_ids: picked.filter(Boolean),   // ปุ๋ยที่เลือกในขั้นที่ 3
+        blend_formula_ids: picked.filter(Boolean),   // ปุ๋ยที่เลือกในขั้นที่ 5
       })
       try {
         await calculateAndSave({
@@ -238,10 +243,23 @@ export default function AnalyzeForm() {
           <CropPicker crops={crops} value={cropId} onChange={(id) => { setCropId(id); invalidate() }} />
         )}
 
-        {/* ② ค่าวิเคราะห์ดิน */}
+
+        {/* ② ค่ามาตรฐานความเข้มข้นของธาตุอาหาร — ตารางอ้างอิงของพืชที่เลือก */}
+        <div className="mt-6 border-t border-gray-100 pt-5">
+          <StepHeader n={2} title="ค่ามาตรฐานความเข้มข้นของธาตุอาหาร" />
+          <LeafStandardTable cropName={cropName} />
+        </div>
+
+        {/* ③ ตารางการใช้ปุ๋ยตามค่าวิเคราะห์ดิน — ชุดตัวเลขเดียวกับที่ใช้คำนวณ */}
+        <div className="mt-6 border-t border-gray-100 pt-5">
+          <StepHeader n={3} title="การใช้ปุ๋ยตามค่าวิเคราะห์ดิน" />
+          <SoilRecommendationTable cropId={cropId} cropName={cropName} />
+        </div>
+
+        {/* ④ ค่าวิเคราะห์ดิน */}
         <div className="mt-6 border-t border-gray-100 pt-5">
           <StepHeader
-            n={2}
+            n={4}
             title="ค่าวิเคราะห์ดิน"
             hint="กรอกค่าจากชุดตรวจดินหรือผลแล็บ"
           />
@@ -257,10 +275,10 @@ export default function AnalyzeForm() {
 
         </div>
 
-        {/* ③ เลือกปุ๋ยที่จะใช้ (input ก่อนกดคำนวณ) */}
+        {/* ⑤ เลือกปุ๋ยที่จะใช้ (input ก่อนกดคำนวณ) */}
         <div className="mt-6 border-t border-gray-100 pt-5">
           <StepHeader
-            n={3}
+            n={5}
             title="เลือกปุ๋ยที่จะใช้"
             hint="เลือกปุ๋ยที่หาซื้อได้ 1–3 สูตร (จะคำนวณปริมาณให้ตอนกดคำนวณ)"
           />
@@ -296,10 +314,10 @@ export default function AnalyzeForm() {
           )}
         </div>
 
-        {/* ④ ธาตุอาหารที่ต้องการ — แสดงหลังกดคำนวณ */}
+        {/* ⑥ ธาตุอาหารที่ต้องการ — แสดงหลังกดคำนวณ */}
         {calc && (
           <div className="mt-6 border-t border-gray-100 pt-5">
-            <StepHeader n={4} title="ธาตุอาหารที่พืชต้องการ" hint="จากค่าดิน + ชนิดพืช" />
+            <StepHeader n={6} title="ธาตุอาหารที่พืชต้องการ" hint="จากค่าดิน + ชนิดพืช" />
             <div className="rounded-xl bg-[#1A2F2A] p-4 text-white">
               <div className="grid grid-cols-3 gap-3">
                 {[
@@ -327,11 +345,11 @@ export default function AnalyzeForm() {
           </div>
         )}
 
-        {/* ⑤ แผนใส่ปุ๋ยตามระยะ (คำแนะนำกรมฯ ตายตัว) — ตัวหลัก */}
+        {/* ⑦ แผนใส่ปุ๋ยตามระยะ (คำแนะนำกรมฯ ตายตัว) — ตัวหลัก */}
         {calc && (
           <div className="mt-6 border-t border-gray-100 pt-5">
             <StepHeader
-              n={5}
+              n={7}
               title="แผนการใส่ปุ๋ยตามระยะ"
               hint="คำแนะนำตายตัวของกรมวิชาการเกษตร ตามช่วงค่าดิน"
             />
@@ -339,19 +357,19 @@ export default function AnalyzeForm() {
           </div>
         )}
 
-        {/* ⑥ ทางเลือก: เลือกปุ๋ยเอง (solver) — จากสูตรที่เลือกไว้ในขั้นที่ 3 */}
+        {/* ⑧ ทางเลือก: เลือกปุ๋ยเอง (solver) — จากสูตรที่เลือกไว้ในขั้นที่ 5 */}
         {calc && blendResult && (
           <div className="mt-6 border-t border-gray-100 pt-5">
             <StepHeader
-              n={6}
+              n={8}
               title="ทางเลือก : ปริมาณปุ๋ยที่ต้องใช้"
-              hint="กรณีหาปุ๋ยตามตารางไม่ได้ — คำนวณจากสูตรที่เลือกในขั้นที่ 3"
+              hint="กรณีหาปุ๋ยตามตารางไม่ได้ — คำนวณจากสูตรที่เลือกในขั้นที่ 5"
             />
             <BlendResultCard result={blendResult} unit={calc.unit} />
           </div>
         )}
 
-        {/* หมายเหตุ (คำแนะนำเพิ่มเติมของกรมฯ) — ต่อจากขั้นที่ 6 ไม่มีเลขขั้น */}
+        {/* หมายเหตุ (คำแนะนำเพิ่มเติมของกรมฯ) — ต่อจากขั้นที่ 8 ไม่มีเลขขั้น */}
         {calc && <CropNote cropId={cropId} />}
 
         {/* บันทึก */}

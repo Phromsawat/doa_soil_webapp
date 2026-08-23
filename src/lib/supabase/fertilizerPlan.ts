@@ -81,7 +81,7 @@ export async function getCropStageSplit(cropId: string): Promise<
 }
 
 /**
- * ดึงหมายเหตุการใส่ปุ๋ยของพืช (แสดงต่อจากขั้นที่ 6) — คืน null ถ้าไม่มี
+ * ดึงหมายเหตุการใส่ปุ๋ยของพืช (แสดงต่อจากขั้นที่ 8) — คืน null ถ้าไม่มี
  */
 export async function getCropNote(
   cropId: string
