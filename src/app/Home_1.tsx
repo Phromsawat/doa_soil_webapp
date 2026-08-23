@@ -29,7 +29,8 @@ export default function Home_1() {
       <section className="relative bg-[#1A2F2A] px-4 py-20 min-h-[100dvh] overflow-hidden w-full flex flex-col items-center justify-center">
         {/* Background Image Overlay */}
         {/* ภาพพื้นหลังนี้ทับด้วย opacity-20 บนพื้นเข้ม จึงย่อ + บีบแรงได้โดยตาไม่เห็นความต่าง
-            ต้นฉบับ bernd-dittrich-...jpg คือ 5732x7643 หนัก 18.8 MB — ห้ามเอากลับมาใช้ตรง ๆ */}
+            ต้นฉบับเป็น JPEG 5732x7643 หนัก 18.8 MB ลบออกจาก public แล้ว (ดูใน git history)
+            ถ้าจะเปลี่ยนภาพ ให้ย่อเหลือกว้าง ~1280 แล้วบันทึกเป็น WebP ก่อนเสมอ */}
         <div
           className="absolute inset-0 opacity-20 bg-cover bg-center"
           style={{ backgroundImage: 'url("/img/hero-bg.webp")' }}
