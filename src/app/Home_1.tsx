@@ -28,9 +28,11 @@ export default function Home_1() {
       {/* Dark Hero Section with Quick Guide */}
       <section className="relative bg-[#1A2F2A] px-4 py-20 min-h-[100dvh] overflow-hidden w-full flex flex-col items-center justify-center">
         {/* Background Image Overlay */}
-        <div 
+        {/* ภาพพื้นหลังนี้ทับด้วย opacity-20 บนพื้นเข้ม จึงย่อ + บีบแรงได้โดยตาไม่เห็นความต่าง
+            ต้นฉบับ bernd-dittrich-...jpg คือ 5732x7643 หนัก 18.8 MB — ห้ามเอากลับมาใช้ตรง ๆ */}
+        <div
           className="absolute inset-0 opacity-20 bg-cover bg-center"
-          style={{ backgroundImage: 'url("/img/bernd-dittrich-G2hfwMGlzUg-unsplash.jpg")' }}
+          style={{ backgroundImage: 'url("/img/hero-bg.webp")' }}
         ></div>
         
         <div className="relative z-10 flex flex-col items-center text-center space-y-6">
