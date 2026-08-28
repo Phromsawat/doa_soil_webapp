@@ -27,6 +27,7 @@ import FertilizerPlanTable from "@/components/fertilizer/FertilizerPlanTable"
 import CropNote from "@/components/fertilizer/CropNote"
 import LeafStandardTable from "@/components/fertilizer/LeafStandardTable"
 import SoilRecommendationTable from "@/components/fertilizer/SoilRecommendationTable"
+import ImportPanel, { type FilledRow } from "@/components/analyze/ImportPanel"
 
 /** ช่องกรอกตัวเลข + ป้ายระดับ (ต่ำ/ปานกลาง/สูง) */
 function NutrientInput({
@@ -226,12 +227,28 @@ export default function AnalyzeForm() {
     }
   }
 
+  // เติมค่าจากไฟล์ที่นำเข้า (กรณีไฟล์มีแถวเดียว) — ผู้ใช้ยังต้องกดคำนวณเอง
+  function applyImportedRow(row: FilledRow) {
+    setCropId(row.cropId)
+    setOm(row.om)
+    setP(row.p)
+    setK(row.k)
+    setPh(row.ph)
+    setPicked(row.formulaIds.length > 0 ? row.formulaIds : [""])
+    invalidate()
+  }
+
   return (
     <div className="mx-auto w-full max-w-[46rem] px-4 py-6">
       <div className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
         <h1 className="mb-5 text-center text-lg font-bold text-gray-800">
           คำนวณปุ๋ยตามค่าวิเคราะห์ดิน
         </h1>
+
+        {/* นำเข้าไฟล์ — แถวเดียวเติมลงฟอร์ม หลายแถวคำนวณและบันทึกรวดเดียว */}
+        <div className="mb-6">
+          <ImportPanel crops={crops} formulas={formulas} onFillForm={applyImportedRow} />
+        </div>
 
         {/* ① เลือกพืช */}
         <StepHeader n={1} title="เลือกพืชที่จะปลูก" hint="เลือกประเภทก่อน แล้วเลือกพืช" />
