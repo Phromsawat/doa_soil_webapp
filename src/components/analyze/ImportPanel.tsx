@@ -127,24 +127,26 @@ export default function ImportPanel({
   const okCount = preview?.filter((r) => r.ok).length ?? 0
 
   return (
-    <div className="rounded-xl border border-dashed border-gray-300 bg-gray-50/60 p-4">
-      <div className="flex flex-wrap items-center gap-2">
-        <FileSpreadsheet className="h-4 w-4 shrink-0 text-[#1A4D2E]" />
-        <span className="mr-auto text-sm font-medium text-gray-700">
-          นำเข้าจากไฟล์ Excel / CSV
-        </span>
+    <div className="rounded-xl border border-gray-200 bg-white px-3 py-2.5">
+      {/* แถบนี้เป็นทางลัด ไม่ใช่ขั้นตอนหลักของหน้า จึงคุมให้เตี้ยและสีจางกว่าปุ่มในฟอร์ม */}
+      <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
+        <FileSpreadsheet className="h-4 w-4 shrink-0 text-gray-400" />
+        <div className="mr-auto min-w-0">
+          <p className="text-[13px] font-medium text-gray-600">นำเข้าจากไฟล์ Excel / CSV</p>
+          <p className="text-[11px] text-gray-400">คำนวณและบันทึกลงประวัติพร้อมกัน</p>
+        </div>
         <button
           type="button"
           onClick={downloadTemplate}
-          className="inline-flex h-9 items-center gap-1.5 rounded-full border border-gray-200 bg-white px-3 text-xs font-medium text-gray-600 hover:bg-gray-50"
+          className="inline-flex h-8 items-center gap-1.5 rounded-full px-2.5 text-xs font-medium text-gray-500 hover:bg-gray-100 hover:text-gray-700"
         >
-          <Download className="h-3.5 w-3.5" /> โหลดเทมเพลต
+          <Download className="h-3.5 w-3.5" /> เทมเพลต
         </button>
         <button
           type="button"
           onClick={() => fileRef.current?.click()}
           disabled={busy !== null}
-          className="inline-flex h-9 items-center gap-1.5 rounded-full bg-[#1A4D2E] px-4 text-xs font-medium text-white hover:bg-[#143a22] disabled:opacity-50"
+          className="inline-flex h-8 items-center gap-1.5 rounded-full border border-gray-200 bg-white px-3 text-xs font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50"
         >
           {busy === "reading" ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Upload className="h-3.5 w-3.5" />}
           เลือกไฟล์
@@ -157,11 +159,6 @@ export default function ImportPanel({
           onChange={(e) => { const f = e.target.files?.[0]; if (f) handleFile(f) }}
         />
       </div>
-
-      <p className="mt-2 text-[11px] leading-relaxed text-gray-400">
-        ไฟล์แถวเดียวจะเติมลงฟอร์มให้ · หลายแถวจะคำนวณและบันทึกลงประวัติพร้อมกัน
-        (ต้องมีครบทั้งพืช OM P K และปุ๋ยอย่างน้อย 1 สูตร) · แนะนำ .xlsx เพราะ CSV ภาษาไทยจาก Excel มักเพี้ยน
-      </p>
 
       {info && (
         <p className="mt-3 rounded-xl bg-emerald-50 px-4 py-2 text-sm text-emerald-700">{info}</p>
