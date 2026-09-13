@@ -553,7 +553,19 @@ export async function adminDeleteAnalysis(analysisId: string) {
 
   const paths = (images ?? []).map((i) => i.storage_path).filter(Boolean)
   if (paths.length > 0) {
-    await supabase.storage.from("soil-images").remove(paths)
+    // ต้องใช้ service_role เหมือน adminDeleteUser — policy ของ soil-images ยอมให้ลบ
+    // เฉพาะเจ้าของโฟลเดอร์ ({user_id}/...) แอดมินที่ลบผลวิเคราะห์ของเกษตรกรจึงไม่เข้าเงื่อนไข
+    // ถ้าใช้ client ของผู้ใช้ remove() จะคืน 0 ไฟล์เงียบ ๆ แถวใน DB หายตาม cascade
+    // แต่รูปค้างใน storage ถาวรโดยไม่มีใครรู้ว่ามีอยู่ (เปลืองที่ + ข้อมูลผู้ใช้ไม่ถูกลบจริง)
+    const { createClient: createAdminClient } = await import("@supabase/supabase-js")
+    const admin = createAdminClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SECRET_KEY!,
+      { auth: { autoRefreshToken: false, persistSession: false } }
+    )
+    const { error: rmErr } = await admin.storage.from("soil-images").remove(paths)
+    // ลบไฟล์ไม่สำเร็จไม่ควรขวางการลบข้อมูล แต่ต้องรู้ว่าเกิดขึ้น (เดิมกลืน error ทิ้ง)
+    if (rmErr) console.warn(`adminDeleteAnalysis: ลบรูปไม่สำเร็จ — ${rmErr.message}`)
   }
 
   // DB rows cascade-delete via FK
