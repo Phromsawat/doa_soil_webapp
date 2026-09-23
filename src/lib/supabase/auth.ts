@@ -87,11 +87,15 @@ export async function updateEmail(newEmail: string) {
 }
 
 /**
- * Sign out the current user.
+ * Sign out the current user — เฉพาะเครื่องนี้เท่านั้น
+ *
+ * ค่าเริ่มต้นของ supabase-js คือ scope: "global" ซึ่งเพิกถอน refresh token
+ * ของบัญชีนั้น "ทุกเครื่อง" คนอื่นที่ใช้บัญชีเดียวกันอยู่ (เช่นบัญชีแอดมินที่ใช้ร่วมกัน)
+ * จะถูกเด้งออกตอน token หมดอายุทั้งที่ไม่ได้กดอะไร จึงระบุ local ไว้ชัดเจน
  */
 export async function signOut() {
   const supabase = createClient()
-  const { error } = await supabase.auth.signOut()
+  const { error } = await supabase.auth.signOut({ scope: "local" })
   if (error) throw error
 }
 
