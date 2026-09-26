@@ -39,19 +39,20 @@ export default function Home_1() {
         <div className="relative z-10 flex flex-col items-center text-center space-y-6">
 
           {/* Title */}
-          <h1 className="text-5xl md:text-5xl lg:text-6xl font-medium text-white tracking-tight">
+          <h1 className="text-[3.5rem] md:text-7xl lg:text-[5.5rem] font-semibold text-white tracking-tight leading-tight">
             {t('title')}
           </h1>
-          
+
           {/* Subtitle */}
-          <p className="text-[18px] md:text-[18px] lg:text-[20px] text-gray-300 max-w-[340px] md:max-w-[600px] lg:max-w-[800px] leading-relaxed">
+          <p className="text-[20px] md:text-[22px] lg:text-[26px] text-gray-100 max-w-[340px] md:max-w-[600px] lg:max-w-[800px] leading-relaxed">
             {t('subtitle1')}<br/>{t('subtitle2')}
           </p>
-          
+
           {/* Buttons */}
-          <div className="w-full flex flex-col gap-3 pt-4 px-4 max-w-[300px]">
+          {/* ปุ่มหลักใช้พื้นขาวตัวหนังสือเขียวเข้ม ให้ตัดกับพื้นหลังเข้มชัดกว่าปุ่มเมนูลัดโปร่งแสงด้านล่าง */}
+          <div className="w-full flex flex-col gap-3 pt-4 px-4 max-w-[340px]">
             <Link href="/analyze" className="w-full">
-              <Button size="default" className="w-full font-medium text-[15px] h-10 shadow-lg transition-colors bg-[#1A4D2E] hover:bg-[#143a22] text-white rounded-full">
+              <Button size="default" className="w-full font-bold text-[19px] md:text-[20px] h-14 shadow-xl transition-colors bg-white hover:bg-gray-100 text-[#1A4D2E] rounded-full">
                 {t('startAnalysis')}
               </Button>
             </Link>
@@ -62,20 +63,20 @@ export default function Home_1() {
         <div className="relative z-10 mt-24 px-0 space-y-4 w-full max-w-6xl mx-auto md:grid md:grid-cols-3 md:gap-6 md:space-y-0">
         {/* Menu 1 */}
         <Link href="/soil-sampling" className="block w-full">
-          <div className="w-full h-10 relative bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/20 rounded-full shadow-lg flex items-center justify-center px-12 transition-all text-white">
+          <div className="w-full h-full min-h-12 py-2 relative bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/20 rounded-full shadow-lg flex items-center justify-center pl-14 pr-5 transition-all text-white">
             <div className="absolute left-6 flex items-center justify-center">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5 shrink-0">
                 <path d="M12 7v14"/>
               <path d="M3 18a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3z"/>
               </svg>
             </div>
-            <span className="text-[14px] md:text-[15px] font-medium text-center">{t('soilSampling')}</span>
+            <span className="text-[15px] sm:text-[16px] md:text-[17px] font-medium text-center leading-snug">{t('soilSampling')}</span>
           </div>
         </Link>
 
         {/* Menu 2 */}
         <Link href="/doa-kits" className="block w-full">
-          <div className="w-full h-10 relative bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/20 rounded-full shadow-lg flex items-center justify-center px-12 transition-all text-white">
+          <div className="w-full h-full min-h-12 py-2 relative bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/20 rounded-full shadow-lg flex items-center justify-center pl-14 pr-5 transition-all text-white">
             <div className="absolute left-6 flex items-center justify-center">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5 shrink-0">
                 <path d="M14 2v6a2 2 0 0 0 .245.96l5.51 10.08A2 2 0 0 1 18 22H6a2 2 0 0 1-1.755-2.96l5.51-10.08A2 2 0 0 0 10 8V2"/>
@@ -83,19 +84,19 @@ export default function Home_1() {
                 <path d="M8.5 2h7"/>
               </svg>
             </div>
-            <span className="text-[14px] md:text-[15px] font-medium text-center whitespace-nowrap">{t('doaKits')}</span>
+            <span className="text-[15px] sm:text-[16px] md:text-[17px] font-medium text-center leading-snug">{t('doaKits')}</span>
           </div>
         </Link>
 
         {/* Menu 3 */}
         <Link href="/user-guide" className="block w-full">
-          <div className="w-full h-10 relative bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/20 rounded-full shadow-lg flex items-center justify-center px-12 transition-all text-white">
+          <div className="w-full h-full min-h-12 py-2 relative bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/20 rounded-full shadow-lg flex items-center justify-center pl-14 pr-5 transition-all text-white">
             <div className="absolute left-6 flex items-center justify-center">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5 shrink-0">
                 <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H19a1 1 0 0 1 1 1v18a1 1 0 0 1-1 1H6.5a1 1 0 0 1 0-5H20"/>
               </svg>
             </div>
-            <span className="text-[14px] md:text-[15px] font-medium text-center">{t('userGuide')}</span>
+            <span className="text-[15px] sm:text-[16px] md:text-[17px] font-medium text-center leading-snug">{t('userGuide')}</span>
           </div>
         </Link>
         </div>
