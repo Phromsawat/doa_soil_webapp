@@ -38,12 +38,13 @@ export const translations = {
 
     // Contact Section
     contactUsNow: "หากมีข้อสงสัยติดต่อเราได้ทันที",
-    addressLabel: "Address",
+    addressLabel: "ที่อยู่",
     addressFull: "กลุ่มวิจัยเกษตรเคมี กองวิจัยพัฒนาปัจจัยการผลิตทางการเกษตร กรมวิชาการเกษตร 50 ถนนพหลโยธิน แขวงลาดยาว เขตจตุจักร กทม. 10900",
-    businessHoursLabel: "Business Hours",
+    businessHoursLabel: "เวลาทำการ",
     businessHoursFull: "จันทร์-ศุกร์: 9:00 - 16:00",
-    phoneLabel: "Phone",
-    emailLabel: "Email",
+    phoneLabel: "โทรศัพท์",
+    emailLabel: "อีเมล",
+    viewOnGoogleMaps: "ดูแผนที่บน Google Maps",
 
     // Footer
     copyright: "สงวนลิขสิทธิ์ © 2567 กรมวิชาการเกษตร และ ศูนย์เทคโนโลยีอิเล็กทรอนิกส์และคอมพิวเตอร์แห่งชาติ",
@@ -111,6 +112,7 @@ export const translations = {
     businessHoursFull: "Monday-Friday: 9am - 4pm",
     phoneLabel: "Phone",
     emailLabel: "Email",
+    viewOnGoogleMaps: "View on Google Maps",
 
     // Footer
     copyright: "Copyright © 2024 Department of Agriculture and National Electronics and Computer Technology Center",

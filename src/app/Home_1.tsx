@@ -6,9 +6,12 @@ import { ShieldCheck, Home, Clock, Phone, Mail } from "lucide-react"
 import { Button } from "@/components/ui/Button"
 import { useLanguage } from "@/components/providers/LanguageProvider"
 import { TermsModal } from "@/components/TermsModal"
+import type { HomeContent } from "@/lib/content/home"
 
-export default function Home_1() {
-  const { t } = useLanguage()
+export default function Home_1({ content }: { content: HomeContent }) {
+  const { t, language } = useLanguage()
+  // ข้อความส่วนโครงการ/ติดต่อ แก้ได้จาก /admin/content/home (ค่าว่างเติมด้วยข้อความเดิมแล้ว)
+  const home = content[language]
   const [isTermsModalOpen, setIsTermsModalOpen] = useState(false)
 
   useEffect(() => {
@@ -113,26 +116,24 @@ export default function Home_1() {
 
           {/* Description */}
           <p className="text-[14px] text-[#333333] leading-relaxed">
-            {t('projectDescription')}
+            {home.projectDescription}
           </p>
 
           {/* Organized By */}
           <div className="space-y-1.5">
             <h3 className="text-[16px] font-black text-[#1A1A1A]">{t('organizedByTitle')}</h3>
             <p className="text-[14px] text-[#333333] leading-relaxed">
-              {t('organizedByDesc')}
+              {home.organizedBy}
             </p>
           </div>
 
           {/* Original Contact Info */}
           <div className="space-y-1.5 pt-2">
             <h3 className="text-[16px] font-black text-[#1A1A1A]">{t('contactTitle')}</h3>
-            <p className="text-[14px] text-[#333333] leading-relaxed">
-              {t('contactDept1')}<br/>
-              {t('contactDept2')}<br/>
-              {t('contactDept3')}<br/>
-              {t('contactDept4')}<br/>
-              {t('contactPhoneShort')}
+            <p className="text-[14px] text-[#333333] leading-relaxed whitespace-pre-line">
+              {home.contactPlace}
+              <br />
+              {home.phone}
             </p>
           </div>
         </div>
@@ -155,16 +156,16 @@ export default function Home_1() {
                   <Home className="w-5 h-5 fill-current" />
                   <h3 className="text-[16px] font-black">{t('addressLabel')}</h3>
                 </div>
-                <p className="text-[14px] text-[#666666] leading-relaxed">
-                  {t('addressFull')}
+                <p className="text-[14px] text-[#666666] leading-relaxed whitespace-pre-line">
+                  {home.address}
                 </p>
                 <a 
-                  href="https://maps.app.goo.gl/Fh4E8ChqGUo6fRio6" 
+                  href={content.mapsUrl}
                   target="_blank" 
                   rel="noopener noreferrer"
                   className="inline-block mt-2 text-[14px] text-[#0070F3] font-bold hover:underline"
                 >
-                  ดูแผนที่บน Google Maps
+                  {t('viewOnGoogleMaps')}
                 </a>
               </div>
               
@@ -176,8 +177,8 @@ export default function Home_1() {
                   <Clock className="w-5 h-5" />
                   <h3 className="text-[16px] font-black">{t('businessHoursLabel')}</h3>
                 </div>
-                <p className="text-[14px] text-[#666666]">
-                  {t('businessHoursFull')}
+                <p className="text-[14px] text-[#666666] whitespace-pre-line">
+                  {home.businessHours}
                 </p>
               </div>
               
@@ -189,8 +190,8 @@ export default function Home_1() {
                   <Phone className="w-5 h-5 fill-current" />
                   <h3 className="text-[16px] font-black">{t('phoneLabel')}</h3>
                 </div>
-                <p className="text-[14px] text-[#666666]">
-                  {t('contactPhoneShort')}
+                <p className="text-[14px] text-[#666666] whitespace-pre-line">
+                  {home.phone}
                 </p>
               </div>
               
@@ -202,16 +203,16 @@ export default function Home_1() {
                   <Mail className="w-5 h-5" />
                   <h3 className="text-[16px] font-black">{t('emailLabel')}</h3>
                 </div>
-                <p className="text-[14px] text-[#666666]">
-                  soilandwatergroup@doa.in.th
-                </p>
+                <a href={`mailto:${content.email}`} className="text-[14px] text-[#666666] hover:underline">
+                  {content.email}
+                </a>
               </div>
             </div>
 
             {/* Google Map Embed */}
             <div className="w-full h-[300px] lg:h-auto min-h-[300px] rounded-xl overflow-hidden shadow-sm border border-gray-200">
               <iframe 
-                src="https://maps.google.com/maps?q=13.846650240280857,100.57496470153023&t=&z=16&ie=UTF8&iwloc=&output=embed" 
+                src={`https://maps.google.com/maps?q=${content.lat},${content.lng}&t=&z=16&ie=UTF8&iwloc=&output=embed`}
                 width="100%" 
                 height="100%" 
                 style={{ border: 0 }} 

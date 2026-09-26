@@ -6,6 +6,7 @@ import { revalidatePath } from "next/cache"
 import { DEFAULT_CONTENT } from "@/lib/content/defaults"
 import { isValidSlug } from "@/lib/content/getPageContent"
 import { PAGE_SLUGS, type Block, type PageSlug } from "@/types/content"
+import { HOME_SLUG, sanitizeHome, validateHome, type HomeContentInput } from "@/lib/content/home"
 
 // =============================================================================
 // เนื้อหาหน้าข้อมูล — ฝั่งเขียน/แอดมิน (ต้องมีสิทธิ์เมนู "content")
@@ -94,5 +95,40 @@ export async function resetPageContent(slug: string) {
   if (error) throw new Error(`resetPageContent: ${error.message}`)
 
   revalidatePath(`/${slug}`)
+  revalidatePath("/admin/content")
+}
+
+// ---------------------------------------------------------------- หน้าหลัก
+// เก็บเป็นแถว slug = "home" ในตารางเดียวกัน (RLS: เขียนได้เฉพาะแอดมิน)
+
+/** บันทึกเนื้อหาหน้าหลัก (upsert) — ช่องว่าง = ใช้ข้อความตั้งต้น */
+export async function saveHomeContent(input: HomeContentInput) {
+  const { user } = await requirePermission("content", "edit")
+  const content = sanitizeHome(input)
+  const invalid = validateHome(content)
+  if (invalid) throw new Error(invalid)
+
+  const supabase = await createClient()
+  const { error } = await supabase
+    .from("page_contents")
+    .upsert(
+      { slug: HOME_SLUG, blocks: content, updated_by: user.id, updated_at: new Date().toISOString() },
+      { onConflict: "slug" }
+    )
+  if (error) throw new Error(`saveHomeContent: ${error.message}`)
+
+  revalidatePath("/")
+  revalidatePath("/admin/content")
+}
+
+/** คืนหน้าหลักกลับไปใช้ข้อความตั้งต้น (ลบแถวทิ้ง) */
+export async function resetHomeContent() {
+  await requirePermission("content", "delete")
+
+  const supabase = await createClient()
+  const { error } = await supabase.from("page_contents").delete().eq("slug", HOME_SLUG)
+  if (error) throw new Error(`resetHomeContent: ${error.message}`)
+
+  revalidatePath("/")
   revalidatePath("/admin/content")
 }
