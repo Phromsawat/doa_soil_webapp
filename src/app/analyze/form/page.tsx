@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { Loader2, Sprout, Check, History, Calculator } from "lucide-react"
+import { Loader2, Sprout, Check, History, Calculator, ChevronDown } from "lucide-react"
 import Link from "next/link"
 import { Button } from "@/components/ui/Button"
 import { saveManualAnalysis } from "@/lib/supabase/analyses"
@@ -85,6 +85,37 @@ function StepHeader({ n, title, hint }: { n: number; title: string; hint?: strin
   )
 }
 
+/**
+ * ขั้นที่เป็นตารางอ้างอิง — ซ่อนไว้ก่อนเป็นค่าเริ่มต้น ให้ช่องกรอกอยู่ใกล้ปุ่มคำนวณ
+ * ตารางจะ mount (และโหลดข้อมูล) ตอนกดเปิดเท่านั้น
+ */
+function CollapsibleStep({ n, title, hint, children }: { n: number; title: string; hint?: string; children: React.ReactNode }) {
+  const [open, setOpen] = useState(false)
+  return (
+    <div className="mt-6 border-t border-gray-100 pt-5">
+      <button
+        type="button"
+        onClick={() => setOpen((o) => !o)}
+        aria-expanded={open}
+        className="flex w-full items-start gap-2 text-left"
+      >
+        <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[#1A4D2E] text-xs font-bold text-white">
+          {n}
+        </span>
+        <div className="mr-auto">
+          <h2 className="text-sm font-bold text-gray-800">{title}</h2>
+          {hint && <p className="text-xs text-gray-500">{hint}</p>}
+        </div>
+        <span className="flex shrink-0 items-center gap-1 rounded-full border border-gray-200 px-3 py-1 text-xs font-medium text-[#1A4D2E] hover:bg-gray-50">
+          {open ? "ซ่อนตาราง" : "แสดงตาราง"}
+          <ChevronDown className={`h-3.5 w-3.5 transition-transform ${open ? "rotate-180" : ""}`} />
+        </span>
+      </button>
+      {open && <div className="mt-3">{children}</div>}
+    </div>
+  )
+}
+
 export default function AnalyzeForm() {
   const [crops, setCrops] = useState<CropOption[]>([])
   const [cropsLoading, setCropsLoading] = useState(true)
@@ -130,7 +161,7 @@ export default function AnalyzeForm() {
   const pLevel = classify("p", pN)
   const kLevel = classify("k", kN)
 
-  // ชื่อพืชที่เลือก — ใช้เปิดตารางอ้างอิงในขั้นที่ 2-3 (ตารางผูกกับชื่อพืช ไม่ใช่ id)
+  // ชื่อพืชที่เลือก — ใช้เปิดตารางอ้างอิงในขั้นที่ 4-5 (ตารางผูกกับชื่อพืช ไม่ใช่ id)
   const cropName = crops.find((c) => c.id === cropId)?.name ?? ""
 
   const hasSoil = omN != null || pN != null || kN != null
@@ -206,7 +237,7 @@ export default function AnalyzeForm() {
         amphur: null,
         district: null,
         notes: crop ? `พืช: ${crop.name}` : null,
-        blend_formula_ids: picked.filter(Boolean),   // ปุ๋ยที่เลือกในขั้นที่ 5
+        blend_formula_ids: picked.filter(Boolean),   // ปุ๋ยที่เลือกในขั้นที่ 3
       })
       try {
         await calculateAndSave({
@@ -260,23 +291,10 @@ export default function AnalyzeForm() {
           <CropPicker crops={crops} value={cropId} onChange={(id) => { setCropId(id); invalidate() }} />
         )}
 
-
-        {/* ② ค่ามาตรฐานความเข้มข้นของธาตุอาหาร — ตารางอ้างอิงของพืชที่เลือก */}
-        <div className="mt-6 border-t border-gray-100 pt-5">
-          <StepHeader n={2} title="ค่ามาตรฐานความเข้มข้นของธาตุอาหาร" />
-          <LeafStandardTable cropName={cropName} />
-        </div>
-
-        {/* ③ ตารางการใช้ปุ๋ยตามค่าวิเคราะห์ดิน — ชุดตัวเลขเดียวกับที่ใช้คำนวณ */}
-        <div className="mt-6 border-t border-gray-100 pt-5">
-          <StepHeader n={3} title="การใช้ปุ๋ยตามค่าวิเคราะห์ดิน" />
-          <SoilRecommendationTable cropId={cropId} cropName={cropName} />
-        </div>
-
-        {/* ④ ค่าวิเคราะห์ดิน */}
+        {/* ② ค่าวิเคราะห์ดิน — ช่องกรอกอยู่ต่อจากเลือกพืชทันที */}
         <div className="mt-6 border-t border-gray-100 pt-5">
           <StepHeader
-            n={4}
+            n={2}
             title="ค่าวิเคราะห์ดิน"
             hint="กรอกค่าจากชุดตรวจดินหรือผลแล็บ"
           />
@@ -292,10 +310,10 @@ export default function AnalyzeForm() {
 
         </div>
 
-        {/* ⑤ เลือกปุ๋ยที่จะใช้ (input ก่อนกดคำนวณ) */}
+        {/* ③ เลือกปุ๋ยที่จะใช้ (input ก่อนกดคำนวณ) */}
         <div className="mt-6 border-t border-gray-100 pt-5">
           <StepHeader
-            n={5}
+            n={3}
             title="เลือกปุ๋ยที่จะใช้"
             hint="เลือกปุ๋ยที่หาซื้อได้ 1–3 สูตร (จะคำนวณปริมาณให้ตอนกดคำนวณ)"
           />
@@ -306,6 +324,14 @@ export default function AnalyzeForm() {
             onChange={(p) => { setPicked(p); invalidate() }}
           />
         </div>
+
+        {/* ④⑤ ตารางอ้างอิงของพืชที่เลือก — ซ่อนไว้ก่อน กดปุ่มเพื่อเปิดดู */}
+        <CollapsibleStep n={4} title="ค่ามาตรฐานความเข้มข้นของธาตุอาหาร">
+          <LeafStandardTable cropName={cropName} />
+        </CollapsibleStep>
+        <CollapsibleStep n={5} title="การใช้ปุ๋ยตามค่าวิเคราะห์ดิน">
+          <SoilRecommendationTable cropId={cropId} cropName={cropName} />
+        </CollapsibleStep>
 
         {/* ปุ่มคำนวณ — ต้องกดก่อนถึงจะแสดงผล */}
         <div className="mt-6 border-t border-gray-100 pt-5">
@@ -374,13 +400,13 @@ export default function AnalyzeForm() {
           </div>
         )}
 
-        {/* ⑧ ทางเลือก: เลือกปุ๋ยเอง (solver) — จากสูตรที่เลือกไว้ในขั้นที่ 5 */}
+        {/* ⑧ ทางเลือก: เลือกปุ๋ยเอง (solver) — จากสูตรที่เลือกไว้ในขั้นที่ 3 */}
         {calc && blendResult && (
           <div className="mt-6 border-t border-gray-100 pt-5">
             <StepHeader
               n={8}
               title="ทางเลือก : ปริมาณปุ๋ยที่ต้องใช้"
-              hint="กรณีหาปุ๋ยตามตารางไม่ได้ — คำนวณจากสูตรที่เลือกในขั้นที่ 5"
+              hint="กรณีหาปุ๋ยตามตารางไม่ได้ — คำนวณจากสูตรที่เลือกในขั้นที่ 3"
             />
             <BlendResultCard result={blendResult} unit={calc.unit} />
           </div>
