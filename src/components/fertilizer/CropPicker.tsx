@@ -1,7 +1,7 @@
 "use client"
 
 import { useMemo, useState } from "react"
-import { Check } from "lucide-react"
+import { Check, X } from "lucide-react"
 import type { CropOption } from "@/lib/supabase/fertilizer"
 import { CropIcon } from "./cropIcons"
 
@@ -29,8 +29,17 @@ export default function CropPicker({
   }, [crops])
 
   // ประเภทที่กำลังเปิดอยู่ — ตั้งต้นจากประเภทของพืชที่เลือกไว้ (ถ้ามี)
-  const selectedType = crops.find((c) => c.id === value)?.crop_type_name
+  const selected = crops.find((c) => c.id === value)
+  const selectedType = selected?.crop_type_name
   const [activeType, setActiveType] = useState<string>(selectedType ?? "")
+
+  // พืชถูกเปลี่ยนจากภายนอก (เช่นนำเข้าไฟล์) → เปิดแท็บประเภทของพืชนั้นให้เห็น
+  // ปรับ state ระหว่าง render แทน useEffect ตามแนวทางของ React
+  const [prevValue, setPrevValue] = useState(value)
+  if (value !== prevValue) {
+    setPrevValue(value)
+    if (selectedType) setActiveType(selectedType)
+  }
 
   const activeList = grouped.find((g) => g.type === activeType)?.list ?? []
 
@@ -90,10 +99,29 @@ export default function CropPicker({
         </div>
       )}
 
-      {!activeType && (
+      {!activeType && !selected && (
         <p className="mt-3 rounded-xl bg-gray-50 p-3 text-center text-xs text-gray-400">
           เลือกประเภทพืชด้านบนเพื่อดูรายการพืช
         </p>
+      )}
+
+      {/* ③ พืชที่เลือกอยู่ — แสดงเสมอ เพราะถ้าเปลี่ยนไปดูประเภทอื่น การ์ดพืชที่เลือกจะไม่อยู่ในจอ
+          ผู้ใช้จะเข้าใจผิดว่ายังไม่ได้เลือกพืช ทั้งที่กดคำนวณได้ */}
+      {selected && (
+        <div className="mt-3 flex items-center gap-2 rounded-xl border border-[#1A4D2E]/20 bg-[#F1F7F2] px-3 py-2 text-sm">
+          <Check className="h-4 w-4 shrink-0 text-[#1A4D2E]" strokeWidth={3} />
+          <span className="mr-auto text-gray-700">
+            พืชที่เลือก: <span className="font-bold text-[#1A4D2E]">{selected.name}</span>
+            <span className="text-gray-400"> · {selected.crop_type_name}</span>
+          </span>
+          <button
+            type="button"
+            onClick={() => onChange("")}
+            className="flex items-center gap-1 rounded-full px-2 py-0.5 text-xs text-gray-500 hover:bg-white hover:text-gray-700"
+          >
+            <X className="h-3.5 w-3.5" /> ล้าง
+          </button>
+        </div>
       )}
     </div>
   )
