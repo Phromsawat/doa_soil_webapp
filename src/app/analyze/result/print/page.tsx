@@ -4,13 +4,13 @@ import { getAnalysis } from "@/lib/supabase/analyses"
 import { listCrops, calculateFertilizer } from "@/lib/supabase/fertilizer"
 import {
   getFertilizerPlan,
-  getCropPlanUseTypes,
   getCropStageSplit,
   getCropNote,
   type UseType,
   type FertilizerPlan,
 } from "@/lib/supabase/fertilizerPlan"
-import { splitBlendByStage } from "@/lib/fertilizer/stageSplit"
+import { chooseChemicalPlan, missingGradesNote, parsePlanTab, PLAN_TABS, type PlanTab } from "@/lib/fertilizer/chemicalPlan"
+import { unitTh } from "@/lib/fertilizer/unit"
 import { listFertilizerFormulas } from "@/lib/supabase/fertilizerFormulas"
 import { blendFertilizer, compareGrade, type Formula } from "@/lib/fertilizer/blend"
 import { classify, LEVEL_LABEL_TH } from "@/lib/soil/grid"
@@ -18,10 +18,9 @@ import type { ReportData } from "@/lib/pdf/reportPdf"
 
 export const dynamic = "force-dynamic"
 
-const USE_TYPE_LABEL: Record<UseType, string> = {
-  straight: "กรณีใช้แม่ปุ๋ย",
-  compound: "กรณีใช้ปุ๋ยผสม 100%",
-  organic70: "กรณีใช้ปุ๋ยเคมี 70% ร่วมกับปุ๋ยอินทรีย์",
+const PLAN_TITLE: Record<PlanTab, string> = {
+  chemical: "กรณีใช้ปุ๋ยเคมี",
+  organic70: "กรณีใช้ปุ๋ยเคมีร่วมกับปุ๋ยอินทรีย์",
 }
 
 // สีระดับตาม DESIGN.md — ต่ำ=แดง / ปานกลาง=เหลืองอ่อน / สูง=เขียว
@@ -53,16 +52,15 @@ export default async function PrintReportPage({
   const { id, use } = await searchParams
   if (!id) notFound()
 
-  // โหมดที่ผู้ใช้เลือกอยู่บนหน้าผล — รายงานจะพิมพ์เฉพาะโหมดนี้
-  // ไม่ได้ส่งมา (เช่นเปิดลิงก์ตรง ๆ) = พิมพ์ทุกโหมดที่มีข้อมูล
-  const ALL_USE_TYPES: UseType[] = ["straight", "compound", "organic70"]
-  const selectedUseType = ALL_USE_TYPES.find((t) => t === use) ?? null
+  // แถบที่ผู้ใช้เลือกอยู่บนหน้าผล — รายงานจะพิมพ์เฉพาะแถบนี้
+  // ไม่ได้ส่งมา (เช่นเปิดลิงก์ตรง ๆ) = พิมพ์ทุกแถบที่มีข้อมูล
+  const selectedTab = parsePlanTab(use)
 
   const record = await getAnalysis(id).catch(() => null)
   if (!record) notFound()
 
   const cropId: string | null = record.crop_id
-  const [crops, calculation, useTypes, note, formulas] = await Promise.all([
+  const [crops, calculation, note, formulas] = await Promise.all([
     listCrops().catch(() => []),
     cropId
       ? calculateFertilizer({
@@ -72,19 +70,13 @@ export default async function PrintReportPage({
           k_value: record.k_value,
         }).catch(() => null)
       : Promise.resolve(null),
-    cropId ? getCropPlanUseTypes(cropId).catch(() => []) : Promise.resolve([]),
     cropId ? getCropNote(cropId).catch(() => null) : Promise.resolve(null),
     listFertilizerFormulas().catch(() => []),
   ])
   const splitRows = cropId ? await getCropStageSplit(cropId).catch(() => []) : []
 
-  // พิมพ์เฉพาะโหมดที่เลือกมา และเฉพาะที่มีข้อมูลจริง
-  // (ไม่พิมพ์ตารางเปล่าที่เต็มไปด้วย "-" เหมือนรายงานแบบเดิม)
-  const wantedTypes = selectedUseType
-    ? useTypes.filter((t) => t === selectedUseType)
-    : useTypes
-  // ปุ๋ยที่ผู้ใช้เลือกไว้ + ปริมาณที่ต้องใช้ (ต้องคำนวณก่อน เพราะแผน "ปุ๋ยผสม 100%"
-  // ของไม้ผลไม่มีตารางตายตัว ต้องแบ่งจากค่านี้ตามสัดส่วนของแต่ละระยะ)
+  // ปุ๋ยที่ผู้ใช้เลือกไว้ + ปริมาณที่ต้องใช้ (ต้องคำนวณก่อน เพราะแถบ "ปุ๋ยเคมี"
+  // ใช้สูตรที่เลือกตัดสินว่าจะยึดตารางไหน และไม้ผลอาจต้องแบ่งจากค่านี้ตามระยะ)
   const pickedIds: string[] = (record.blend_formula_ids ?? []).filter(Boolean)
   const picked: Formula[] = pickedIds
     .map((fid) => formulas.find((f) => f.id === fid))
@@ -105,47 +97,47 @@ export default async function PrintReportPage({
 
   const { mass, basis } = unitParts(calculation?.unit ?? "")
 
-  // แผนตายตัวตามค่าดิน (แม่ปุ๋ย / 70%+อินทรีย์ / ปุ๋ยผสมของพืชไร่)
-  const staticPlans: FertilizerPlan[] = cropId
-    ? (
-        await Promise.all(
-          wantedTypes.map((t) =>
-            getFertilizerPlan({
-              crop_id: cropId,
-              om: record.om_value,
-              p: record.p_value,
-              k: record.k_value,
-              use_type: t,
-            }).catch(() => null)
-          )
-        )
-      ).filter((p): p is FertilizerPlan => !!p && p.stages.length > 0)
-    : []
+  // ตารางตายตัวตามค่าดินทั้ง 3 ชนิด แล้วเลือกแบบเดียวกับหน้าจอ (chooseChemicalPlan)
+  const getPlan = (use_type: UseType) =>
+    cropId
+      ? getFertilizerPlan({
+          crop_id: cropId,
+          om: record.om_value,
+          p: record.p_value,
+          k: record.k_value,
+          use_type,
+        }).catch(() => null)
+      : Promise.resolve(null)
+  const [straightPlan, compoundPlan, organicPlan] = await Promise.all([
+    getPlan("straight"),
+    getPlan("compound"),
+    getPlan("organic70"),
+  ])
+  const chemical = chooseChemicalPlan({
+    straight: straightPlan,
+    compound: compoundPlan,
+    splitRows,
+    blend,
+    pickedGrades: picked.map((f) => f.grade ?? ""),
+    massUnit: mass,
+  })
 
-  // "ปุ๋ยผสม 100%" ของไม้ผลไม่มีตารางตายตัว — แบ่งจากปุ๋ยที่เลือกตามสัดส่วนของแต่ละระยะ
-  // (ตรรกะเดียวกับที่ FertilizerPlanTable ทำบนหน้าจอ) ไม่งั้นรายงานจะไม่มีตารางเลย
-  const wantsCompound = !selectedUseType || selectedUseType === "compound"
-  const hasStaticCompound = staticPlans.some((p) => p.use_type === "compound")
-  const computedCompound: FertilizerPlan | null =
-    wantsCompound && !hasStaticCompound && blend && splitRows.length > 0
-      ? {
-          use_type: "compound",
-          unit: mass,
-          stages: splitBlendByStage(blend, splitRows).map((s) => ({
-            stage: s.stage_desc ? `${s.stage_name} (${s.stage_desc})` : s.stage_name,
-            order: s.order,
-            items: s.items.map((it) => ({
-              grade: it.grade,
-              amount: Math.round(it.amount),
-              unit: mass,
-            })),
-          })),
-        }
-      : null
-
-  const plans: FertilizerPlan[] = computedCompound
-    ? [...staticPlans, computedCompound]
-    : staticPlans
+  // พิมพ์เฉพาะแถบที่เลือกมา และเฉพาะที่มีข้อมูลจริง
+  // (ไม่พิมพ์ตารางเปล่าที่เต็มไปด้วย "-" เหมือนรายงานแบบเดิม)
+  const tabPlan: Record<PlanTab, FertilizerPlan | null> = {
+    chemical: chemical?.plan ?? null,
+    organic70: organicPlan && organicPlan.stages.length > 0 ? organicPlan : null,
+  }
+  const plans = PLAN_TABS.filter((t) => (!selectedTab || t === selectedTab) && tabPlan[t]).map(
+    (t) => ({
+      tab: t,
+      ...(tabPlan[t] as FertilizerPlan),
+      note:
+        t === "chemical" && chemical && chemical.missingGrades.length > 0
+          ? missingGradesNote(chemical.missingGrades)
+          : null,
+    })
+  )
 
   const cropName = crops.find((c) => c.id === cropId)?.name ?? "ไม่ระบุ"
   const area = [record.district, record.amphur, record.province].filter(Boolean).join(" ")
@@ -187,11 +179,12 @@ export default async function PrintReportPage({
           n: calculation.target_n,
           p2o5: calculation.target_p2o5,
           k2o: calculation.target_k2o,
-          unit: calculation.unit,
+          unit: unitTh(calculation.unit),
         }
       : null,
     plans: plans.map((plan) => ({
-      title: USE_TYPE_LABEL[plan.use_type],
+      title: PLAN_TITLE[plan.tab],
+      note: plan.note,
       unit: plan.unit,
       rows: plan.stages.flatMap((s) =>
         s.items.map((it) => ({ stage: s.stage, grade: it.grade, amount: it.amount }))
@@ -281,7 +274,7 @@ export default async function PrintReportPage({
                 </div>
               ))}
             </div>
-            <p className="unit-note">หน่วย: {calculation.unit}</p>
+            <p className="unit-note">หน่วย: {unitTh(calculation.unit)}</p>
           </>
         )}
 
@@ -290,8 +283,9 @@ export default async function PrintReportPage({
           <>
             <h2 className="h2">แผนการใส่ปุ๋ยตามระยะการเจริญเติบโต</h2>
             {plans.map((plan) => (
-              <div className="plan" key={plan.use_type}>
-                <h3 className="h3">{USE_TYPE_LABEL[plan.use_type]}</h3>
+              <div className="plan" key={plan.tab}>
+                <h3 className="h3">{PLAN_TITLE[plan.tab]}</h3>
+                {plan.note && <p className="plan-note">{plan.note}</p>}
                 <table className="tbl">
                   <thead>
                     <tr><th>ระยะ</th><th>สูตรปุ๋ย</th><th className="right">ปริมาณ ({plan.unit})</th></tr>

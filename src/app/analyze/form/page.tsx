@@ -20,6 +20,7 @@ import { ensureSession } from "@/lib/supabase/auth"
 import { useUser } from "@/lib/supabase/useUser"
 import { classify, LEVEL_COLORS, LEVEL_LABEL_TH } from "@/lib/soil/grid"
 import { blendFertilizer, type BlendResult } from "@/lib/fertilizer/blend"
+import { unitTh } from "@/lib/fertilizer/unit"
 import CropPicker from "@/components/fertilizer/CropPicker"
 import FertilizerPicker from "@/components/fertilizer/FertilizerPicker"
 import BlendResultCard from "@/components/fertilizer/BlendResultCard"
@@ -163,6 +164,11 @@ export default function AnalyzeForm() {
 
   // ชื่อพืชที่เลือก — ใช้เปิดตารางอ้างอิงในขั้นที่ 4-5 (ตารางผูกกับชื่อพืช ไม่ใช่ id)
   const cropName = crops.find((c) => c.id === cropId)?.name ?? ""
+
+  // สูตรของปุ๋ยที่เลือก — แผนใส่ปุ๋ยใช้ตัดสินว่าจะยึดตารางแม่ปุ๋ยของกรมฯ หรือไม่
+  const pickedGrades = picked
+    .map((id) => formulas.find((f) => f.id === id)?.grade ?? "")
+    .filter(Boolean)
 
   const hasSoil = omN != null || pN != null || kN != null
   const ready = !!cropId && hasSoil
@@ -315,7 +321,7 @@ export default function AnalyzeForm() {
           <StepHeader
             n={3}
             title="เลือกปุ๋ยที่จะใช้"
-            hint="เลือกปุ๋ยที่หาซื้อได้ 1–3 สูตร (จะคำนวณปริมาณให้ตอนกดคำนวณ)"
+            hint="เลือกปุ๋ยที่หาซื้อได้ 1–3 สูตร"
           />
           <FertilizerPicker
             formulas={formulas}
@@ -360,7 +366,7 @@ export default function AnalyzeForm() {
         {/* ⑥ ธาตุอาหารที่ต้องการ — แสดงหลังกดคำนวณ */}
         {calc && (
           <div className="mt-6 border-t border-gray-100 pt-5">
-            <StepHeader n={6} title="ธาตุอาหารที่พืชต้องการ" hint="จากค่าดิน + ชนิดพืช" />
+            <StepHeader n={6} title="ธาตุอาหารที่พืชต้องการ" hint={`จากค่าดิน + ${cropName || "ชนิดพืช"}`} />
             <div className="rounded-xl bg-[#1A2F2A] p-4 text-white">
               <div className="grid grid-cols-3 gap-3">
                 {[
@@ -375,7 +381,7 @@ export default function AnalyzeForm() {
                 ))}
               </div>
               <p className="mt-2 border-t border-white/10 pt-2 text-center text-xs text-white/70">
-                หน่วย: <span className="font-medium text-white">{calc.unit}</span>
+                หน่วย: <span className="font-medium text-white">{unitTh(calc.unit)}</span>
               </p>
               {calc.notes.length > 0 && (
                 <div className="mt-2 border-t border-white/10 pt-2">
@@ -396,18 +402,22 @@ export default function AnalyzeForm() {
               title="แผนการใส่ปุ๋ยตามระยะ"
               hint="คำแนะนำตายตัวของกรมวิชาการเกษตร ตามช่วงค่าดิน"
             />
-            <FertilizerPlanTable cropId={cropId} om={omN} p={pN} k={kN} blend={blendResult} unit={calc.unit} />
+            <FertilizerPlanTable
+              cropId={cropId}
+              om={omN}
+              p={pN}
+              k={kN}
+              blend={blendResult}
+              pickedGrades={pickedGrades}
+              unit={calc.unit}
+            />
           </div>
         )}
 
         {/* ⑧ ทางเลือก: เลือกปุ๋ยเอง (solver) — จากสูตรที่เลือกไว้ในขั้นที่ 3 */}
         {calc && blendResult && (
           <div className="mt-6 border-t border-gray-100 pt-5">
-            <StepHeader
-              n={8}
-              title="ทางเลือก : ปริมาณปุ๋ยที่ต้องใช้"
-              hint="กรณีหาปุ๋ยตามตารางไม่ได้ — คำนวณจากสูตรที่เลือกในขั้นที่ 3"
-            />
+            <StepHeader n={8} title="ทางเลือก : ปริมาณปุ๋ยที่ต้องใช้" />
             <BlendResultCard result={blendResult} unit={calc.unit} />
           </div>
         )}

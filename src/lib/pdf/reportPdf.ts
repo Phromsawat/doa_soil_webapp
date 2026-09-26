@@ -24,6 +24,8 @@ export interface ReportNutrient {
 
 export interface ReportPlan {
   title: string
+  /** แจ้งเมื่อตารางกรมฯ ไม่มีบางสูตรที่ผู้ใช้เลือก */
+  note?: string | null
   unit: string
   rows: { stage: string; grade: string; amount: number }[]
 }
@@ -275,6 +277,14 @@ export async function buildReportPdf(
       doc.setTextColor(55, 65, 81)
       doc.text(plan.title, M, y)
       y += 3
+      if (plan.note) {
+        doc.setFontSize(8)
+        doc.setTextColor(180, 83, 9)
+        const lines = doc.splitTextToSize(plan.note, CW) as string[]
+        y += 1.5
+        doc.text(lines, M, y)
+        y += lines.length * 3.6
+      }
 
       // รวมชื่อระยะที่ซ้ำกันให้แสดงครั้งเดียว (เหมือน rowSpan บนหน้าจอ)
       let prevStage = ""

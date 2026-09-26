@@ -214,6 +214,7 @@ input[type=number] {
 .report-root .tbl .right { text-align: right; }
 .report-root .tbl .stage { background: #fafafa; font-weight: 600; vertical-align: middle; width: 32%; }
 .report-root .plan { break-inside: avoid; }
+.report-root .plan-note { margin: 0 0 6px; padding: 6px 10px; border-radius: 8px; background: #fffbeb; color: #b45309; font-size: 11.5px; }
 
 /* หมายเหตุ */
 .report-root .note {

@@ -1,6 +1,7 @@
 import Link from "next/link"
 import { notFound } from "next/navigation"
 import { adminGetAnalysis } from "@/lib/supabase/admin"
+import { unitTh } from "@/lib/fertilizer/unit"
 import { ArrowLeft, MapPin, User, Calendar, FileText } from "lucide-react"
 
 export const dynamic = "force-dynamic"
@@ -175,7 +176,7 @@ export default async function AdminAnalysisDetailPage({ params }: PageProps) {
               <p className="text-2xl font-bold text-accent">{result.recommended_k2o ?? "—"}</p>
             </div>
           </div>
-          <p className="text-center text-[10px] text-white/50 mt-3">หน่วย: {result.unit}</p>
+          <p className="text-center text-[10px] text-white/50 mt-3">หน่วย: {unitTh(result.unit)}</p>
         </div>
       )}
     </div>

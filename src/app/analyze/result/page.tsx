@@ -11,7 +11,8 @@ import { blendFertilizer, type Formula } from "@/lib/fertilizer/blend"
 import FertilizerBlend from "./FertilizerBlend"
 import FertilizerPlanTable from "@/components/fertilizer/FertilizerPlanTable"
 import CropNote from "@/components/fertilizer/CropNote"
-import type { UseType } from "@/lib/supabase/fertilizerPlan"
+import type { PlanTab } from "@/lib/fertilizer/chemicalPlan"
+import { unitTh } from "@/lib/fertilizer/unit"
 
 type AnalysisRecord = Awaited<ReturnType<typeof getAnalysis>>
 
@@ -26,8 +27,8 @@ function ResultContent() {
   const [calculation, setCalculation] = useState<FertilizerResult | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  // โหมดแผนปุ๋ยที่กำลังดูอยู่ — ส่งต่อให้รายงานพิมพ์เฉพาะโหมดนี้ (ค่าเริ่มต้นตรงกับแถบแรก)
-  const [planUseType, setPlanUseType] = useState<UseType>("straight")
+  // แถบแผนปุ๋ยที่กำลังดูอยู่ — ส่งต่อให้รายงานพิมพ์เฉพาะแถบนี้ (ค่าเริ่มต้นตรงกับแถบแรก)
+  const [planTab, setPlanTab] = useState<PlanTab>("chemical")
 
   useEffect(() => {
     if (!id) {
@@ -58,7 +59,7 @@ function ResultContent() {
   }, [id])
 
   // ปุ๋ยที่บันทึกไว้ + ปริมาณที่ต้องใช้
-  // โหมด "ปุ๋ยผสม 100%" ของไม้ผลคำนวณสดจากค่านี้ ถ้าไม่ส่งให้ตารางแผน
+  // แถบ "ปุ๋ยเคมี" ของไม้ผลอาจคำนวณสดจากค่านี้ ถ้าไม่ส่งให้ตารางแผน
   // จะขึ้นว่า "เลือกปุ๋ยที่จะใช้แล้วกดคำนวณ" ทั้งที่บันทึกปุ๋ยไว้แล้ว
   const blendResult = useMemo(() => {
     const ids: string[] = record?.blend_formula_ids ?? []
@@ -77,6 +78,10 @@ function ResultContent() {
     const hasTarget = target.n > 0 || target.p2o5 > 0 || target.k2o > 0
     return picked.length > 0 && hasTarget ? blendFertilizer(target, picked) : null
   }, [record, formulas, calculation])
+
+  const pickedGrades = (record?.blend_formula_ids ?? [])
+    .map((fid: string) => formulas.find((f) => f.id === fid)?.grade ?? "")
+    .filter(Boolean)
 
   if (loading) {
     return (
@@ -239,7 +244,7 @@ function ResultContent() {
                 </div>
               </div>
               <div className="text-center text-xs text-white/70 pt-2 border-t border-white/10">
-                หน่วย: <span className="font-medium text-white">{calculation.unit}</span>
+                หน่วย: <span className="font-medium text-white">{unitTh(calculation.unit)}</span>
               </div>
               {calculation.notes.length > 0 && (
                 <div className="pt-2 border-t border-white/10">
@@ -266,8 +271,9 @@ function ResultContent() {
               p={record.p_value}
               k={record.k_value}
               blend={blendResult}
+              pickedGrades={pickedGrades}
               unit={calculation?.unit}
-              onUseTypeChange={setPlanUseType}
+              onTabChange={setPlanTab}
             />
           </div>
         )}
@@ -297,7 +303,7 @@ function ResultContent() {
           </button>
           <Button
             variant="outline"
-            onClick={() => router.push(`/analyze/result/print?id=${record.id}&use=${planUseType}`)}
+            onClick={() => router.push(`/analyze/result/print?id=${record.id}&use=${planTab}`)}
             className="flex-1 rounded-full border-gray-200 font-medium h-12 text-text-primary bg-white hover:bg-gray-50 flex items-center gap-2"
           >
             <FileDown className="w-4 h-4" /> บันทึก PDF
