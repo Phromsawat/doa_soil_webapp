@@ -127,6 +127,8 @@ export async function saveManualAnalysis(input: {
   province?: string | null
   amphur?: string | null
   district?: string | null
+  latitude?: number | null          // จุดที่ปักบนแผนที่ (ถ้าดึงค่าดินจากแผนที่)
+  longitude?: number | null
   notes?: string | null
   blend_formula_ids?: string[]      // สูตรปุ๋ยที่เลือกไว้ตอนกรอกฟอร์ม (สูงสุด 3)
 }) {
@@ -141,8 +143,8 @@ export async function saveManualAnalysis(input: {
     province: input.province ?? null,
     amphur: input.amphur ?? null,
     district: input.district ?? null,
-    latitude: null,
-    longitude: null,
+    latitude: input.latitude ?? null,
+    longitude: input.longitude ?? null,
     notes: input.notes ?? null,
     blend_formula_ids: (input.blend_formula_ids ?? []).filter(Boolean).slice(0, 3),
   })

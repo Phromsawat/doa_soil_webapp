@@ -1,7 +1,9 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { Loader2, Sprout, Check, History, Calculator, ChevronDown } from "lucide-react"
+import dynamic from "next/dynamic"
+import * as Dialog from "@radix-ui/react-dialog"
+import { Loader2, Sprout, Check, History, Calculator, ChevronDown, MapPin } from "lucide-react"
 import Link from "next/link"
 import { Button } from "@/components/ui/Button"
 import { saveManualAnalysis } from "@/lib/supabase/analyses"
@@ -29,6 +31,29 @@ import CropNote from "@/components/fertilizer/CropNote"
 import LeafStandardTable from "@/components/fertilizer/LeafStandardTable"
 import SoilRecommendationTable from "@/components/fertilizer/SoilRecommendationTable"
 import ImportPanel, { type FilledRow } from "@/components/analyze/ImportPanel"
+import { getSoilAtPoint } from "@/lib/supabase/soilGrid"
+import type { PickedArea } from "@/app/analyze/map/MapPicker"
+
+// Leaflet ใช้ได้เฉพาะฝั่งเบราว์เซอร์ — โหลดตอนเปิดหน้าต่างแผนที่เท่านั้น
+const MapPicker = dynamic(() => import("@/app/analyze/map/MapPicker"), {
+  ssr: false,
+  loading: () => (
+    <div className="flex h-[60vh] items-center justify-center">
+      <Loader2 className="h-8 w-8 animate-spin text-[#1A4D2E]" />
+    </div>
+  ),
+})
+
+/** ค่าดินที่ดึงจากแผนที่ + จุดที่ปัก (ใช้แจ้งผู้ใช้ และบันทึกตำแหน่งไปกับผล) */
+interface MapPick {
+  lat: number
+  lng: number
+  area: PickedArea | null
+  values: { om: string; p: string; k: string }
+}
+
+// ค่าจาก soil_grid เป็นทศนิยมยาว — ตัดเหลือ 2 ตำแหน่ง (เหมือนหน้าแผนที่)
+const fmtSoil = (v: number | null) => (v == null ? "" : String(Number(v.toFixed(2))))
 
 /** ช่องกรอกตัวเลข + ป้ายระดับ (ต่ำ/ปานกลาง/สูง) */
 function NutrientInput({
@@ -72,16 +97,17 @@ function NutrientInput({
   )
 }
 
-function StepHeader({ n, title, hint }: { n: number; title: string; hint?: string }) {
+function StepHeader({ n, title, hint, action }: { n: number; title: string; hint?: string; action?: React.ReactNode }) {
   return (
     <div className="mb-3 flex items-start gap-2">
       <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[#1A4D2E] text-xs font-bold text-white">
         {n}
       </span>
-      <div>
+      <div className="mr-auto">
         <h2 className="text-sm font-bold text-gray-800">{title}</h2>
         {hint && <p className="text-xs text-gray-500">{hint}</p>}
       </div>
+      {action}
     </div>
   )
 }
@@ -139,6 +165,12 @@ export default function AnalyzeForm() {
   const [savedId, setSavedId] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
 
+  // ดึงค่าดินจากแผนที่ (ค่าประมาณจาก soil_grid ความละเอียด 0.05° ≈ 5 กม.)
+  const [mapOpen, setMapOpen] = useState(false)
+  const [mapLoading, setMapLoading] = useState(false)
+  const [mapError, setMapError] = useState<string | null>(null)
+  const [mapPick, setMapPick] = useState<MapPick | null>(null)
+
   // บันทึกได้เฉพาะคน login จริง (ไม่ใช่ anonymous) — ผู้ไม่ล็อกอินแค่คำนวณดูผล ไม่เก็บข้อมูล
   const { isAuthenticated, loading: userLoading } = useUser()
 
@@ -169,6 +201,10 @@ export default function AnalyzeForm() {
   const pickedGrades = picked
     .map((id) => formulas.find((f) => f.id === id)?.grade ?? "")
     .filter(Boolean)
+
+  // ยังใช้ค่าจากแผนที่อยู่ไหม (แก้ครบทุกช่องแล้ว = ไม่ใช่ค่าจากแผนที่แล้ว) — ใช้ระบุในหมายเหตุตอนบันทึก
+  const usingMapValues =
+    !!mapPick && (om === mapPick.values.om || p === mapPick.values.p || k === mapPick.values.k)
 
   const hasSoil = omN != null || pN != null || kN != null
   const ready = !!cropId && hasSoil
@@ -233,16 +269,25 @@ export default function AnalyzeForm() {
     try {
       await ensureSession()
       const crop = crops.find((c) => c.id === cropId)
+      // ค่าดินจากแผนที่เป็นค่าประมาณ — ระบุไว้ในหมายเหตุ ไม่ให้ปนกับผลตรวจดินจริงตอนวิเคราะห์ข้อมูล
+      const notes = [
+        crop ? `พืช: ${crop.name}` : null,
+        usingMapValues && mapPick
+          ? `ค่าดินประมาณจากแผนที่ ณ ${mapPick.lat.toFixed(5)}, ${mapPick.lng.toFixed(5)}`
+          : null,
+      ].filter(Boolean).join(" · ")
       const analysisId = await saveManualAnalysis({
         crop_id: cropId,
         om_value: omN,
         p_value: pN,
         k_value: kN,
         ph_value: num(ph),
-        province: null,
-        amphur: null,
-        district: null,
-        notes: crop ? `พืช: ${crop.name}` : null,
+        province: mapPick?.area?.province ?? null,
+        amphur: mapPick?.area?.amphur ?? null,
+        district: mapPick?.area?.district ?? null,
+        latitude: mapPick?.lat ?? null,
+        longitude: mapPick?.lng ?? null,
+        notes: notes || null,
         blend_formula_ids: picked.filter(Boolean),   // ปุ๋ยที่เลือกในขั้นที่ 3
       })
       try {
@@ -272,7 +317,40 @@ export default function AnalyzeForm() {
     setK(row.k)
     setPh(row.ph)
     setPicked(row.formulaIds.length > 0 ? row.formulaIds : [""])
+    setMapPick(null)
     invalidate()
+  }
+
+  // ปักหมุดแล้ว -> ดึง OM/P/K ของจุดนั้นจากแผนที่ดิน มาเติมในช่อง (ผู้ใช้แก้ต่อได้)
+  async function handleMapConfirm(lat: number, lng: number, area?: PickedArea) {
+    setMapOpen(false)
+    setMapError(null)
+    setMapLoading(true)
+    try {
+      // MapPicker หาชื่อพื้นที่แบบหน่วงเวลา — ถ้ากดยืนยันเร็วกว่านั้น area จะยังว่าง จึงถามซ้ำที่นี่
+      const [soil, place] = await Promise.all([
+        getSoilAtPoint(lat, lng),
+        area ??
+          fetch(`/api/reverse-geocode?lat=${lat}&lng=${lng}`)
+            .then((r) => (r.ok ? (r.json() as Promise<PickedArea>) : null))
+            .catch(() => null),
+      ])
+      area = place ?? undefined
+      if (!soil || (soil.om == null && soil.p == null && soil.k == null)) {
+        setMapError("จุดนี้อยู่นอกพื้นที่ของแผนที่ดิน ลองปักหมุดบนพื้นที่เกษตรในประเทศไทย")
+        return
+      }
+      const values = { om: fmtSoil(soil.om), p: fmtSoil(soil.p), k: fmtSoil(soil.k) }
+      setOm(values.om)
+      setP(values.p)
+      setK(values.k)
+      setMapPick({ lat, lng, area: area ?? null, values })
+      invalidate()
+    } catch {
+      setMapError("ดึงค่าจากแผนที่ไม่สำเร็จ ลองใหม่อีกครั้ง")
+    } finally {
+      setMapLoading(false)
+    }
   }
 
   return (
@@ -303,12 +381,28 @@ export default function AnalyzeForm() {
             n={2}
             title="ค่าวิเคราะห์ดิน"
             hint="กรอกค่าจากชุดตรวจดินหรือผลแล็บ"
+            action={
+              // ทางลัดรอง — สีจางกว่าช่องกรอก เพราะค่าจากแผนที่เป็นแค่ค่าประมาณ
+              <button
+                type="button"
+                onClick={() => setMapOpen(true)}
+                disabled={mapLoading}
+                className="flex shrink-0 items-center gap-1 rounded-full border border-gray-200 px-3 py-1 text-xs text-gray-500 transition hover:border-[#1A4D2E]/40 hover:text-[#1A4D2E] disabled:opacity-50"
+              >
+                {mapLoading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <MapPin className="h-3.5 w-3.5" />}
+                ดึงค่าจากแผนที่
+              </button>
+            }
           />
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
             <NutrientInput label="อินทรียวัตถุ (OM)" unit="%" value={om} onChange={(v) => { setOm(v); invalidate() }} level={omLevel} placeholder="เช่น 1.5" />
             <NutrientInput label="ฟอสฟอรัส (P)" unit="mg/kg" value={p} onChange={(v) => { setP(v); invalidate() }} level={pLevel} placeholder="เช่น 20" />
             <NutrientInput label="โพแทสเซียม (K)" unit="mg/kg" value={k} onChange={(v) => { setK(v); invalidate() }} level={kLevel} placeholder="เช่น 80" />
           </div>
+
+          {mapError && (
+            <p className="mt-3 rounded-xl bg-amber-50 px-3 py-2 text-xs text-amber-700">{mapError}</p>
+          )}
 
           <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-3">
             <NutrientInput label="ความเป็นกรด-ด่าง (pH)" unit="0–14" value={ph} onChange={(v) => { setPh(v); setSavedId(null) }} placeholder="เช่น 6.5" />
@@ -486,6 +580,27 @@ export default function AnalyzeForm() {
           </div>
         )}
       </div>
+
+      {/* หน้าต่างเลือกจุดบนแผนที่ — ไม่เปลี่ยนหน้า ค่าที่กรอกไว้จึงไม่หาย */}
+      <Dialog.Root open={mapOpen} onOpenChange={setMapOpen}>
+        <Dialog.Portal>
+          <Dialog.Overlay className="fixed inset-0 z-[100] bg-black/50" />
+          <Dialog.Content className="fixed inset-x-0 top-1/2 z-[101] mx-auto w-[95vw] max-w-3xl -translate-y-1/2 overflow-hidden rounded-2xl bg-white shadow-2xl">
+            <Dialog.Title className="sr-only">ดึงค่าวิเคราะห์ดินจากแผนที่</Dialog.Title>
+            <Dialog.Description className="sr-only">
+              ปักหมุดตำแหน่งแปลง แล้วกดยืนยันเพื่อดึงค่า OM, P, K ของจุดนั้น
+            </Dialog.Description>
+            {mapOpen && (
+              <MapPicker
+                onConfirm={handleMapConfirm}
+                onCancel={() => setMapOpen(false)}
+                initialLat={mapPick?.lat}
+                initialLng={mapPick?.lng}
+              />
+            )}
+          </Dialog.Content>
+        </Dialog.Portal>
+      </Dialog.Root>
     </div>
   )
 }
