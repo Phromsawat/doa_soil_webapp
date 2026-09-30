@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+
+<html lang="th"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0, viewport-fit=cover" name="viewport"/>
+<title>DOA Soil Analysis - Home</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@300;400;500;600;700;800&amp;family=Inter:wght@400;500;600;700&amp;family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=inter:wght@100..900&amp;family=notoSans:wght@100..900&amp;display=swap" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            vertical-align: middle;
+        }
+        body {
+            font-family: 'Inter', 'Noto Sans Thai', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .custom-glass {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface": "#f8faf9",
+                        "primary-fixed-dim": "#b5c8e5",
+                        "on-secondary": "#ffffff",
+                        "on-background": "#191c1c",
+                        "background": "#f8faf9",
+                        "on-tertiary-container": "#579476",
+                        "on-primary-fixed-variant": "#364860",
+                        "inverse-primary": "#b5c8e5",
+                        "on-tertiary-fixed-variant": "#0e5138",
+                        "on-error": "#ffffff",
+                        "surface-container": "#eceeed",
+                        "surface-bright": "#f8faf9",
+                        "on-primary-container": "#7689a4",
+                        "secondary-fixed-dim": "#75daa8",
+                        "on-primary-fixed": "#081c32",
+                        "outline-variant": "#c4c6cd",
+                        "outline": "#74777d",
+                        "on-surface": "#191c1c",
+                        "surface-dim": "#d8dada",
+                        "surface-container-lowest": "#ffffff",
+                        "secondary-container": "#92f7c3",
+                        "primary-fixed": "#d2e4ff",
+                        "tertiary-fixed-dim": "#95d4b3",
+                        "tertiary-container": "#002617",
+                        "surface-container-high": "#e6e9e8",
+                        "primary": "#000917",
+                        "tertiary": "#000b05",
+                        "on-secondary-fixed-variant": "#005235",
+                        "inverse-surface": "#2e3131",
+                        "error-container": "#ffdad6",
+                        "on-secondary-container": "#00734d",
+                        "tertiary-fixed": "#b1f0ce",
+                        "inverse-on-surface": "#eff1f0",
+                        "surface-container-low": "#f2f4f3",
+                        "secondary-fixed": "#92f7c3",
+                        "primary-container": "#0d2137",
+                        "on-error-container": "#93000a",
+                        "secondary": "#006c48",
+                        "error": "#ba1a1a",
+                        "on-primary": "#ffffff",
+                        "surface-variant": "#e1e3e2",
+                        "surface-tint": "#4d6079",
+                        "on-surface-variant": "#44474d",
+                        "on-tertiary-fixed": "#002114",
+                        "surface-container-highest": "#e1e3e2",
+                        "on-tertiary": "#ffffff",
+                        "on-secondary-fixed": "#002113"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "lg": "24px",
+                        "container-margin": "16px",
+                        "sm": "8px",
+                        "base": "4px",
+                        "xs": "4px",
+                        "gutter": "16px",
+                        "xl": "32px",
+                        "md": "16px"
+                    },
+                    "fontFamily": {
+                        "data-lg": ["inter"],
+                        "headline-md": ["notoSans"],
+                        "display-sm": ["notoSans"],
+                        "display-lg-mobile": ["notoSans"],
+                        "display-lg": ["notoSans"],
+                        "label-md": ["inter"],
+                        "body-md": ["inter"],
+                        "body-lg": ["inter"],
+                        "title-lg": ["notoSans"]
+                    },
+                    "fontSize": {
+                        "data-lg": ["28px", {"lineHeight": "32px", "letterSpacing": "-0.03em", "fontWeight": "700"}],
+                        "headline-md": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+                        "display-sm": ["24px", {"lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "700"}],
+                        "display-lg-mobile": ["26px", {"lineHeight": "32px", "fontWeight": "700"}],
+                        "display-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                        "label-md": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                        "body-md": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                        "body-lg": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                        "title-lg": ["18px", {"lineHeight": "24px", "fontWeight": "600"}]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-surface text-on-surface selection:bg-secondary-container">
+<!-- Top AppBar Component -->
+<header class="docked full-width top-0 sticky z-50 bg-surface dark:bg-inverse-surface shadow-sm flex justify-between items-center w-full px-container-margin h-16">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-secondary font-headline-md text-headline-md-mobile" data-icon="agriculture">agriculture</span>
+<h1 class="font-display-sm text-display-sm text-primary dark:text-primary-fixed">DOA Soil Analysis</h1>
+</div>
+<button class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-surface-container-high dark:hover:bg-surface-container-low transition-colors active:scale-95 duration-100">
+<span class="material-symbols-outlined text-on-surface-variant" data-icon="notifications">notifications</span>
+</button>
+</header>
+<main class="pb-24 px-container-margin pt-6">
+<!-- Greeting Section -->
+<section class="mb-lg">
+<h2 class="font-display-lg-mobile text-display-lg-mobile text-primary leading-tight">สวัสดี, สมชาย</h2>
+<p class="font-body-md text-body-md text-on-surface-variant mt-1">วันนี้ 15 พฤศจิกายน 2566</p>
+</section>
+<!-- Quick Actions Bento -->
+<section class="grid grid-cols-2 gap-md mb-xl">
+<button class="flex flex-col items-center justify-center bg-secondary-container text-on-secondary-container p-lg rounded-xl shadow-sm border border-secondary-fixed active:scale-95 transition-transform duration-150">
+<div class="w-12 h-12 bg-white/40 rounded-full flex items-center justify-center mb-3">
+<span class="material-symbols-outlined !text-3xl" data-icon="photo_camera">photo_camera</span>
+</div>
+<span class="font-title-lg text-title-lg text-center">อัพโหลดรูปภาพ</span>
+</button>
+<button class="flex flex-col items-center justify-center bg-surface-container-lowest text-primary p-lg rounded-xl shadow-sm border border-outline-variant active:scale-95 transition-transform duration-150">
+<div class="w-12 h-12 bg-surface-container-high rounded-full flex items-center justify-center mb-3">
+<span class="material-symbols-outlined !text-3xl text-on-surface-variant" data-icon="edit_note">edit_note</span>
+</div>
+<span class="font-title-lg text-title-lg text-center">กรอกผลด้วยตนเอง</span>
+</button>
+</section>
+<!-- Stats Section (Vertical Layout) -->
+<section class="space-y-md mb-xl">
+<h3 class="font-label-md text-label-md text-outline uppercase tracking-wider">ภาพรวมของคุณ</h3>
+<div class="bg-surface-container-lowest p-md rounded-xl shadow-sm border border-outline-variant flex items-center gap-md">
+<div class="w-10 h-10 rounded-lg bg-primary-container/10 flex items-center justify-center">
+<span class="material-symbols-outlined text-primary-container" data-icon="description">description</span>
+</div>
+<div class="flex-1">
+<p class="font-body-md text-body-md text-on-surface-variant">การวิเคราะห์ทั้งหมด</p>
+<p class="font-data-lg text-data-lg text-primary">24</p>
+</div>
+<span class="material-symbols-outlined text-outline-variant" data-icon="chevron_right">chevron_right</span>
+</div>
+<div class="bg-surface-container-lowest p-md rounded-xl shadow-sm border border-outline-variant flex items-center gap-md">
+<div class="w-10 h-10 rounded-lg bg-amber-100 flex items-center justify-center">
+<span class="material-symbols-outlined text-amber-700" data-icon="timer">timer</span>
+</div>
+<div class="flex-1">
+<p class="font-body-md text-body-md text-on-surface-variant">รอผล</p>
+<p class="font-data-lg text-data-lg text-primary">3</p>
+</div>
+<span class="material-symbols-outlined text-outline-variant" data-icon="chevron_right">chevron_right</span>
+</div>
+<div class="bg-surface-container-lowest p-md rounded-xl shadow-sm border border-outline-variant flex items-center gap-md">
+<div class="w-10 h-10 rounded-lg bg-secondary-container/30 flex items-center justify-center">
+<span class="material-symbols-outlined text-secondary" data-icon="check_circle">check_circle</span>
+</div>
+<div class="flex-1">
+<p class="font-body-md text-body-md text-on-surface-variant">เสร็จสิ้น</p>
+<p class="font-data-lg text-data-lg text-primary">21</p>
+</div>
+<span class="material-symbols-outlined text-outline-variant" data-icon="chevron_right">chevron_right</span>
+</div>
+</section>
+<!-- Recent Activity List -->
+<section class="space-y-md">
+<div class="flex justify-between items-end">
+<h3 class="font-label-md text-label-md text-outline uppercase tracking-wider">กิจกรรมล่าสุด</h3>
+<button class="font-label-md text-label-md text-secondary">ดูทั้งหมด</button>
+</div>
+<div class="space-y-sm">
+<!-- Activity Item 1 -->
+<div class="bg-surface-container-lowest p-md rounded-xl border border-outline-variant shadow-sm hover:border-secondary transition-colors">
+<div class="flex justify-between items-start mb-sm">
+<div>
+<h4 class="font-title-lg text-title-lg text-primary">ข้าวหอมมะลิ</h4>
+<p class="font-label-md text-label-md text-on-surface-variant">12 ก.ค. 2566</p>
+</div>
+<span class="bg-secondary-container/50 text-on-secondary-container px-2 py-0.5 rounded-full font-label-md text-label-md">เสร็จสิ้น</span>
+</div>
+<div class="flex gap-4 pt-sm border-t border-surface-variant">
+<div class="flex flex-col">
+<span class="font-label-md text-[10px] text-outline">N</span>
+<span class="font-title-lg text-title-lg text-secondary">สูง</span>
+</div>
+<div class="flex flex-col">
+<span class="font-label-md text-[10px] text-outline">P</span>
+<span class="font-title-lg text-title-lg text-secondary">กลาง</span>
+</div>
+<div class="flex flex-col">
+<span class="font-label-md text-[10px] text-outline">K</span>
+<span class="font-title-lg text-title-lg text-secondary">ต่ำ</span>
+</div>
+</div>
+</div>
+<!-- Activity Item 2 -->
+<div class="bg-surface-container-lowest p-md rounded-xl border border-outline-variant shadow-sm">
+<div class="flex justify-between items-start mb-sm">
+<div>
+<h4 class="font-title-lg text-title-lg text-primary">มันสำปะหลัง</h4>
+<p class="font-label-md text-label-md text-on-surface-variant">08 ก.ค. 2566</p>
+</div>
+<span class="bg-secondary-container/50 text-on-secondary-container px-2 py-0.5 rounded-full font-label-md text-label-md">เสร็จสิ้น</span>
+</div>
+<div class="flex gap-4 pt-sm border-t border-surface-variant">
+<div class="flex flex-col">
+<span class="font-label-md text-[10px] text-outline">N</span>
+<span class="font-title-lg text-title-lg text-secondary">ต่ำ</span>
+</div>
+<div class="flex flex-col">
+<span class="font-label-md text-[10px] text-outline">P</span>
+<span class="font-title-lg text-title-lg text-secondary">ต่ำ</span>
+</div>
+<div class="flex flex-col">
+<span class="font-label-md text-[10px] text-outline">K</span>
+<span class="font-title-lg text-title-lg text-secondary">สูง</span>
+</div>
+</div>
+</div>
+<!-- Activity Item 3 -->
+<div class="bg-surface-container-lowest p-md rounded-xl border border-outline-variant shadow-sm opacity-80">
+<div class="flex justify-between items-start mb-sm">
+<div>
+<h4 class="font-title-lg text-title-lg text-primary">ยางพารา</h4>
+<p class="font-label-md text-label-md text-on-surface-variant">01 ก.ค. 2566</p>
+</div>
+<span class="bg-secondary-container/50 text-on-secondary-container px-2 py-0.5 rounded-full font-label-md text-label-md">เสร็จสิ้น</span>
+</div>
+<div class="flex gap-4 pt-sm border-t border-surface-variant">
+<div class="flex flex-col">
+<span class="font-label-md text-[10px] text-outline">N</span>
+<span class="font-title-lg text-title-lg text-secondary">กลาง</span>
+</div>
+<div class="flex flex-col">
+<span class="font-label-md text-[10px] text-outline">P</span>
+<span class="font-title-lg text-title-lg text-secondary">กลาง</span>
+</div>
+<div class="flex flex-col">
+<span class="font-label-md text-[10px] text-outline">K</span>
+<span class="font-title-lg text-title-lg text-secondary">กลาง</span>
+</div>
+</div>
+</div>
+</div>
+</section>
+</main>
+<!-- Bottom Navigation Bar Component -->
+<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 py-2 pb-safe bg-surface-container-lowest border-t border-outline-variant">
+<!-- Home (Active) -->
+<a class="flex flex-col items-center justify-center bg-secondary-container text-on-secondary-container rounded-full px-4 py-1 active:scale-90 transition-transform duration-150" href="#">
+<span class="material-symbols-outlined" data-icon="home" style="font-variation-settings: 'FILL' 1;">home</span>
+<span class="font-label-md text-label-md">Home</span>
+</a>
+<!-- Analyze -->
+<a class="flex flex-col items-center justify-center text-on-surface-variant px-4 py-1 hover:bg-surface-container-high active:scale-90 transition-transform duration-150" href="#">
+<span class="material-symbols-outlined" data-icon="biotech">biotech</span>
+<span class="font-label-md text-label-md">Soil Test</span>
+</a>
+<!-- History -->
+<a class="flex flex-col items-center justify-center text-on-surface-variant px-4 py-1 hover:bg-surface-container-high active:scale-90 transition-transform duration-150" href="#">
+<span class="material-symbols-outlined" data-icon="history">history</span>
+<span class="font-label-md text-label-md">History</span>
+</a>
+<!-- Profile -->
+<a class="flex flex-col items-center justify-center text-on-surface-variant px-4 py-1 hover:bg-surface-container-high active:scale-90 transition-transform duration-150" href="#">
+<span class="material-symbols-outlined" data-icon="person">person</span>
+<span class="font-label-md text-label-md">Profile</span>
+</a>
+</nav>
+<!-- Background Decorative Elements -->
+<div class="fixed top-0 left-0 w-full h-full -z-10 pointer-events-none opacity-40">
+<div class="absolute top-[-10%] right-[-10%] w-[300px] h-[300px] rounded-full bg-secondary-container blur-[100px]"></div>
+<div class="absolute bottom-[-10%] left-[-10%] w-[250px] h-[250px] rounded-full bg-primary-fixed blur-[80px]"></div>
+</div>
+<script>
+        // Simple micro-interaction for cards
+        document.querySelectorAll('.bg-surface-container-lowest').forEach(card => {
+            card.addEventListener('touchstart', () => {
+                card.style.transform = 'scale(0.98)';
+            });
+            card.addEventListener('touchend', () => {
+                card.style.transform = 'scale(1)';
+            });
+        });
+
+        // Dynamic Greeting (Simple adjustment for demo)
+        const hour = new Date().getHours();
+        const greetingText = document.querySelector('h2');
+        if (hour >= 12 && hour < 18) {
+            greetingText.innerHTML = 'สวัสดีตอนบ่าย, สมชาย';
+        } else if (hour >= 18) {
+            greetingText.innerHTML = 'สวัสดีตอนเย็น, สมชาย';
+        }
+    </script>
+</body></html>

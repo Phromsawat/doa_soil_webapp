@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+
+<html class="light" lang="th"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@100..900&amp;family=Inter:wght@100..900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        :root {
+            --font-noto: 'Noto Sans Thai', sans-serif;
+            --font-inter: 'Inter', sans-serif;
+        }
+        body {
+            font-family: var(--font-inter), var(--font-noto);
+            -webkit-font-smoothing: antialiased;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(229, 231, 235, 0.5);
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                "tertiary-fixed-dim": "#95d4b3",
+                "surface-container-low": "#f2f4f3",
+                "secondary-fixed": "#92f7c3",
+                "on-tertiary-fixed": "#002114",
+                "inverse-primary": "#b5c8e5",
+                "on-secondary-container": "#00734d",
+                "on-error": "#ffffff",
+                "primary": "#000917",
+                "outline": "#74777d",
+                "surface-container": "#eceeed",
+                "on-error-container": "#93000a",
+                "on-primary-fixed-variant": "#364860",
+                "tertiary": "#000b05",
+                "on-primary-container": "#7689a4",
+                "surface": "#f8faf9",
+                "surface-container-highest": "#e1e3e2",
+                "background": "#f8faf9",
+                "on-primary-fixed": "#081c32",
+                "surface-bright": "#f8faf9",
+                "on-primary": "#ffffff",
+                "on-surface-variant": "#44474d",
+                "on-tertiary-fixed-variant": "#0e5138",
+                "error": "#ba1a1a",
+                "on-secondary": "#ffffff",
+                "tertiary-container": "#002617",
+                "surface-dim": "#d8dada",
+                "on-secondary-fixed-variant": "#005235",
+                "outline-variant": "#c4c6cd",
+                "tertiary-fixed": "#b1f0ce",
+                "on-background": "#191c1c",
+                "on-tertiary": "#ffffff",
+                "secondary-fixed-dim": "#75daa8",
+                "surface-container-high": "#e6e9e8",
+                "inverse-surface": "#2e3131",
+                "on-secondary-fixed": "#002113",
+                "secondary": "#006c48",
+                "surface-variant": "#e1e3e2",
+                "surface-tint": "#4d6079",
+                "on-surface": "#191c1c",
+                "primary-fixed": "#d2e4ff",
+                "on-tertiary-container": "#579476",
+                "error-container": "#ffdad6",
+                "secondary-container": "#92f7c3",
+                "surface-container-lowest": "#ffffff",
+                "primary-container": "#0d2137",
+                "inverse-on-surface": "#eff1f0",
+                "primary-fixed-dim": "#b5c8e5"
+              },
+              "borderRadius": {
+                "DEFAULT": "0.25rem",
+                "lg": "0.5rem",
+                "xl": "0.75rem",
+                "full": "9999px"
+              },
+              "spacing": {
+                "md": "16px",
+                "gutter": "16px",
+                "sm": "8px",
+                "lg": "24px",
+                "base": "4px",
+                "xs": "4px",
+                "xl": "32px",
+                "container-margin": "16px"
+              },
+              "fontFamily": {
+                "body-md": ["Inter", "sans-serif"],
+                "display-sm": ["Noto Sans Thai", "sans-serif"],
+                "display-lg-mobile": ["Noto Sans Thai", "sans-serif"],
+                "body-lg": ["Inter", "sans-serif"],
+                "data-lg": ["Inter", "sans-serif"],
+                "title-lg": ["Noto Sans Thai", "sans-serif"],
+                "headline-md": ["Noto Sans Thai", "sans-serif"],
+                "label-md": ["Inter", "sans-serif"],
+                "display-lg": ["Noto Sans Thai", "sans-serif"]
+              },
+              "fontSize": {
+                "body-md": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                "display-sm": ["24px", {"lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "700"}],
+                "display-lg-mobile": ["26px", {"lineHeight": "32px", "fontWeight": "700"}],
+                "body-lg": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                "data-lg": ["28px", {"lineHeight": "32px", "letterSpacing": "-0.03em", "fontWeight": "700"}],
+                "title-lg": ["18px", {"lineHeight": "24px", "fontWeight": "600"}],
+                "headline-md": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+                "label-md": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                "display-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "700"}]
+              }
+            }
+          }
+        }
+    </script>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-surface min-h-screen pb-24">
+<!-- Top AppBar -->
+<header class="docked full-width top-0 sticky z-50 bg-surface dark:bg-inverse-surface shadow-sm flex justify-between items-center w-full px-container-margin h-16">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-secondary dark:text-secondary-fixed" data-icon="agriculture">agriculture</span>
+<h1 class="font-display-sm text-display-sm text-primary dark:text-primary-fixed">DOA Soil Analysis</h1>
+</div>
+<button class="w-10 h-10 rounded-full flex items-center justify-center hover:bg-surface-container-high dark:hover:bg-surface-container-low transition-colors active:scale-95 duration-100">
+<span class="material-symbols-outlined text-on-surface-variant dark:text-outline-variant" data-icon="notifications">notifications</span>
+</button>
+</header>
+<main class="max-w-7xl mx-auto px-container-margin pt-6 space-y-6">
+<!-- Welcome Section -->
+<section class="relative overflow-hidden rounded-xl bg-primary-container p-6 text-on-primary">
+<div class="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
+<div>
+<h2 class="font-display-lg-mobile text-display-lg-mobile md:font-display-lg md:text-display-lg text-white">สวัสดีคุณสมชาย</h2>
+<p class="font-body-md text-body-md text-on-primary-container mt-1">ยินดีต้อนรับกลับสู่ระบบวิเคราะห์ดินกรมวิชาการเกษตร</p>
+</div>
+<div class="flex items-center gap-4">
+<div class="bg-surface/10 p-4 rounded-lg backdrop-blur-md">
+<p class="font-label-md text-label-md text-secondary-fixed">สถานะแปลงปัจจุบัน</p>
+<p class="font-title-lg text-title-lg text-white">พร้อมสำหรับการปลูก</p>
+</div>
+</div>
+</div>
+<!-- Decorative image element -->
+<div class="absolute right-0 bottom-0 w-1/3 h-full opacity-20 pointer-events-none">
+<img alt="Agricultural patterns" class="w-full h-full object-cover" data-alt="A macro shot of healthy green rice leaves in a flooded paddy field, illuminated by a warm golden sunset. The lighting is soft and cinematic, creating high contrast with the dark rich soil beneath the water. The style is professional and documentary-like, emphasizing the vitality of agricultural growth and precise environmental monitoring." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAvt0Q1lJ57AUm6TMH9D8th8F1vYLlsXMyt8L08EnVfA1v8voGYvq2CdijZemMeQJ0aOJKlT8rJTN1g6ezWVwSJ5uaDrMgZM-G5woRVe_5efmGUdxcTd__NI1spPD1VJZZRifa8nJHpJfkSgvAeH2r46RUo6bUElahnBXyusXjHiPiH-6YRsg8ta9Be64QgoWVJC_-CK3NYnwKZ0OMMHxR_ne7YEQb5qB0Od3-PPLVCtabvWuZUpQWgAGyF1Tw0qdSokeRSyAPOR9I"/>
+</div>
+</section>
+<!-- Main Bento Grid -->
+<div class="grid grid-cols-1 md:grid-cols-12 gap-6">
+<!-- Latest Soil Test Result (Bento Large) -->
+<div class="md:col-span-8 bg-surface-container-lowest rounded-xl p-6 shadow-sm border border-outline-variant/30">
+<div class="flex justify-between items-start mb-6">
+<div>
+<h3 class="font-headline-md text-headline-md text-primary">ผลการตรวจดินล่าสุด</h3>
+<p class="font-body-md text-body-md text-on-surface-variant">ตรวจเมื่อ: 12 ต.ค. 2566 • แปลงที่ 1 (ข้าวนาปี)</p>
+</div>
+<span class="bg-secondary-container text-on-secondary-container px-3 py-1 rounded-full font-label-md text-label-md">ปกติ</span>
+</div>
+<div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+<!-- N -->
+<div class="bg-surface p-4 rounded-lg border border-outline-variant/20">
+<div class="flex justify-between items-center mb-2">
+<span class="font-title-lg text-title-lg text-primary">N</span>
+<span class="material-symbols-outlined text-secondary" data-icon="science">science</span>
+</div>
+<p class="font-data-lg text-data-lg text-primary">24 <span class="text-label-md font-label-md text-on-surface-variant">mg/kg</span></p>
+<div class="w-full bg-outline-variant h-1.5 rounded-full mt-2 overflow-hidden">
+<div class="bg-secondary h-full" style="width: 65%"></div>
+</div>
+<p class="font-label-md text-label-md mt-1 text-secondary">ปานกลาง</p>
+</div>
+<!-- P -->
+<div class="bg-surface p-4 rounded-lg border border-outline-variant/20">
+<div class="flex justify-between items-center mb-2">
+<span class="font-title-lg text-title-lg text-primary">P</span>
+<span class="material-symbols-outlined text-secondary" data-icon="biotech">biotech</span>
+</div>
+<p class="font-data-lg text-data-lg text-primary">12 <span class="text-label-md font-label-md text-on-surface-variant">mg/kg</span></p>
+<div class="w-full bg-outline-variant h-1.5 rounded-full mt-2 overflow-hidden">
+<div class="bg-secondary h-full" style="width: 40%"></div>
+</div>
+<p class="font-label-md text-label-md mt-1 text-on-tertiary-container">ค่อนข้างต่ำ</p>
+</div>
+<!-- K -->
+<div class="bg-surface p-4 rounded-lg border border-outline-variant/20">
+<div class="flex justify-between items-center mb-2">
+<span class="font-title-lg text-title-lg text-primary">K</span>
+<span class="material-symbols-outlined text-secondary" data-icon="experiment">experiment</span>
+</div>
+<p class="font-data-lg text-data-lg text-primary">156 <span class="text-label-md font-label-md text-on-surface-variant">mg/kg</span></p>
+<div class="w-full bg-outline-variant h-1.5 rounded-full mt-2 overflow-hidden">
+<div class="bg-secondary h-full" style="width: 85%"></div>
+</div>
+<p class="font-label-md text-label-md mt-1 text-secondary">สูง</p>
+</div>
+</div>
+<div class="mt-6 flex flex-wrap gap-2">
+<span class="font-label-md text-label-md bg-tertiary-fixed text-on-tertiary-fixed-variant px-3 py-1 rounded-full">pH: 6.5 (เป็นกลาง)</span>
+<span class="font-label-md text-label-md bg-tertiary-fixed text-on-tertiary-fixed-variant px-3 py-1 rounded-full">ความชื้น: 18%</span>
+</div>
+</div>
+<!-- Weather Widget (Bento Side) -->
+<div class="md:col-span-4 flex flex-col gap-6">
+<div class="bg-surface-container-highest/50 rounded-xl p-6 border border-outline-variant/30 flex-1 relative overflow-hidden">
+<div class="relative z-10">
+<div class="flex justify-between items-start">
+<h3 class="font-title-lg text-title-lg text-primary">พยากรณ์อากาศ</h3>
+<span class="material-symbols-outlined text-secondary text-3xl" data-icon="partly_cloudy_day" style="font-variation-settings: 'FILL' 1;">partly_cloudy_day</span>
+</div>
+<div class="mt-4">
+<p class="font-data-lg text-data-lg text-primary">32°C</p>
+<p class="font-body-md text-body-md text-on-surface-variant">มีเมฆบางส่วน • นครสวรรค์</p>
+</div>
+<div class="mt-6 flex justify-between text-center border-t border-outline-variant/30 pt-4">
+<div>
+<p class="font-label-md text-label-md text-on-surface-variant">พรุ่งนี้</p>
+<p class="font-body-lg text-body-lg text-primary">33°C</p>
+</div>
+<div>
+<p class="font-label-md text-label-md text-on-surface-variant">ความชื้น</p>
+<p class="font-body-lg text-body-lg text-primary">65%</p>
+</div>
+<div>
+<p class="font-label-md text-label-md text-on-surface-variant">ฝน</p>
+<p class="font-body-lg text-body-lg text-primary">10%</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Next Schedule -->
+<div class="bg-secondary-container text-on-secondary-container rounded-xl p-6 border border-secondary/20">
+<div class="flex items-center gap-3 mb-2">
+<span class="material-symbols-outlined" data-icon="calendar_month">calendar_month</span>
+<h3 class="font-title-lg text-title-lg">กำหนดการปลูกถัดไป</h3>
+</div>
+<p class="font-display-sm text-display-sm">15 พ.ย. 2566</p>
+<p class="font-body-md text-body-md mt-1 opacity-80">การเตรียมดินสำหรับฤดูถัดไป</p>
+</div>
+</div>
+</div>
+<!-- Quick Actions -->
+<section class="space-y-4">
+<h3 class="font-headline-md text-headline-md text-primary px-2">เมนูจัดการด่วน</h3>
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+<button class="group bg-surface-container-lowest p-6 rounded-xl shadow-sm border border-outline-variant/30 flex flex-col items-center text-center gap-3 hover:bg-secondary-container transition-all duration-300 active:scale-95">
+<div class="w-12 h-12 bg-secondary rounded-full flex items-center justify-center text-white group-hover:scale-110 transition-transform">
+<span class="material-symbols-outlined" data-icon="add_box">add_box</span>
+</div>
+<span class="font-title-lg text-title-lg text-primary">เริ่มการตรวจดินใหม่</span>
+</button>
+<button class="group bg-surface-container-lowest p-6 rounded-xl shadow-sm border border-outline-variant/30 flex flex-col items-center text-center gap-3 hover:bg-secondary-container transition-all duration-300 active:scale-95">
+<div class="w-12 h-12 bg-primary rounded-full flex items-center justify-center text-white group-hover:scale-110 transition-transform">
+<span class="material-symbols-outlined" data-icon="menu_book">menu_book</span>
+</div>
+<span class="font-title-lg text-title-lg text-primary">ดูคำแนะนำปุ๋ย</span>
+</button>
+<button class="group bg-surface-container-lowest p-6 rounded-xl shadow-sm border border-outline-variant/30 flex flex-col items-center text-center gap-3 hover:bg-secondary-container transition-all duration-300 active:scale-95">
+<div class="w-12 h-12 bg-outline rounded-full flex items-center justify-center text-white group-hover:scale-110 transition-transform">
+<span class="material-symbols-outlined" data-icon="history">history</span>
+</div>
+<span class="font-title-lg text-title-lg text-primary">ประวัติการตรวจ</span>
+</button>
+<button class="group bg-surface-container-lowest p-6 rounded-xl shadow-sm border border-outline-variant/30 flex flex-col items-center text-center gap-3 hover:bg-secondary-container transition-all duration-300 active:scale-95">
+<div class="w-12 h-12 bg-tertiary-container rounded-full flex items-center justify-center text-tertiary-fixed group-hover:scale-110 transition-transform">
+<span class="material-symbols-outlined" data-icon="storefront">storefront</span>
+</div>
+<span class="font-title-lg text-title-lg text-primary">ร้านปุ๋ยใกล้เคียง</span>
+</button>
+</div>
+</section>
+<!-- Insights / Recent Activity -->
+<section class="bg-surface-container rounded-xl p-6 overflow-hidden relative">
+<div class="flex justify-between items-center mb-4">
+<h3 class="font-headline-md text-headline-md text-primary">คำแนะนำสำหรับคุณ</h3>
+<a class="text-secondary font-label-md text-label-md flex items-center gap-1 hover:underline" href="#">ดูทั้งหมด <span class="material-symbols-outlined text-sm" data-icon="arrow_forward">arrow_forward</span></a>
+</div>
+<div class="flex flex-col gap-3">
+<div class="bg-surface-container-lowest p-4 rounded-lg flex gap-4 items-center border border-outline-variant/20">
+<div class="bg-error-container text-on-error-container p-2 rounded-lg">
+<span class="material-symbols-outlined" data-icon="warning">warning</span>
+</div>
+<div>
+<p class="font-title-lg text-title-lg text-primary">ดินของคุณเริ่มขาดฟอสฟอรัส</p>
+<p class="font-body-md text-body-md text-on-surface-variant">แนะนำให้เติมปุ๋ยสูตร 16-20-0 สำหรับรอบถัดไป</p>
+</div>
+</div>
+<div class="bg-surface-container-lowest p-4 rounded-lg flex gap-4 items-center border border-outline-variant/20">
+<div class="bg-secondary-container text-on-secondary-container p-2 rounded-lg">
+<span class="material-symbols-outlined" data-icon="lightbulb">lightbulb</span>
+</div>
+<div>
+<p class="font-title-lg text-title-lg text-primary">เทคนิคเพิ่มผลผลิตข้าว</p>
+<p class="font-body-md text-body-md text-on-surface-variant">การใส่ปุ๋ยตามค่าวิเคราะห์ดินช่วยลดต้นทุนได้ถึง 30%</p>
+</div>
+</div>
+</div>
+</section>
+</main>
+<!-- Navigation Shell -->
+<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 py-2 pb-safe bg-surface-container-lowest dark:bg-surface-container-lowest border-t border-outline-variant rounded-t-xl md:hidden">
+<a class="flex flex-col items-center justify-center bg-secondary-container dark:bg-secondary-fixed-variant text-on-secondary-container dark:text-secondary-fixed rounded-full px-4 py-1 active:scale-90 transition-transform duration-150" href="#">
+<span class="material-symbols-outlined" data-icon="home" style="font-variation-settings: 'FILL' 1;">home</span>
+<span class="font-label-md text-label-md">Home</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-outline-variant px-4 py-1 hover:bg-surface-container-high active:scale-90 transition-transform duration-150" href="#">
+<span class="material-symbols-outlined" data-icon="biotech">biotech</span>
+<span class="font-label-md text-label-md">Soil Test</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-outline-variant px-4 py-1 hover:bg-surface-container-high active:scale-90 transition-transform duration-150" href="#">
+<span class="material-symbols-outlined" data-icon="history">history</span>
+<span class="font-label-md text-label-md">History</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-outline-variant px-4 py-1 hover:bg-surface-container-high active:scale-90 transition-transform duration-150" href="#">
+<span class="material-symbols-outlined" data-icon="person">person</span>
+<span class="font-label-md text-label-md">Profile</span>
+</a>
+</nav>
+<!-- Floating Action Button for Desktop context -->
+<button class="fixed right-8 bottom-8 hidden md:flex items-center gap-3 bg-secondary text-on-secondary px-6 py-4 rounded-full shadow-lg hover:shadow-xl hover:brightness-110 active:scale-95 transition-all z-50">
+<span class="material-symbols-outlined" data-icon="biotech">biotech</span>
+<span class="font-title-lg text-title-lg">เริ่มตรวจดิน</span>
+</button>
+<script>
+        // Simple micro-interaction for cards
+        document.querySelectorAll('.bg-surface-container-lowest').forEach(card => {
+            card.addEventListener('mouseenter', () => {
+                card.classList.add('shadow-md');
+            });
+            card.addEventListener('mouseleave', () => {
+                card.classList.remove('shadow-md');
+            });
+        });
+
+        // Initialize any specific material icons font-variation-settings if needed via JS
+        // This ensures the FILL property is applied where data-weight="fill" would be
+    </script>
+</body></html>
