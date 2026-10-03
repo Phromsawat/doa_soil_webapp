@@ -57,6 +57,17 @@ export default function ProfilePage() {
         nickname: nickname.trim() || null,
         phone: phone.trim() || null,
       })
+      // ค่าที่บันทึกแล้วกลายเป็นค่าตั้งต้นใหม่ ปุ่มบันทึกจะกลับเป็นสีจาง
+      setProfile((p) =>
+        p
+          ? {
+              ...p,
+              full_name: fullName.trim() || null,
+              nickname: nickname.trim() || null,
+              phone: phone.trim() || null,
+            }
+          : p
+      )
       setSuccess(true)
       setTimeout(() => setSuccess(false), 3000)
     } catch (e) {

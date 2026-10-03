@@ -37,14 +37,19 @@ export async function updateMyProfile(input: {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) throw new Error("Not authenticated")
 
+  // อัปเดตเฉพาะช่องที่ส่งมา — ช่องที่ไม่ได้ส่ง (เช่น avatar_url) ต้องไม่ถูกล้างเป็น null
+  const patch = Object.fromEntries(
+    Object.entries({
+      full_name: input.full_name,
+      nickname: input.nickname,
+      phone: input.phone,
+      avatar_url: input.avatar_url,
+    }).filter(([, v]) => v !== undefined)
+  )
+
   const { error } = await supabase
     .from("profiles")
-    .update({
-      full_name: input.full_name ?? null,
-      nickname: input.nickname ?? null,
-      phone: input.phone ?? null,
-      avatar_url: input.avatar_url ?? null,
-    })
+    .update(patch)
     .eq("id", user.id)
 
   if (error) throw new Error(`updateMyProfile: ${error.message}`)
