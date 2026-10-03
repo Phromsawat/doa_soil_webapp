@@ -3,19 +3,18 @@
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { FileDown, ArrowLeft, Loader2 } from "lucide-react"
-import { downloadReportPdf, type ReportData } from "@/lib/pdf/reportPdf"
 
 /**
  * แถบปุ่มของหน้ารายงาน — ซ่อนตอนพิมพ์ (คลาส no-print)
  *
- * ปุ่มดาวน์โหลดสร้างไฟล์ PDF เองแล้วเซฟลงเครื่องเลย ไม่เปิดกล่องพิมพ์ของเบราว์เซอร์
- * (jsPDF ถูก import แบบ dynamic ตอนกด จึงไม่ถ่วง bundle ของหน้าอื่น)
+ * ปุ่มดาวน์โหลดถ่ายแผ่นรายงานบนจอเป็นไฟล์ PDF หน้าเดียวแล้วเซฟลงเครื่องเลย
+ * (ไลบรารีถูก import แบบ dynamic ตอนกด จึงไม่ถ่วง bundle ของหน้าอื่น)
  */
 export default function PrintActions({
-  data,
+  sheetId,
   filename,
 }: {
-  data: ReportData
+  sheetId: string
   filename: string
 }) {
   const router = useRouter()
@@ -23,10 +22,13 @@ export default function PrintActions({
   const [error, setError] = useState<string | null>(null)
 
   async function handleDownload() {
+    const sheet = document.getElementById(sheetId)
+    if (!sheet) return
     setBusy(true)
     setError(null)
     try {
-      await downloadReportPdf(data, filename)
+      const { downloadSheetPdf } = await import("@/lib/pdf/reportPdf")
+      await downloadSheetPdf(sheet, filename)
     } catch (e) {
       setError(e instanceof Error ? e.message : "สร้างไฟล์ PDF ไม่สำเร็จ")
     } finally {
