@@ -32,6 +32,7 @@
     "react-leaflet": "^5.0.0",
     "recharts": "^3.8.1",
     "tailwind-merge": "^3.6.0",
+    "write-excel-file": "^4.1.1",
     "zod": "^4.4.3"
   },
   "devDependencies": {

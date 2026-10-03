@@ -7,28 +7,22 @@ import { FileDown, ArrowLeft, Loader2 } from "lucide-react"
 /**
  * แถบปุ่มของหน้ารายงาน — ซ่อนตอนพิมพ์ (คลาส no-print)
  *
- * ปุ่มดาวน์โหลดถ่ายแผ่นรายงานบนจอเป็นไฟล์ PDF หน้าเดียวแล้วเซฟลงเครื่องเลย
+ * ปุ่มดาวน์โหลดถ่ายแผ่น A4 ทุกแผ่นบนหน้า (A4Sheet) เป็นไฟล์ PDF หน้าละแผ่น แล้วเซฟลงเครื่องเลย
  * (ไลบรารีถูก import แบบ dynamic ตอนกด จึงไม่ถ่วง bundle ของหน้าอื่น)
  */
-export default function PrintActions({
-  sheetId,
-  filename,
-}: {
-  sheetId: string
-  filename: string
-}) {
+export default function PrintActions({ filename }: { filename: string }) {
   const router = useRouter()
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   async function handleDownload() {
-    const sheet = document.getElementById(sheetId)
-    if (!sheet) return
+    const sheets = Array.from(document.querySelectorAll<HTMLElement>(".report-root .sheet"))
+    if (sheets.length === 0) return
     setBusy(true)
     setError(null)
     try {
-      const { downloadSheetPdf } = await import("@/lib/pdf/reportPdf")
-      await downloadSheetPdf(sheet, filename)
+      const { downloadSheetsPdf } = await import("@/lib/pdf/reportPdf")
+      await downloadSheetsPdf(sheets, filename)
     } catch (e) {
       setError(e instanceof Error ? e.message : "สร้างไฟล์ PDF ไม่สำเร็จ")
     } finally {

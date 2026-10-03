@@ -8,6 +8,8 @@ import type { EntryKind } from "@/lib/ledger/categories"
 // สมุดบัญชี — รอบเพาะปลูก / หมวดหมู่ที่เพิ่มเอง / รายการรายรับรายจ่าย
 // ทุก action ต้องล็อกอินจริง (anonymous ใช้ไม่ได้ เพราะข้อมูลจะหายไปกับ session)
 // RLS บังคับเจ้าของอยู่แล้ว ตรงนี้ยัด user_id ให้ตรงกันอีกชั้น
+// การอ่านต้องกรอง user_id เองด้วย — RLS เปิดให้แอดมินอ่านทุกคน (migration 036)
+// ถ้าไม่กรอง สมุดบัญชีของบัญชีแอดมินเองจะมีรอบ/รายการของผู้ใช้คนอื่นปนมา
 // =============================================================================
 
 export interface Season {
@@ -47,10 +49,11 @@ async function requireUser() {
 // ----------------------------------------------------------------- รอบเพาะปลูก
 
 export async function listSeasons(): Promise<Season[]> {
-  const { supabase } = await requireUser()
+  const { supabase, userId } = await requireUser()
   const { data, error } = await supabase
     .from("farm_seasons")
     .select("id, name, crop_id, started_on, ended_on, yield_kg, note")
+    .eq("user_id", userId)
     .order("started_on", { ascending: false })
     .order("created_at", { ascending: false })
   if (error) throw new Error(`listSeasons: ${error.message}`)
@@ -105,10 +108,11 @@ export async function deleteSeason(id: string): Promise<void> {
 // -------------------------------------------------------- หมวดหมู่ที่เพิ่มเอง
 
 export async function listCustomCategories(): Promise<CustomCategory[]> {
-  const { supabase } = await requireUser()
+  const { supabase, userId } = await requireUser()
   const { data, error } = await supabase
     .from("farm_categories")
     .select("id, kind, name")
+    .eq("user_id", userId)
     .order("created_at", { ascending: true })
   if (error) throw new Error(`listCustomCategories: ${error.message}`)
   return (data ?? []) as CustomCategory[]
@@ -146,11 +150,12 @@ export async function deleteCustomCategory(id: string): Promise<void> {
 // ------------------------------------------------------------------- รายการ
 
 export async function listEntries(seasonId: string): Promise<Entry[]> {
-  const { supabase } = await requireUser()
+  const { supabase, userId } = await requireUser()
   const { data, error } = await supabase
     .from("farm_entries")
     .select("id, season_id, kind, category, title, amount, happened_on")
     .eq("season_id", seasonId)
+    .eq("user_id", userId)
     .order("happened_on", { ascending: false })
     .order("created_at", { ascending: false })
   if (error) throw new Error(`listEntries: ${error.message}`)

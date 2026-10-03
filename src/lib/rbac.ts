@@ -4,6 +4,7 @@ export const ADMIN_MENUS = [
   { key: "dashboard",   label: "ภาพรวม",             href: "/admin" },
   { key: "users",       label: "ผู้ใช้",              href: "/admin/users" },
   { key: "analyses",    label: "ประวัติการวิเคราะห์", href: "/admin/analyses" },
+  { key: "ledgers",     label: "สมุดบัญชี",           href: "/admin/ledgers" },
   { key: "crops",       label: "พืช/ปุ๋ย",            href: "/admin/crops" },
   { key: "fertilizers", label: "สูตรปุ๋ย",            href: "/admin/fertilizers" },
   { key: "content",     label: "จัดการเนื้อหา",       href: "/admin/content" },

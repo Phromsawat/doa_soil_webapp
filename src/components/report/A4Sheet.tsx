@@ -9,7 +9,7 @@ import { useLayoutEffect, useRef, useState } from "react"
  * - จอแคบกว่า A4 (มือถือ) -> ย่อการแสดงผลทั้งแผ่นเหมือนดูไฟล์ PDF แต่เลย์เอาต์ยังเป็น A4
  *   การย่อนี้อยู่บนกรอบรอบนอก ไม่ติดไปกับแผ่นตอนถ่ายเป็น PDF
  */
-export default function A4Sheet({ id, children }: { id: string; children: React.ReactNode }) {
+export default function A4Sheet({ id, children }: { id?: string; children: React.ReactNode }) {
   const frameRef = useRef<HTMLDivElement>(null)
   const sheetRef = useRef<HTMLDivElement>(null)
   const contentRef = useRef<HTMLDivElement>(null)

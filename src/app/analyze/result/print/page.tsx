@@ -1,7 +1,7 @@
 import Link from "next/link"
 import { notFound } from "next/navigation"
-import PrintActions from "./PrintActions"
-import A4Sheet from "./A4Sheet"
+import PrintActions from "@/components/report/PrintActions"
+import A4Sheet from "@/components/report/A4Sheet"
 import { getAnalysis } from "@/lib/supabase/analyses"
 import { getMyProfile } from "@/lib/supabase/profile"
 import { listCrops, calculateFertilizer } from "@/lib/supabase/fertilizer"
@@ -19,8 +19,6 @@ import { blendFertilizer, compareGrade, type Formula } from "@/lib/fertilizer/bl
 import { classify, LEVEL_LABEL_TH } from "@/lib/soil/grid"
 
 export const dynamic = "force-dynamic"
-
-const SHEET_ID = "report-sheet"
 
 const PLAN_TITLE: Record<PlanTab, string> = {
   chemical: "กรณีใช้ปุ๋ยเคมี",
@@ -186,7 +184,7 @@ export default async function PrintReportPage({
 
   return (
     <div className="report-root font-thai">
-      <PrintActions sheetId={SHEET_ID} filename={pdfFilename} />
+      <PrintActions filename={pdfFilename} />
 
       {/* แจ้งเฉพาะบนจอ (อยู่นอกแผ่น ไม่ติดไปใน PDF) */}
       {!hasFullName && (
@@ -200,7 +198,7 @@ export default async function PrintReportPage({
       )}
 
       {/* แผ่นรายงานขนาด A4 พอดี — ไฟล์ PDF ถ่ายจากแผ่นนี้ตรง ๆ จึงหน้าตาเหมือนที่เห็นบนจอ */}
-      <A4Sheet id={SHEET_ID}>
+      <A4Sheet>
         {/* ---------- หัวรายงาน ---------- */}
         <header className="head">
           {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -218,7 +216,8 @@ export default async function PrintReportPage({
           <div><span>พืชที่ปลูก</span><strong>{cropName}</strong></div>
           <div><span>พื้นที่เก็บตัวอย่าง</span><strong>{area || "ไม่ระบุ"}</strong></div>
           {coords && <div><span>พิกัด</span><strong>{coords}</strong></div>}
-          {record.ph_value != null && <div><span>ความเป็นกรด-ด่าง (pH)</span><strong>{record.ph_value}</strong></div>}
+          {/* แสดงเสมอ — ไม่ได้กรอก pH ก็บอกไว้ ไม่ให้ดูเหมือนข้อมูลหาย */}
+          <div><span>ความเป็นกรด-ด่าง (pH)</span><strong>{record.ph_value ?? "ไม่ได้ระบุ"}</strong></div>
         </section>
 
         {/* ---------- ระดับธาตุอาหาร | ธาตุอาหารที่พืชต้องการ (วางคู่กันประหยัดพื้นที่) ---------- */}

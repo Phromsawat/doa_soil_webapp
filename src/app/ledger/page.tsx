@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react"
 import Link from "next/link"
-import { Loader2, Pencil, Plus, BookOpen } from "lucide-react"
+import { Loader2, Pencil, Plus, BookOpen, FileDown } from "lucide-react"
 import { useUser } from "@/lib/supabase/useUser"
 import { listCrops, type CropOption } from "@/lib/supabase/fertilizer"
 import {
@@ -356,7 +356,15 @@ export default function LedgerPage() {
             {/* สรุปของรอบ — อยู่ท้ายสุด ต่อจากที่บันทึกรายการเสร็จ */}
             {season && (
               <div className="mt-6 border-t border-gray-100 pt-5">
-                <h2 className="mb-3 text-sm font-bold text-gray-800">สรุปรอบนี้</h2>
+                <div className="mb-3 flex items-center justify-between gap-2">
+                  <h2 className="text-sm font-bold text-gray-800">สรุปรอบนี้</h2>
+                  <Link
+                    href={`/ledger/print?season=${season.id}`}
+                    className="inline-flex items-center gap-1 rounded-full border border-gray-200 px-3 py-1 text-xs text-gray-600 hover:border-[#1A4D2E]/40 hover:text-[#1A4D2E]"
+                  >
+                    <FileDown className="h-3.5 w-3.5" /> พิมพ์ / PDF
+                  </Link>
+                </div>
                 <SeasonSummary season={season} entries={entries} />
               </div>
             )}

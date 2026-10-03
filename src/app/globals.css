@@ -230,6 +230,36 @@ input[type=number] {
 .report-root .tbl th small { font-weight: 400; font-size: 12px; }
 .report-root .tbl .stage { background: #fafafa; font-weight: 600; vertical-align: middle; width: 42%; }
 .report-root .tbl .dash { color: #c4c7cc; }
+.report-root .tbl .muted { color: var(--muted); }
+.report-root .tbl .nowrap { white-space: nowrap; }
+
+/* รายงานหลายหน้า (สมุดบัญชี) — แผ่นซ้อนกันบนจอ */
+.report-root .sheet-frame + .sheet-frame { margin-top: 18px; }
+.report-root .duo.even { grid-template-columns: 1fr 1fr; }
+.report-root .empty-note { margin: 10px 0 0; font-size: 13.5px; color: var(--muted); }
+.report-root .cont-head {
+  display: flex; justify-content: space-between; align-items: baseline;
+  padding-bottom: 8px; border-bottom: 3px solid var(--brand);
+  font-size: 15px; color: var(--muted);
+}
+.report-root .cont-head strong { font-size: 18px; color: var(--brand); }
+.report-root .amt-in { color: #15803d; }
+.report-root .amt-out { color: #dc2626; }
+
+/* สรุปเงิน: รายรับ | รายจ่าย | กำไร/ขาดทุน */
+.report-root .money { display: grid; grid-template-columns: 1fr 1fr 1.2fr; gap: 10px; }
+.report-root .money > div {
+  display: flex; flex-direction: column; gap: 2px;
+  padding: 9px 14px; border-radius: 10px; border: 1px solid var(--line);
+}
+.report-root .money span { font-size: 13.5px; }
+.report-root .money strong { font-size: 22px; font-weight: 700; }
+.report-root .money .in { background: #ecfdf3; border-color: #bbf7d0; color: #15803d; }
+.report-root .money .out { background: #fef2f2; border-color: #fecaca; color: #dc2626; }
+.report-root .money .net { background: #1a2f2a; border-color: #1a2f2a; color: #fff; }
+.report-root .money .net strong { color: #6fd39b; }
+.report-root .money .net.loss strong { color: #fdba74; }
+.report-root .per-kg { margin: 8px 0 0; font-size: 13.5px; color: #374151; }
 
 /* ปริมาณปุ๋ยที่ต้องใช้ — การ์ดเรียงแนวนอน */
 .report-root .blend { display: grid; gap: 10px; }
