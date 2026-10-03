@@ -572,3 +572,117 @@ export async function adminDeleteAnalysis(analysisId: string) {
   const { error } = await supabase.from("analyses").delete().eq("id", analysisId)
   if (error) throw new Error(`adminDeleteAnalysis: ${error.message}`)
 }
+
+// =============================================================================
+// ADMIN — Export ประวัติการวิเคราะห์ (Excel)
+// =============================================================================
+
+export interface AnalysisExportRow {
+  id: string
+  created_at: string
+  input_mode: string
+  status: string
+  crop_name: string | null
+  crop_type: string | null
+  om: number | null
+  p: number | null
+  k: number | null
+  ph: number | null
+  district: string | null
+  amphur: string | null
+  province: string | null
+  latitude: number | null
+  longitude: number | null
+  rec_n: number | null
+  rec_p2o5: number | null
+  rec_k2o: number | null
+  rec_unit: string | null
+  notes: string | null
+  owner_name: string | null
+  owner_email: string | null
+}
+
+/**
+ * ทุกแถวที่ตรงตัวกรองเดียวกับหน้ารายการ (สถานะ / คำค้น / ประเภท) — ดึงทีละ 1,000 จนครบ
+ * เติมชื่อ/อีเมลผู้ใช้ทีหลัง (analyses.user_id ชี้ auth.users จึง embed profiles ตรง ๆ ไม่ได้)
+ */
+export async function adminExportAnalyses(opts: {
+  status?: "all" | "completed" | "pending" | "failed"
+  search?: string
+  mode?: "all" | "image_upload" | "manual_form"
+} = {}): Promise<AnalysisExportRow[]> {
+  await requirePermission("analyses", "view")
+  const supabase = await createClient()
+  const s = sanitizeFilterTerm(opts.search)
+
+  type Raw = {
+    id: string; created_at: string; input_mode: string; status: string; user_id: string
+    om_value: number | null; p_value: number | null; k_value: number | null; ph_value: number | null
+    district: string | null; amphur: string | null; province: string | null
+    latitude: number | null; longitude: number | null; notes: string | null
+    crops: { name: string; crop_types: { name: string } | null } | null
+    analysis_results: { recommended_n: number | null; recommended_p2o5: number | null; recommended_k2o: number | null; unit: string | null }[] | null
+  }
+  const raw: Raw[] = []
+  for (let from = 0; ; from += 1000) {
+    let q = supabase
+      .from("analyses")
+      .select(
+        `id, created_at, input_mode, status, user_id,
+         om_value, p_value, k_value, ph_value,
+         district, amphur, province, latitude, longitude, notes,
+         crops(name, crop_types(name)),
+         analysis_results(recommended_n, recommended_p2o5, recommended_k2o, unit)`
+      )
+      .order("created_at", { ascending: false })
+      .range(from, from + 999)
+    if (opts.status && opts.status !== "all") q = q.eq("status", opts.status)
+    if (opts.mode && opts.mode !== "all") q = q.eq("input_mode", opts.mode)
+    if (s) q = q.or(`notes.ilike.%${s}%,province.ilike.%${s}%,amphur.ilike.%${s}%,district.ilike.%${s}%`)
+    const { data, error } = await q
+    if (error) throw new Error(`adminExportAnalyses: ${error.message}`)
+    raw.push(...((data ?? []) as unknown as Raw[]))
+    if (!data || data.length < 1000) break
+  }
+
+  // ผู้ใช้ — ส่ง id ทีละ 100 กัน URL ยาวเกิน
+  const ids = [...new Set(raw.map((r) => r.user_id))]
+  const people = new Map<string, { email: string | null; full_name: string | null; nickname: string | null }>()
+  for (let i = 0; i < ids.length; i += 100) {
+    const { data } = await supabase
+      .from("profiles")
+      .select("id, email, full_name, nickname")
+      .in("id", ids.slice(i, i + 100))
+    for (const p of data ?? []) people.set(p.id as string, p)
+  }
+
+  const num = (v: unknown) => (v == null || v === "" ? null : Number(v))
+  return raw.map((r) => {
+    const p = people.get(r.user_id)
+    const rec = r.analysis_results?.[0] ?? null
+    return {
+      id: r.id,
+      created_at: r.created_at,
+      input_mode: r.input_mode,
+      status: r.status,
+      crop_name: r.crops?.name ?? null,
+      crop_type: r.crops?.crop_types?.name ?? null,
+      om: num(r.om_value),
+      p: num(r.p_value),
+      k: num(r.k_value),
+      ph: num(r.ph_value),
+      district: r.district,
+      amphur: r.amphur,
+      province: r.province,
+      latitude: num(r.latitude),
+      longitude: num(r.longitude),
+      rec_n: num(rec?.recommended_n),
+      rec_p2o5: num(rec?.recommended_p2o5),
+      rec_k2o: num(rec?.recommended_k2o),
+      rec_unit: rec?.unit ?? null,
+      notes: r.notes,
+      owner_name: p?.full_name?.trim() || p?.nickname?.trim() || null,
+      owner_email: p?.email ?? null,
+    }
+  })
+}

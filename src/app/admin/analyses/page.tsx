@@ -2,8 +2,9 @@
 
 import { useEffect, useState, useTransition, useMemo } from "react"
 import Link from "next/link"
-import { FileBarChart, Loader2, Search, ChevronLeft, ChevronRight, ImageIcon, Eye, Trash2, Camera, Pencil } from "lucide-react"
-import { adminListAnalyses, adminDeleteAnalysis } from "@/lib/supabase/admin"
+import { FileBarChart, Loader2, Search, ChevronLeft, ChevronRight, ImageIcon, Eye, Trash2, Camera, Pencil, Download } from "lucide-react"
+import { adminListAnalyses, adminDeleteAnalysis, adminExportAnalyses } from "@/lib/supabase/admin"
+import { ANALYSES_XLSX_COLUMNS, ANALYSES_XLSX_STICKY_ROWS, buildAnalysesSheet } from "@/lib/export/analysesXlsx"
 
 type Row = Awaited<ReturnType<typeof adminListAnalyses>>["rows"][number]
 
@@ -42,6 +43,36 @@ export default function AdminAnalysesPage() {
   const [page, setPage] = useState(0)
 
   const [, startDelete] = useTransition()
+  const [exporting, setExporting] = useState(false)
+
+  // ส่งออกตามตัวกรองที่เลือกอยู่ (สถานะ / คำค้น / ประเภท) — ทุกหน้า ไม่ใช่แค่หน้าที่เห็น
+  const handleExport = async () => {
+    setExporting(true)
+    try {
+      const [all, { default: writeXlsxFile }] = await Promise.all([
+        adminExportAnalyses({ status, search, mode }),
+        import("write-excel-file/browser"),
+      ])
+      const filterText =
+        [
+          mode !== "all" && `ประเภท ${MODE_LABEL[mode]}`,
+          status !== "all" && `สถานะ ${STATUS_LABEL[status]}`,
+          search && `ค้นหา "${search}"`,
+        ]
+          .filter(Boolean)
+          .join(" · ") || "ทุกรายการ"
+      const exportedAt = new Date().toLocaleString("th-TH", { dateStyle: "medium", timeStyle: "short" })
+      await writeXlsxFile(buildAnalysesSheet(all, { filterText, exportedAt }), {
+        sheet: "ประวัติการวิเคราะห์",
+        columns: ANALYSES_XLSX_COLUMNS,
+        stickyRowsCount: ANALYSES_XLSX_STICKY_ROWS,
+      }).toFile(`ประวัติการวิเคราะห์-${new Date().toISOString().slice(0, 10)}.xlsx`)
+    } catch (e) {
+      alert(e instanceof Error ? e.message : "ส่งออกไฟล์ไม่สำเร็จ")
+    } finally {
+      setExporting(false)
+    }
+  }
 
   const load = () => {
     setLoading(true)
@@ -111,6 +142,14 @@ export default function AdminAnalysesPage() {
             ทั้งหมด {total.toLocaleString()} รายการ
           </p>
         </div>
+        <button
+          onClick={handleExport}
+          disabled={exporting || total === 0}
+          className="flex items-center gap-2 rounded-full bg-[#1A4D2E] px-5 py-2.5 text-sm font-medium text-white hover:bg-[#143a22] disabled:opacity-50"
+        >
+          {exporting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
+          {exporting ? "กำลังส่งออก…" : "ส่งออก Excel"}
+        </button>
       </div>
 
       {/* Filters */}
