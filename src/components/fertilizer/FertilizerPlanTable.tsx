@@ -41,6 +41,7 @@ export default function FertilizerPlanTable({
   blend,
   pickedGrades,
   unit,
+  initialTab,
   onTabChange,
 }: {
   cropId: string
@@ -51,11 +52,13 @@ export default function FertilizerPlanTable({
   /** สูตรของปุ๋ยที่ผู้ใช้เลือก (เช่น "46-0-0") — ใช้ตัดสินว่าจะแสดงตารางแม่ปุ๋ยหรือไม่ */
   pickedGrades: string[]
   unit?: string
-  /** แจ้งแถบที่กำลังดูอยู่ให้หน้าแม่ (ใช้ตอนออกรายงานให้ตรงกับที่เห็นบนจอ) */
+  /** แถบที่เปิดอยู่ตอนแสดงครั้งแรก — เช่นแถบที่บันทึกไว้กับผล หรือแถบที่เลือกไว้ก่อนกดคำนวณใหม่ */
+  initialTab?: PlanTab
+  /** แจ้งแถบที่กำลังดูอยู่ให้หน้าแม่ (ใช้ตอนบันทึก/ออกรายงานให้ตรงกับที่เห็นบนจอ) */
   onTabChange?: (t: PlanTab) => void
 }) {
   const [types, setTypes] = useState<UseType[] | null>(null)
-  const [tab, setTab] = useState<PlanTab>("chemical")
+  const [tab, setTab] = useState<PlanTab>(initialTab ?? "chemical")
   const [plans, setPlans] = useState<Plans | null>(null)
   const [splitRows, setSplitRows] = useState<StageSplitRow[]>([])
   const [loading, setLoading] = useState(true)

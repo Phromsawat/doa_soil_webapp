@@ -23,6 +23,7 @@ import { useUser } from "@/lib/supabase/useUser"
 import { classify, LEVEL_COLORS, LEVEL_LABEL_TH } from "@/lib/soil/grid"
 import { blendFertilizer, type BlendResult } from "@/lib/fertilizer/blend"
 import { unitTh } from "@/lib/fertilizer/unit"
+import type { PlanTab } from "@/lib/fertilizer/chemicalPlan"
 import CropPicker from "@/components/fertilizer/CropPicker"
 import FertilizerPicker from "@/components/fertilizer/FertilizerPicker"
 import BlendResultCard from "@/components/fertilizer/BlendResultCard"
@@ -158,6 +159,8 @@ export default function AnalyzeForm() {
   const [picked, setPicked] = useState<string[]>([""]) // สูตรปุ๋ยที่เลือก (สูงสุด 3)
 
   const [calc, setCalc] = useState<FertilizerResult | null>(null)
+  // แถบแผนปุ๋ยที่เลือกอยู่ — บันทึกไปกับผล หน้าผล/รายงาน PDF จะเปิดแถบนี้
+  const [planTab, setPlanTab] = useState<PlanTab>("chemical")
   const [blendResult, setBlendResult] = useState<BlendResult | null>(null)
   const [calcLoading, setCalcLoading] = useState(false)
 
@@ -289,6 +292,7 @@ export default function AnalyzeForm() {
         longitude: mapPick?.lng ?? null,
         notes: notes || null,
         blend_formula_ids: picked.filter(Boolean),   // ปุ๋ยที่เลือกในขั้นที่ 3
+        plan_tab: planTab,
       })
       try {
         await calculateAndSave({
@@ -504,6 +508,8 @@ export default function AnalyzeForm() {
               blend={blendResult}
               pickedGrades={pickedGrades}
               unit={calc.unit}
+              initialTab={planTab}
+              onTabChange={(t) => { setPlanTab(t); setSavedId(null) }}
             />
           </div>
         )}

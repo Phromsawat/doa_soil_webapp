@@ -125,6 +125,7 @@ export interface Analysis {
   longitude: number | null
   notes: string | null
   blend_formula_ids: string[]        // ปุ๋ยที่ผู้ใช้เลือกในขั้นที่ 2 (solver) — fertilizer_formulas.id สูงสุด 3
+  plan_tab: "chemical" | "organic70" // แถบแผนปุ๋ยที่เลือกตอนบันทึก (migration 035)
   created_at: string
   updated_at: string
 }
@@ -181,9 +182,10 @@ export type CropUpdate = Partial<CropInsert>
 export type FertilizerRecommendationInsert = Omit<FertilizerRecommendation, "id" | "created_at" | "updated_at">
 export type FertilizerRecommendationUpdate = Partial<FertilizerRecommendationInsert>
 
-export type AnalysisInsert = Omit<Analysis, "id" | "created_at" | "updated_at" | "status" | "blend_formula_ids"> & {
+export type AnalysisInsert = Omit<Analysis, "id" | "created_at" | "updated_at" | "status" | "blend_formula_ids" | "plan_tab"> & {
   status?: AnalysisStatus
   blend_formula_ids?: string[]
+  plan_tab?: Analysis["plan_tab"]
 }
 export type AnalysisUpdate = Partial<Omit<Analysis, "id" | "user_id" | "created_at" | "updated_at">>
 

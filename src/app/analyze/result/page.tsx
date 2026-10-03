@@ -39,6 +39,7 @@ function ResultContent() {
     Promise.all([getAnalysis(id), listCrops(), listFertilizerFormulas().catch(() => [])])
       .then(async ([data, cropList, formulaList]) => {
         setRecord(data)
+        setPlanTab(data?.plan_tab === "organic70" ? "organic70" : "chemical")
         setCrops(cropList)
         setFormulas(formulaList)
         if (data?.crop_id) {
@@ -273,6 +274,7 @@ function ResultContent() {
               blend={blendResult}
               pickedGrades={pickedGrades}
               unit={calculation?.unit}
+              initialTab={planTab}
               onTabChange={setPlanTab}
             />
           </div>

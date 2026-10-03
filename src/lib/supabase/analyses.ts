@@ -131,6 +131,7 @@ export async function saveManualAnalysis(input: {
   longitude?: number | null
   notes?: string | null
   blend_formula_ids?: string[]      // สูตรปุ๋ยที่เลือกไว้ตอนกรอกฟอร์ม (สูงสุด 3)
+  plan_tab?: "chemical" | "organic70" // แถบแผนปุ๋ยที่เลือกอยู่ตอนกดบันทึก
 }) {
   return createAnalysis({
     crop_id: input.crop_id ?? null,
@@ -147,6 +148,8 @@ export async function saveManualAnalysis(input: {
     longitude: input.longitude ?? null,
     notes: input.notes ?? null,
     blend_formula_ids: (input.blend_formula_ids ?? []).filter(Boolean).slice(0, 3),
+    // ส่งเฉพาะเมื่อไม่ใช่ค่าตั้งต้นของคอลัมน์ ('chemical')
+    ...(input.plan_tab && input.plan_tab !== "chemical" ? { plan_tab: input.plan_tab } : {}),
   })
 }
 
