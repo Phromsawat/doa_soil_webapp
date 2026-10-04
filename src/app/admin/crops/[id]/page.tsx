@@ -15,6 +15,7 @@ import {
 } from "@/lib/supabase/admin"
 import { createClient } from "@/lib/supabase/client"
 import CropPlanEditor from "@/components/admin/CropPlanEditor"
+import CropImageField from "@/components/admin/CropImageField"
 
 type CropType = { id: string; name: string; unit_basis: string }
 
@@ -51,6 +52,13 @@ export default function EditCropPage({ params }: PageProps) {
   const [cropTypeId, setCropTypeId] = useState("")
   const [isActive, setIsActive] = useState(true)
   const [cropTypes, setCropTypes] = useState<CropType[]>([])
+  // รูปพืช — อัปโหลดแล้วบันทึกทันที (ไม่ผูกกับปุ่ม "บันทึกข้อมูลพืช")
+  const [image, setImage] = useState<{
+    url: string | null
+    name: string
+    typeName: string
+    typeUrl: string | null
+  } | null>(null)
 
   // Recommendations
   const [recs, setRecs] = useState<AdminRecommendationRow[]>([])
@@ -63,7 +71,7 @@ export default function EditCropPage({ params }: PageProps) {
   const loadCrop = async () => {
     const { data, error } = await supabase
       .from("crops")
-      .select("id, name, name_en, description, crop_type_id, is_active, fertilizer_note, fertilizer_note_source")
+      .select("id, name, name_en, description, crop_type_id, is_active, fertilizer_note, fertilizer_note_source, image_url, crop_types(name, image_url)")
       .eq("id", cropId)
       .single()
     if (error) { setError(error.message); return }
@@ -74,6 +82,8 @@ export default function EditCropPage({ params }: PageProps) {
     setNoteSource(data.fertilizer_note_source ?? "")
     setCropTypeId(data.crop_type_id)
     setIsActive(data.is_active)
+    const ct = Array.isArray(data.crop_types) ? data.crop_types[0] : data.crop_types
+    setImage({ url: data.image_url, name: data.name, typeName: ct?.name ?? "", typeUrl: ct?.image_url ?? null })
   }
 
   const loadRecs = async () => {
@@ -202,6 +212,17 @@ export default function EditCropPage({ params }: PageProps) {
       {/* Crop info */}
       <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 space-y-4">
         <h2 className="text-lg font-bold text-gray-900">ข้อมูลพืช</h2>
+
+        {image && (
+          <CropImageField
+            kind="crop"
+            id={cropId}
+            name={image.name}
+            type={image.typeName}
+            imageUrl={image.url}
+            typeImageUrl={image.typeUrl}
+          />
+        )}
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-1.5">

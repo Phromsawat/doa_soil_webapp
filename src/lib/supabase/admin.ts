@@ -343,6 +343,8 @@ export type AdminCropRow = {
   crop_type_unit: string
   recommendation_count: number
   created_at: string
+  image_url: string | null
+  crop_type_image_url: string | null
 }
 
 export async function adminListCrops(opts: {
@@ -359,8 +361,8 @@ export async function adminListCrops(opts: {
   let q = supabase
     .from("crops")
     .select(
-      `id, name, name_en, description, is_active, crop_type_id, created_at,
-       crop_types(name, unit_basis)`,
+      `id, name, name_en, description, is_active, crop_type_id, created_at, image_url,
+       crop_types(name, unit_basis, image_url)`,
       { count: "exact" }
     )
     .order("created_at", { ascending: true })
@@ -400,6 +402,8 @@ export async function adminListCrops(opts: {
       crop_type_unit: ct?.unit_basis ?? "",
       recommendation_count: recCounts.get(c.id) ?? 0,
       created_at: c.created_at,
+      image_url: c.image_url,
+      crop_type_image_url: ct?.image_url ?? null,
     }
   })
 
@@ -411,7 +415,7 @@ export async function adminListCropTypes() {
   const supabase = await createClient()
   const { data, error } = await supabase
     .from("crop_types")
-    .select("id, name, unit_basis")
+    .select("id, name, unit_basis, image_url")
     .eq("is_active", true)
     .order("order_by")
   if (error) throw new Error(`adminListCropTypes: ${error.message}`)

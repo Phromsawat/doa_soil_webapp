@@ -24,6 +24,9 @@ export interface CropOption {
   id: string
   name: string
   crop_type_name: string
+  /** รูปที่แอดมินอัปโหลด (null = ใช้ไอคอนเดิม) */
+  image_url?: string | null
+  crop_type_image_url?: string | null
 }
 
 /**
@@ -33,16 +36,22 @@ export async function listCrops(): Promise<CropOption[]> {
   const supabase = await createClient()
   const { data, error } = await supabase
     .from("crops")
-    .select("id, name, crop_types(name)")
+    .select("id, name, image_url, crop_types(name, image_url)")
     .eq("is_active", true)
     .order("name")
   if (error) throw new Error(`listCrops: ${error.message}`)
 
-  return (data ?? []).map((c: { id: string; name: string; crop_types: { name: string } | { name: string }[] | null }) => ({
-    id: c.id,
-    name: c.name,
-    crop_type_name: Array.isArray(c.crop_types) ? c.crop_types[0]?.name ?? "" : c.crop_types?.name ?? "",
-  }))
+  type CropTypeRef = { name: string; image_url: string | null }
+  return (data ?? []).map((c: { id: string; name: string; image_url: string | null; crop_types: CropTypeRef | CropTypeRef[] | null }) => {
+    const ct = Array.isArray(c.crop_types) ? c.crop_types[0] : c.crop_types
+    return {
+      id: c.id,
+      name: c.name,
+      crop_type_name: ct?.name ?? "",
+      image_url: c.image_url,
+      crop_type_image_url: ct?.image_url ?? null,
+    }
+  })
 }
 
 /**

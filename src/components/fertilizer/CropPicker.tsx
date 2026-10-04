@@ -61,7 +61,7 @@ export default function CropPicker({
 
       {/* ① เลือกประเภทพืช */}
       <div className="grid grid-cols-4 gap-2">
-        {grouped.map(({ type }) => {
+        {grouped.map(({ type, list }) => {
           const active = type === activeType
           const c = colorOf(type)
           return (
@@ -79,7 +79,7 @@ export default function CropPicker({
                 active ? "shadow-sm" : ""
               }`}
             >
-              <CropIcon name="" type={type} className="h-7 w-7" />
+              <CropIcon name="" type={type} typeImageUrl={list[0]?.crop_type_image_url} className="h-7 w-7" />
               {type}
             </button>
           )
@@ -115,7 +115,13 @@ export default function CropPicker({
                     <Check className="h-3 w-3" strokeWidth={3} />
                   </span>
                 )}
-                <CropIcon name={c.name} type={c.crop_type_name} className="h-8 w-8" />
+                <CropIcon
+                  name={c.name}
+                  type={c.crop_type_name}
+                  imageUrl={c.image_url}
+                  typeImageUrl={c.crop_type_image_url}
+                  className="h-8 w-8"
+                />
                 <span className="leading-tight">{c.name}</span>
               </button>
             )

@@ -34,6 +34,7 @@ export interface CropType {
   name: string                // 'ไม้ผล', 'พืชไร่', 'พืชผัก', 'ข้าว'
   name_en: string | null
   unit_basis: CropTypeUnit
+  image_url: string | null    // รูปที่แอดมินอัปโหลด (migration 039) — null = ไอคอนเดิม
   order_by: number
   is_active: boolean
   created_at: string

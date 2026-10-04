@@ -1,6 +1,9 @@
 // ไอคอน SVG รายพืช (วาดเอง) — self-contained ไม่พึ่งรูปภายนอก
 // เก็บเป็น "inner markup" ของ <svg viewBox="0 0 24 24"> เพื่อใช้ได้ทั้งใน React และพรีวิว
 // พืชที่ไม่มีไอคอนเฉพาะ -> fallback เป็นไอคอนประเภท (CATEGORY_ICON_SVG)
+// แอดมินอัปโหลดรูปแทนได้ที่ /admin/crops (ดู CropIcon)
+
+import { safeCropImage } from "@/lib/content/cropImage"
 
 export const CROP_ICON_SVG: Record<string, string> = {
   // ── ไม้ผล ─────────────────────────────────────────────
@@ -154,16 +157,30 @@ export function cropIconSvg(name: string, type: string): string {
   return CROP_ICON_SVG[name] ?? CATEGORY_ICON_SVG[type] ?? CATEGORY_ICON_SVG._
 }
 
-/** ไอคอนพืชสำหรับใช้ใน React — inner SVG เป็น markup คงที่ในโปรเจกต์ (ปลอดภัยกับ dangerouslySetInnerHTML) */
+/**
+ * ไอคอนพืชสำหรับใช้ใน React
+ * ลำดับ: รูปพืชที่อัปโหลด → SVG ของพืช → รูปประเภทที่อัปโหลด → SVG ของประเภท
+ * (inner SVG เป็น markup คงที่ในโปรเจกต์ ปลอดภัยกับ dangerouslySetInnerHTML)
+ */
 export function CropIcon({
   name,
   type,
+  imageUrl,
+  typeImageUrl,
   className,
 }: {
   name: string
   type: string
+  imageUrl?: string | null
+  typeImageUrl?: string | null
   className?: string
 }) {
+  const own = safeCropImage(imageUrl)
+  const src = own ?? (CROP_ICON_SVG[name] ? null : safeCropImage(typeImageUrl))
+  if (src) {
+    // eslint-disable-next-line @next/next/no-img-element
+    return <img src={src} alt="" aria-hidden="true" loading="lazy" className={`${className ?? ""} object-contain`} />
+  }
   return (
     <svg
       viewBox="0 0 24 24"

@@ -10,8 +10,10 @@ import {
   adminDeleteCrop,
   type AdminCropRow,
 } from "@/lib/supabase/admin"
+import { CropIcon } from "@/components/fertilizer/cropIcons"
+import CropImageField from "@/components/admin/CropImageField"
 
-type CropType = { id: string; name: string; unit_basis: string }
+type CropType = { id: string; name: string; unit_basis: string; image_url: string | null }
 
 export default function AdminCropsPage() {
   const [rows, setRows] = useState<AdminCropRow[]>([])
@@ -119,6 +121,35 @@ export default function AdminCropsPage() {
         </button>
       </div>
 
+      {/* รูปประเภทพืช */}
+      {cropTypes.length > 0 && (
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 space-y-3">
+          <div>
+            <h2 className="text-sm font-bold text-gray-900">รูปประเภทพืช</h2>
+            <p className="text-xs text-gray-500 mt-0.5">
+              แสดงที่ปุ่มเลือกประเภทในหน้าคำนวณปุ๋ย และใช้แทนพืชที่ไม่มีไอคอนของตัวเอง · รูปของพืชแต่ละชนิดเปลี่ยนได้ที่ปุ่ม &ldquo;แก้ไข&rdquo;
+            </p>
+          </div>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+            {cropTypes.map((t) => (
+              <CropImageField
+                key={t.id}
+                kind="type"
+                id={t.id}
+                name=""
+                type={t.name}
+                imageUrl={t.image_url}
+                compact
+                onChange={(url) => {
+                  setCropTypes((prev) => prev.map((x) => (x.id === t.id ? { ...x, image_url: url } : x)))
+                  setRows((prev) => prev.map((r) => (r.crop_type_id === t.id ? { ...r, crop_type_image_url: url } : r)))
+                }}
+              />
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Filters */}
       <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 space-y-3">
         <form onSubmit={(e) => { e.preventDefault(); setSearch(searchInput.trim()) }} className="relative">
@@ -182,6 +213,13 @@ export default function AdminCropsPage() {
                 className={`bg-white rounded-2xl shadow-sm border border-gray-100 p-4 space-y-2 hover:shadow-md transition-shadow ${isPending ? "opacity-50" : ""}`}
               >
                 <div className="flex items-start justify-between gap-2">
+                  <CropIcon
+                    name={c.name}
+                    type={c.crop_type_name}
+                    imageUrl={c.image_url}
+                    typeImageUrl={c.crop_type_image_url}
+                    className="h-9 w-9 shrink-0"
+                  />
                   <div className="min-w-0 flex-1">
                     <h3 className="font-bold text-gray-900 truncate">{c.name}</h3>
                     {c.name_en && <p className="text-xs text-gray-400 truncate">{c.name_en}</p>}
