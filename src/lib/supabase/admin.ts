@@ -290,8 +290,23 @@ export async function adminDeleteUser(userId: string) {
     { auth: { autoRefreshToken: false, persistSession: false } }
   )
 
-  // Cleanup Storage first (best-effort)
+  // service_role ข้าม RLS ทั้งหมด — สิทธิ์เมนู "ผู้ใช้ → ลบ" ให้บทบาทอื่นได้ จึงต้องกันเองว่า
+  // บัญชีแอดมินลบได้เฉพาะโดยแอดมิน (ไม่งั้นบทบาทที่ได้สิทธิ์ลบผู้ใช้จะลบบัญชีแอดมินทิ้งได้)
+  // ปิดไว้ก่อนถ้าไม่แน่ใจ (fail closed): ผู้ลบที่ไม่ใช่แอดมินต้องยืนยันได้ว่าปลายทาง "ไม่ใช่แอดมิน"
+  // อ่าน role ไม่ได้ (เช่น service_role ไม่มี grant บน profiles) = ไม่ให้ลบ
   const supabase = await createClient()
+  const { data: me } = await supabase.from("profiles").select("role").eq("id", currentUser.id).single()
+  if (me?.role !== "admin") {
+    const { data: target, error: targetErr } = await admin
+      .from("profiles")
+      .select("role")
+      .eq("id", userId)
+      .maybeSingle()
+    if (targetErr || !target) throw new Error("ตรวจสอบบัญชีปลายทางไม่ได้ — ให้แอดมินเป็นผู้ลบ")
+    if (target.role === "admin") throw new Error("เฉพาะแอดมินเท่านั้นที่ลบบัญชีแอดมินได้")
+  }
+
+  // Cleanup Storage first (best-effort)
   const { data: userAnalyses } = await supabase
     .from("analyses")
     .select("id")
