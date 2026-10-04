@@ -8,6 +8,18 @@ import { CropIcon } from "./cropIcons"
 // ลำดับประเภทพืชที่อยากให้แสดง
 const TYPE_ORDER = ["ไม้ผล", "พืชไร่", "พืชผัก", "ข้าว"] as const
 
+// สีประจำประเภท — กรอบ/พื้นของปุ่มประเภทและการ์ดพืชในประเภทนั้น ให้แยกกลุ่มด้วยตาได้ทันที
+// line = กรอบตอนปกติ, solid = กรอบตอนเลือก/พื้นการ์ดที่เลือก, tint = พื้นอ่อน, ink = ตัวอักษร
+interface TypeColor { line: string; solid: string; tint: string; ink: string }
+const TYPE_COLOR: Record<string, TypeColor> = {
+  "ไม้ผล": { line: "#F5C9A6", solid: "#E07A2F", tint: "#FFF5EC", ink: "#A9531B" }, // ส้ม
+  "พืชไร่": { line: "#DCC6A8", solid: "#9A6B3F", tint: "#FAF4EC", ink: "#74502E" }, // น้ำตาล
+  "พืชผัก": { line: "#A8DAB5", solid: "#2F9E44", tint: "#EEF8F1", ink: "#21773A" }, // เขียว
+  "ข้าว": { line: "#EBD58A", solid: "#C99A06", tint: "#FDF8E6", ink: "#8A6A04" },   // เหลืองทอง
+}
+const DEFAULT_COLOR: TypeColor = { line: "#E5E7EB", solid: "#1A4D2E", tint: "#F1F7F2", ink: "#1A4D2E" }
+const colorOf = (type: string) => TYPE_COLOR[type] ?? DEFAULT_COLOR
+
 export default function CropPicker({
   crops,
   value,
@@ -51,15 +63,20 @@ export default function CropPicker({
       <div className="grid grid-cols-4 gap-2">
         {grouped.map(({ type }) => {
           const active = type === activeType
+          const c = colorOf(type)
           return (
             <button
               key={type}
               type="button"
               onClick={() => setActiveType(active ? "" : type)}
-              className={`flex flex-col items-center gap-1 rounded-xl border px-2 py-3 text-xs font-medium transition ${
-                active
-                  ? "border-[#1A4D2E] bg-[#F1F7F2] text-[#1A4D2E] shadow-sm"
-                  : "border-gray-200 bg-gray-50/60 text-gray-600 hover:border-gray-300 hover:bg-gray-50"
+              style={{
+                borderColor: active ? c.solid : c.line,
+                background: active ? c.tint : "#FFFFFF",
+                color: c.ink,
+                boxShadow: active ? `0 0 0 1px ${c.solid}` : undefined,
+              }}
+              className={`flex flex-col items-center gap-1 rounded-xl border px-2 py-3 text-xs font-medium transition hover:brightness-[0.98] ${
+                active ? "shadow-sm" : ""
               }`}
             >
               <CropIcon name="" type={type} className="h-7 w-7" />
@@ -74,20 +91,27 @@ export default function CropPicker({
         <div key={activeType} className="mt-3 grid grid-cols-3 gap-2 sm:grid-cols-4">
           {activeList.map((c, i) => {
             const active = c.id === value
+            const tc = colorOf(c.crop_type_name)
             return (
               <button
                 key={c.id}
                 type="button"
                 onClick={() => onChange(c.id)}
-                style={{ animation: "cropIn .28s ease-out both", animationDelay: `${i * 30}ms` }}
+                style={{
+                  animation: "cropIn .28s ease-out both",
+                  animationDelay: `${i * 30}ms`,
+                  borderColor: active ? tc.solid : tc.line,
+                  background: active ? tc.solid : "#FFFFFF",
+                }}
                 className={`relative flex flex-col items-center gap-1 rounded-xl border px-2 py-3 text-center text-xs font-medium transition ${
-                  active
-                    ? "border-[#1A4D2E] bg-[#1A4D2E] text-white shadow"
-                    : "border-gray-200 bg-white text-gray-700 hover:border-[#1A4D2E]/40 hover:bg-[#F1F7F2]"
+                  active ? "text-white shadow" : "text-gray-700 hover:brightness-[0.97]"
                 }`}
               >
                 {active && (
-                  <span className="absolute right-1 top-1 flex h-4 w-4 items-center justify-center rounded-full bg-white text-[#1A4D2E]">
+                  <span
+                    className="absolute right-1 top-1 flex h-4 w-4 items-center justify-center rounded-full bg-white"
+                    style={{ color: tc.solid }}
+                  >
                     <Check className="h-3 w-3" strokeWidth={3} />
                   </span>
                 )}
