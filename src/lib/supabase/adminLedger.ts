@@ -2,12 +2,13 @@
 
 import { createClient } from "@/lib/supabase/server"
 import { requirePermission } from "@/lib/supabase/permissions"
+import { revalidatePath } from "next/cache"
 
 // =============================================================================
-// สมุดบัญชีของผู้ใช้ทุกคน — ฝั่งแอดมิน (อ่านอย่างเดียว)
+// สมุดบัญชีของผู้ใช้ทุกคน — ฝั่งแอดมิน (ดูและลบได้ แก้ไขไม่ได้)
 //
 // อ่านผ่าน view ledger_season_summary (migration 036) ซึ่งรวมยอดรายรับ/รายจ่ายไว้แล้ว
-// RLS ของ farm_seasons/farm_entries เปิดให้ role admin อ่านทุกแถว (ไม่มีสิทธิ์แก้/ลบ)
+// RLS ของ farm_seasons/farm_entries เปิดให้ role admin อ่าน (036) และลบ (037) ได้ทุกแถว แก้ไขไม่ได้
 // =============================================================================
 
 export interface LedgerFilters {
@@ -184,4 +185,19 @@ export async function adminGetLedgerSeason(seasonId: string) {
       happened_on: e.happened_on as string,
     })),
   }
+}
+
+/**
+ * ลบรอบเพาะปลูกของผู้ใช้ (รายการในรอบหายตาม — FK cascade) — migration 037
+ * RLS ที่ไม่อนุญาตจะ "ลบ 0 แถว" แบบเงียบ จึงขอแถวที่ลบกลับมาเช็ก แล้วแจ้งให้ชัด
+ */
+export async function adminDeleteLedgerSeason(seasonId: string) {
+  await requirePermission("ledgers", "delete")
+  const supabase = await createClient()
+  const { data, error } = await supabase.from("farm_seasons").delete().eq("id", seasonId).select("id")
+  if (error) throw new Error(`adminDeleteLedgerSeason: ${error.message}`)
+  if (!data || data.length === 0) {
+    throw new Error("ลบไม่สำเร็จ — ไม่มีสิทธิ์ลบ หรือรอบนี้ถูกลบไปแล้ว")
+  }
+  revalidatePath("/admin/ledgers")
 }

@@ -2,6 +2,7 @@ import Link from "next/link"
 import { notFound } from "next/navigation"
 import { ArrowLeft, FileDown } from "lucide-react"
 import { adminGetLedgerSeason } from "@/lib/supabase/adminLedger"
+import DeleteSeasonButton from "./DeleteSeasonButton"
 import { formatBaht, formatDay, KIND_LABEL } from "@/lib/ledger/categories"
 
 export const dynamic = "force-dynamic"
@@ -26,13 +27,19 @@ export default async function AdminLedgerDetailPage({ params }: { params: Promis
             {formatDay(s.started_on)} – {s.ended_on ? formatDay(s.ended_on) : "ยังไม่สิ้นสุด"}
           </p>
         </div>
-        <Link
-          href={`/ledger/print?season=${s.season_id}`}
-          target="_blank"
-          className="flex items-center gap-2 rounded-full border border-gray-200 bg-white px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
-        >
-          <FileDown className="h-4 w-4" /> พิมพ์ / PDF
-        </Link>
+        <div className="flex items-center gap-2">
+          <Link
+            href={`/ledger/print?season=${s.season_id}`}
+            target="_blank"
+            className="flex items-center gap-2 rounded-full border border-gray-200 bg-white px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+          >
+            <FileDown className="h-4 w-4" /> พิมพ์ / PDF
+          </Link>
+          <DeleteSeasonButton
+            seasonId={s.season_id}
+            label={`รอบ "${s.name}" ของ ${s.owner_name ?? s.owner_email ?? "ผู้ใช้"} พร้อมรายการทั้งหมด ${s.entries.length} รายการ`}
+          />
+        </div>
       </div>
 
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">

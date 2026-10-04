@@ -2,8 +2,9 @@
 
 import { useEffect, useState } from "react"
 import Link from "next/link"
-import { BookOpen, ChevronLeft, ChevronRight, Download, Eye, Loader2, Search, X } from "lucide-react"
+import { BookOpen, ChevronLeft, ChevronRight, Download, Eye, Loader2, Search, Trash2, X } from "lucide-react"
 import {
+  adminDeleteLedgerSeason,
   adminExportLedgers,
   adminListLedgers,
   type LedgerFilters,
@@ -47,6 +48,8 @@ export default function AdminLedgersPage() {
   const [filters, setFilters] = useState<LedgerFilters>({})
   const [searchInput, setSearchInput] = useState("")
   const [page, setPage] = useState(0)
+  const [reloadKey, setReloadKey] = useState(0)
+  const [deletingId, setDeletingId] = useState<string | null>(null)
 
   useEffect(() => {
     listCrops().then(setCrops).catch(() => {})
@@ -72,7 +75,26 @@ export default function AdminLedgersPage() {
     return () => {
       cancelled = true
     }
-  }, [filters, page])
+  }, [filters, page, reloadKey])
+
+  // ลบรอบ + รายการทั้งหมดในรอบ (กู้คืนไม่ได้) — ยืนยันพร้อมบอกว่าเป็นของใคร มีกี่รายการ
+  async function handleDelete(r: LedgerSummaryRow) {
+    const who = r.owner_name ?? r.owner_email ?? "ผู้ใช้"
+    if (!confirm(`ลบรอบ "${r.name}" ของ ${who} พร้อมรายการทั้งหมด ${r.entry_count} รายการ?
+ลบแล้วกู้คืนไม่ได้`)) return
+    setDeletingId(r.season_id)
+    setError(null)
+    try {
+      await adminDeleteLedgerSeason(r.season_id)
+      // ลบแถวสุดท้ายของหน้าสุดท้าย -> ถอยกลับหนึ่งหน้า
+      if (rows.length === 1 && page > 0) setPage((p) => p - 1)
+      else setReloadKey((k) => k + 1)
+    } catch (e) {
+      setError(e instanceof Error ? e.message : String(e))
+    } finally {
+      setDeletingId(null)
+    }
+  }
 
   const apply = (patch: Partial<LedgerFilters>) => {
     setFilters((f) => ({ ...f, ...patch }))
@@ -114,7 +136,7 @@ export default function AdminLedgersPage() {
             <BookOpen className="h-5 w-5 text-[#1A4D2E]" /> สมุดบัญชีของผู้ใช้
           </h1>
           <p className="mt-1 text-sm text-gray-500">
-            รายรับ รายจ่าย และกำไรสุทธิของทุกรอบเพาะปลูก — ดูได้อย่างเดียว แก้ไขข้อมูลของผู้ใช้ไม่ได้
+            รายรับ รายจ่าย และกำไรสุทธิของทุกรอบเพาะปลูก — ดูและลบได้ แก้ไขข้อมูลของผู้ใช้ไม่ได้
           </p>
         </div>
         <button
@@ -206,12 +228,22 @@ export default function AdminLedgersPage() {
                   <td className="px-4 py-3 text-right"><Money v={r.expense} /></td>
                   <td className="px-4 py-3 text-right font-semibold"><Money v={r.net} signed /></td>
                   <td className="px-4 py-3 text-right">
-                    <Link
-                      href={`/admin/ledgers/${r.season_id}`}
-                      className="inline-flex items-center gap-1 rounded-full border border-gray-200 px-3 py-1 text-xs text-gray-600 hover:border-[#1A4D2E]/40 hover:text-[#1A4D2E]"
-                    >
-                      <Eye className="h-3.5 w-3.5" /> ดู
-                    </Link>
+                    <div className="flex items-center justify-end gap-1">
+                      <Link
+                        href={`/admin/ledgers/${r.season_id}`}
+                        className="inline-flex items-center gap-1 rounded-full border border-gray-200 px-3 py-1 text-xs text-gray-600 hover:border-[#1A4D2E]/40 hover:text-[#1A4D2E]"
+                      >
+                        <Eye className="h-3.5 w-3.5" /> ดู
+                      </Link>
+                      <button
+                        onClick={() => handleDelete(r)}
+                        disabled={deletingId !== null}
+                        aria-label={`ลบรอบ ${r.name}`}
+                        className="rounded-full p-1.5 text-gray-400 hover:bg-red-50 hover:text-red-600 disabled:opacity-40"
+                      >
+                        {deletingId === r.season_id ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))
