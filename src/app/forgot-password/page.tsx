@@ -62,7 +62,7 @@ export default function ForgotPasswordPage() {
 
         <div className="text-center space-y-3 pt-2">
           <div className="flex items-center justify-center mx-auto mb-2">
-            <img src="/doa-logo.svg" alt="DOA" className="w-14 h-14 object-contain" />
+            <img src="/api/site-logo" alt="DOA" className="w-14 h-14 object-contain" />
           </div>
           <h1 className="text-2xl font-black text-[#1A1A1A]">ลืมรหัสผ่าน</h1>
           <p className="text-sm text-gray-500 leading-relaxed">

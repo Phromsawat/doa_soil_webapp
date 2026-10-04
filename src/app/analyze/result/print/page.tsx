@@ -202,7 +202,7 @@ export default async function PrintReportPage({
         {/* ---------- หัวรายงาน ---------- */}
         <header className="head">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/doa-logo.svg" alt="" className="logo" />
+          <img src="/api/site-logo" alt="" className="logo" />
           <div>
             <h1>ผลวิเคราะห์ดินและคำแนะนำการใช้ปุ๋ย</h1>
             <p className="sub">กรมวิชาการเกษตร</p>

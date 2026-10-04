@@ -158,7 +158,7 @@ export default function Bar() {
               </button>
             ) : (
               <button onClick={() => router.push('/')} className="w-8 h-8 rounded-full flex items-center justify-center shrink-0 hover:bg-gray-100 transition-colors">
-                <img src="/doa-logo.svg" alt="DOA Logo" className="w-full h-full object-contain cursor-pointer" />
+                <img src="/api/site-logo" alt="DOA Logo" className="w-full h-full object-contain cursor-pointer" />
               </button>
             )}
             <h2 className={`font-semibold font-thai ${showBack ? 'text-lg text-text-primary' : 'text-base text-[#1A1A1A]'}`}>

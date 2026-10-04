@@ -91,7 +91,7 @@ export default function SignUpPage() {
 
         {/* Logo */}
         <div className="flex items-center justify-center">
-          <img src="/doa-logo.svg" alt="DOA" className="w-14 h-14 object-contain" />
+          <img src="/api/site-logo" alt="DOA" className="w-14 h-14 object-contain" />
         </div>
 
         <p className="text-center text-sm text-gray-500">

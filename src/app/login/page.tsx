@@ -79,7 +79,7 @@ export default function LoginPage() {
 
         {/* Logo */}
         <div className="flex items-center justify-center pt-2">
-          <img src="/doa-logo.svg" alt="DOA" className="w-16 h-16 object-contain" />
+          <img src="/api/site-logo" alt="DOA" className="w-16 h-16 object-contain" />
         </div>
 
         <p className="text-center text-sm text-gray-500 -mt-2">

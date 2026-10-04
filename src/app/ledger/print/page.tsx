@@ -154,7 +154,7 @@ export default async function LedgerPrintPage({
       <A4Sheet>
         <header className="head">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/doa-logo.svg" alt="" className="logo" />
+          <img src="/api/site-logo" alt="" className="logo" />
           <div>
             <h1>สมุดบัญชีรอบเพาะปลูก</h1>
             <p className="sub">กรมวิชาการเกษตร</p>
