@@ -424,7 +424,7 @@ export default function Bar() {
         </div>
 
         <div className="pt-10 text-center">
-          <p className="text-[12px] text-gray-400">version 2.2.0</p>
+          <p className="text-[12px] text-gray-400">version 3.0.0</p>
         </div>
       </div>
     </>
