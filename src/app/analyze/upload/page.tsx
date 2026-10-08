@@ -1,15 +1,13 @@
 "use client"
 
 import { useState, useEffect, useRef } from "react"
-import { useRouter } from "next/navigation"
+import Link from "next/link"
 import dynamic from "next/dynamic"
 import * as Dialog from "@radix-ui/react-dialog"
-import { Folder, Ban, Map, Loader2 } from "lucide-react"
-import {
-  createAnalysis,
-  uploadAnalysisImage,
-  completeAnalysis,
-} from "@/lib/supabase/analyses"
+import { Folder, Ban, Map, Loader2, CheckCircle2, Calculator, RotateCcw } from "lucide-react"
+import { createAnalysis, removeAnalysisImage } from "@/lib/supabase/analyses"
+import { predictAnalysis, type PredictResult } from "@/lib/supabase/prediction"
+import { checkPhoto, uploadSoilPhoto } from "@/lib/image/soilPhoto"
 import { ensureSession } from "@/lib/supabase/auth"
 import type { NutrientCode } from "@/types/database"
 import type { PickedArea } from "@/app/analyze/map/MapPicker"
@@ -24,11 +22,14 @@ const MapPicker = dynamic(() => import("@/app/analyze/map/MapPicker"), {
   ),
 })
 
-const NUTRIENT_FIELDS: Array<{ label: string; code: NutrientCode }> = [
-  { label: "อินทรียวัตถุ", code: "OM" },
-  { label: "ฟอสฟอรัส",    code: "P"  },
-  { label: "โพแทสเซียม",  code: "K"  },
+const NUTRIENT_FIELDS: Array<{ label: string; code: NutrientCode; unit: string; key: "om_value" | "p_value" | "k_value" }> = [
+  { label: "อินทรียวัตถุ", code: "OM", unit: "%",     key: "om_value" },
+  { label: "ฟอสฟอรัส",    code: "P",  unit: "mg/kg", key: "p_value"  },
+  { label: "โพแทสเซียม",  code: "K",  unit: "mg/kg", key: "k_value"  },
 ]
+const labelOf = (code: NutrientCode) => NUTRIENT_FIELDS.find((f) => f.code === code)?.label ?? code
+
+type Prediction = Extract<PredictResult, { ok: true }>
 
 /** ตัวเลือกตำบลจากรหัสไปรษณีย์ — เก็บชื่อพื้นที่แยกส่วนไว้บันทึกลง DB ด้วย */
 type ZipOption = {
@@ -59,7 +60,6 @@ function toZipOption(e: {
 }
 
 export default function AnalyzeUpload() {
-  const router = useRouter()
   const [files, setFiles] = useState<Record<NutrientCode, File | null>>({
     OM: null, P: null, K: null,
   })
@@ -68,8 +68,18 @@ export default function AnalyzeUpload() {
   const [postalCode, setPostalCode] = useState("")
   const [lat, setLat] = useState("")
   const [lng, setLng] = useState("")
-  const [submitting, setSubmitting] = useState(false)
+  // uploading = ส่งรูปขึ้นที่เก็บ, predicting = รอแบบจำลองทำนาย
+  const [phase, setPhase] = useState<"idle" | "uploading" | "predicting">("idle")
+  const submitting = phase !== "idle"
   const [error, setError] = useState<string | null>(null)
+  // รายการที่สร้างแล้ว — กดทำนายซ้ำ (หลังเปลี่ยนรูปที่ไม่ผ่านการตรวจ) ใช้รายการเดิม ไม่สร้างใหม่
+  const [analysisId, setAnalysisId] = useState<string | null>(null)
+  // รูปที่อัปโหลดขึ้นรายการแล้ว — รอบถัดไปอัปโหลดเฉพาะรูปที่เปลี่ยน
+  const uploadedRef = useRef<Partial<Record<NutrientCode, File>>>({})
+  // รูปที่แบบจำลองไม่รับ (ไม่เห็น strip ชัด ฯลฯ) → ข้อความจากระบบ
+  const [rejected, setRejected] = useState<Partial<Record<NutrientCode, string>>>({})
+  const [prediction, setPrediction] = useState<Prediction | null>(null)
+  const locked = submitting || !!prediction
   const [isMapOpen, setIsMapOpen] = useState(false)
   const [zipHint, setZipHint] = useState<string | null>(null)
   const [zipError, setZipError] = useState<string | null>(null)
@@ -167,6 +177,21 @@ export default function AnalyzeUpload() {
 
   const hasAnyFile = Object.values(files).some(Boolean)
 
+  const pickFile = (code: NutrientCode, file: File | null) => {
+    // รูปที่ใช้ไม่ได้ (ชนิดไฟล์ / เกิน 12 MB) — เตือนทันที ไม่รับเข้าช่อง
+    const problem = file && checkPhoto(file)
+    if (problem) {
+      setRejected((prev) => ({ ...prev, [code]: problem }))
+      return
+    }
+    setFiles((prev) => ({ ...prev, [code]: file }))
+    setRejected((prev) => {
+      const next = { ...prev }
+      delete next[code]
+      return next
+    })
+  }
+
   const handleSubmit = async () => {
     setError(null)
 
@@ -175,47 +200,75 @@ export default function AnalyzeUpload() {
       return
     }
 
-    setSubmitting(true)
+    setPhase("uploading")
     try {
       // 1. Make sure user has a session (anonymous if not signed in)
       await ensureSession()
 
-      // 2. Create analysis row
-      const analysisId = await createAnalysis({
-        crop_id: null,
-        input_mode: "image_upload",
-        status: "pending",
-        om_value: null,
-        p_value: null,
-        k_value: null,
-        ph_value: null,
-        province: area?.province ?? null,
-        amphur: area?.amphur ?? null,
-        district: area?.district ?? null,
-        latitude: lat ? Number(lat) : null,
-        longitude: lng ? Number(lng) : null,
-        notes: sampleCode ? `รหัสตัวอย่าง: ${sampleCode}${phone ? ` · ${phone}` : ""}` : null,
-      })
-
-      // 3. Upload each image (skip empty slots)
-      for (const { code } of NUTRIENT_FIELDS) {
-        const file = files[code]
-        if (!file) continue
-        const fd = new FormData()
-        fd.append("file", file)
-        await uploadAnalysisImage(analysisId, code, fd)
+      // 2. Create analysis row (ครั้งแรกเท่านั้น)
+      let id = analysisId
+      if (!id) {
+        id = await createAnalysis({
+          crop_id: null,
+          input_mode: "image_upload",
+          status: "pending",
+          om_value: null,
+          p_value: null,
+          k_value: null,
+          ph_value: null,
+          province: area?.province ?? null,
+          amphur: area?.amphur ?? null,
+          district: area?.district ?? null,
+          latitude: lat ? Number(lat) : null,
+          longitude: lng ? Number(lng) : null,
+          notes: sampleCode ? `รหัสตัวอย่าง: ${sampleCode}${phone ? ` · ${phone}` : ""}` : null,
+        })
+        setAnalysisId(id)
       }
 
-      // 4. Mark as completed (later: trigger AI prediction first)
-      await completeAnalysis(analysisId)
+      // 3. อัปโหลดรูปที่ใหม่/เปลี่ยน (ต้นฉบับ + สำเนาย่อ ตรงเข้า Storage) และเอารูปที่ผู้ใช้กดยกเลิกออก
+      for (const { code } of NUTRIENT_FIELDS) {
+        const file = files[code]
+        const sent = uploadedRef.current[code]
+        if (file && file !== sent) {
+          await uploadSoilPhoto(id, code, file)
+          uploadedRef.current[code] = file
+        } else if (!file && sent) {
+          await removeAnalysisImage(id, code)
+          delete uploadedRef.current[code]
+        }
+      }
 
-      // 5. Navigate to result page with the analysis id
-      router.push(`/analyze/result?id=${analysisId}`)
+      // 4. ให้แบบจำลองทำนายค่า — บันทึกค่าและเปลี่ยนสถานะเป็น completed ฝั่ง server เมื่อสำเร็จ
+      setPhase("predicting")
+      const codes = NUTRIENT_FIELDS.map((f) => f.code).filter((c) => files[c])
+      const r = await predictAnalysis(id, codes)
+      if (r.ok) {
+        setPrediction(r)
+        setRejected({})
+      } else if (r.kind === "rejected" && r.element) {
+        setRejected({ [r.element]: r.message })
+        setError(`รูป${labelOf(r.element)}ไม่ผ่านการตรวจ — เปลี่ยนรูปแล้วกด "ทำนายผล" อีกครั้ง`)
+      } else {
+        setError(r.message)
+      }
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e))
     } finally {
-      setSubmitting(false)
+      setPhase("idle")
     }
+  }
+
+  // เริ่มตัวอย่างใหม่ — คงพื้นที่/เบอร์โทรไว้ (มักเป็นแปลงเดียวกัน)
+  const resetForNext = () => {
+    setFiles({ OM: null, P: null, K: null })
+    setSampleCode("")
+    setAnalysisId(null)
+    uploadedRef.current = {}
+    setRejected({})
+    setPrediction(null)
+    setError(null)
+    window.scrollTo({ top: 0, behavior: "smooth" })
   }
 
   return (
@@ -224,12 +277,19 @@ export default function AnalyzeUpload() {
 
         {/* Section 1: สารอาหารในดิน */}
         <div className="space-y-4">
-          <div className="flex items-center gap-2 text-gray-800 font-semibold text-lg mb-4">
-            <span>สารอาหารในดิน</span>
+          <div className="mb-4">
+            <div className="flex items-center gap-2 text-gray-800 font-semibold text-lg">
+              <span>สารอาหารในดิน</span>
+            </div>
+            <p className="mt-0.5 text-xs text-gray-500">รูปแผ่นทดสอบ JPG, PNG หรือ WebP ไม่เกิน 12 MB ต่อรูป</p>
           </div>
 
           {NUTRIENT_FIELDS.map(({ label, code }) => (
-            <div key={code} className="flex flex-col lg:flex-row lg:items-center gap-3 bg-gray-50/50 p-2 rounded-xl">
+            <div
+              key={code}
+              className={`space-y-1.5 rounded-xl p-2 ${rejected[code] ? "bg-red-50/70 ring-1 ring-red-200" : "bg-gray-50/50"}`}
+            >
+            <div className="flex flex-col lg:flex-row lg:items-center gap-3">
               <div className="flex items-center gap-2 w-40 shrink-0 px-2">
                 <span className="font-semibold text-sm text-gray-700">{label}</span>
               </div>
@@ -240,29 +300,37 @@ export default function AnalyzeUpload() {
                 </div>
                 <div className="flex gap-2">
                   <button
-                    onClick={() => setFiles((prev) => ({ ...prev, [code]: null }))}
-                    className="flex-1 sm:flex-none justify-center items-center gap-1 px-5 h-10 bg-gray-200 hover:bg-gray-300 text-gray-600 rounded-full text-sm font-medium transition-colors flex"
+                    onClick={() => pickFile(code, null)}
+                    disabled={locked}
+                    className="flex-1 sm:flex-none justify-center items-center gap-1 px-5 h-10 bg-gray-200 hover:bg-gray-300 text-gray-600 rounded-full text-sm font-medium transition-colors flex disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     <Ban className="w-4 h-4" />
                     ยกเลิก
                   </button>
-                  <label className="flex-1 sm:flex-none justify-center items-center gap-1 px-5 h-10 bg-[#E6EFEA] hover:bg-[#D8E6DD] text-[#1A1A1A] rounded-full text-sm font-medium transition-colors flex cursor-pointer">
+                  <label
+                    className={`flex-1 sm:flex-none justify-center items-center gap-1 px-5 h-10 bg-[#E6EFEA] hover:bg-[#D8E6DD] text-[#1A1A1A] rounded-full text-sm font-medium transition-colors flex cursor-pointer ${
+                      locked ? "pointer-events-none opacity-50" : ""
+                    }`}
+                  >
                     <Folder className="w-4 h-4" />
-                    เลือกรูป
+                    {rejected[code] ? "เปลี่ยนรูป" : "เลือกรูป"}
                     <input
                       type="file"
                       accept="image/jpeg,image/png,image/webp"
                       className="hidden"
+                      disabled={locked}
                       onChange={(e) => {
-                        if (e.target.files && e.target.files[0]) {
-                          const file = e.target.files[0]
-                          setFiles((prev) => ({ ...prev, [code]: file }))
-                        }
+                        if (e.target.files && e.target.files[0]) pickFile(code, e.target.files[0])
+                        e.target.value = ""
                       }}
                     />
                   </label>
                 </div>
               </div>
+            </div>
+            {rejected[code] && (
+              <p className="px-2 text-xs text-red-600">{rejected[code]}</p>
+            )}
             </div>
           ))}
         </div>
@@ -393,23 +461,71 @@ export default function AnalyzeUpload() {
           </div>
         )}
 
-        {/* Predict Button */}
-        <div className="flex justify-center pt-8 pb-4">
-          <button
-            onClick={handleSubmit}
-            disabled={submitting || !hasAnyFile}
-            className="flex items-center justify-center gap-2 px-12 h-10 bg-[#1A4D2E] hover:bg-[#143a22] text-white rounded-full font-medium text-[15px] shadow-sm hover:shadow-md transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {submitting ? (
-              <>
-                <Loader2 className="w-4 h-4 animate-spin" />
-                กำลังอัปโหลด...
-              </>
-            ) : (
-              "ทำนายผล"
+        {/* ผลทำนาย — ค่าถูกบันทึกในรายการแล้ว ไปเลือกพืช/ปุ๋ยต่อในหน้าคำนวณ (ตรวจ/แก้ค่าได้ที่นั่น) */}
+        {prediction ? (
+          <div className="rounded-2xl border border-[#1A4D2E]/15 bg-[#F1F7F2] p-5 space-y-4">
+            <div className="flex items-center gap-2 font-semibold text-[#1A4D2E]">
+              <CheckCircle2 className="w-5 h-5" /> ผลการวิเคราะห์ภาพ
+            </div>
+            <div className="grid grid-cols-3 gap-2">
+              {NUTRIENT_FIELDS.map(({ label, code, unit, key }) => {
+                const v = prediction[key]
+                return (
+                  <div key={code} className="rounded-xl bg-white p-3 text-center shadow-sm">
+                    <p className="flex min-h-[2.5rem] items-center justify-center text-xs leading-tight text-gray-500">{label} ({code})</p>
+                    <p className={`mt-1 text-2xl font-semibold ${v == null ? "text-gray-300" : "text-[#1A4D2E]"}`}>
+                      {v == null ? "—" : v.toLocaleString("th-TH", { maximumFractionDigits: 2 })}
+                    </p>
+                    <p className="text-[11px] text-gray-400">{v == null ? "ไม่ได้ส่งรูป" : unit}</p>
+                  </div>
+                )
+              })}
+            </div>
+            <p className="text-xs leading-relaxed text-gray-500">
+              ค่าประมาณจากแบบจำลองวิเคราะห์ภาพแผ่นทดสอบ — ตรวจและแก้ค่าได้ในขั้นเลือกพืชและคำนวณปุ๋ย
+              {prediction.model_version && (
+                <span className="block break-all text-[11px] text-gray-400">รุ่นแบบจำลอง {prediction.model_version}</span>
+              )}
+            </p>
+            <div className="flex flex-col gap-2 sm:flex-row">
+              <Link
+                href={`/analyze/form?from=${analysisId}`}
+                className="flex flex-1 items-center justify-center gap-2 h-11 rounded-full bg-[#1A4D2E] hover:bg-[#143a22] text-white text-[15px] font-medium shadow-sm"
+              >
+                <Calculator className="w-4 h-4" /> เลือกพืชและคำนวณปุ๋ย
+              </Link>
+              <button
+                type="button"
+                onClick={resetForNext}
+                className="flex items-center justify-center gap-2 h-11 px-5 rounded-full border border-gray-200 bg-white text-sm font-medium text-gray-600 hover:bg-gray-50"
+              >
+                <RotateCcw className="w-4 h-4" /> วิเคราะห์ตัวอย่างใหม่
+              </button>
+            </div>
+          </div>
+        ) : (
+          <div className="flex flex-col items-center gap-2 pt-8 pb-4">
+            <button
+              onClick={handleSubmit}
+              disabled={submitting || !hasAnyFile}
+              className="flex items-center justify-center gap-2 px-12 h-10 bg-[#1A4D2E] hover:bg-[#143a22] text-white rounded-full font-medium text-[15px] shadow-sm hover:shadow-md transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {submitting ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  {phase === "uploading" ? "กำลังอัปโหลดรูป..." : "กำลังวิเคราะห์ภาพ..."}
+                </>
+              ) : (
+                "ทำนายผล"
+              )}
+            </button>
+            {phase === "predicting" && (
+              <p className="text-center text-xs text-gray-500">
+                ระบบกำลังตรวจรูปและทำนายค่า ถ้าระบบเพิ่งเริ่มทำงานอาจใช้เวลา 1–2 นาที
+              </p>
             )}
-          </button>
-        </div>
+          </div>
+        )}
 
       </div>
 

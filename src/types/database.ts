@@ -127,8 +127,19 @@ export interface Analysis {
   notes: string | null
   blend_formula_ids: string[]        // ปุ๋ยที่ผู้ใช้เลือกในขั้นที่ 2 (solver) — fertilizer_formulas.id สูงสุด 3
   plan_tab: "chemical" | "organic70" // แถบแผนปุ๋ยที่เลือกตอนบันทึก (migration 035)
+  ai_result: AnalysisAiResult | null  // ผลดิบจากแบบจำลองทำนายภาพ (migration 040) — null = ไม่ได้ทำนาย
   created_at: string
   updated_at: string
+}
+
+export interface AnalysisAiResult {
+  om_value: number | null
+  p_value: number | null
+  k_value: number | null
+  model_version: string | null
+  request_id: string | null
+  images: NutrientCode[]
+  predicted_at: string
 }
 
 // -----------------------------------------------------------------------------
@@ -138,7 +149,8 @@ export interface AnalysisImage {
   id: string
   analysis_id: string
   nutrient_code: NutrientCode
-  storage_path: string             // /{user_id}/{analysis_id}/om.jpg
+  storage_path: string             // {user_id}/{analysis_id}/OM-<ver>.jpg — สำเนาย่อที่เก็บถาวร
+  original_path: string | null     // {user_id}/{analysis_id}/original/OM-<ver>.jpg — ต้นฉบับรอทำนาย (migration 041)
   public_url: string | null
   file_size_bytes: number | null
   width: number | null
@@ -183,7 +195,7 @@ export type CropUpdate = Partial<CropInsert>
 export type FertilizerRecommendationInsert = Omit<FertilizerRecommendation, "id" | "created_at" | "updated_at">
 export type FertilizerRecommendationUpdate = Partial<FertilizerRecommendationInsert>
 
-export type AnalysisInsert = Omit<Analysis, "id" | "created_at" | "updated_at" | "status" | "blend_formula_ids" | "plan_tab"> & {
+export type AnalysisInsert = Omit<Analysis, "id" | "created_at" | "updated_at" | "status" | "blend_formula_ids" | "plan_tab" | "ai_result"> & {
   status?: AnalysisStatus
   blend_formula_ids?: string[]
   plan_tab?: Analysis["plan_tab"]

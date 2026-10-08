@@ -3,10 +3,10 @@
 import { useEffect, useState } from "react"
 import dynamic from "next/dynamic"
 import * as Dialog from "@radix-ui/react-dialog"
-import { Loader2, Sprout, Check, History, Calculator, ChevronDown, MapPin } from "lucide-react"
+import { Loader2, Sprout, Check, History, Calculator, ChevronDown, MapPin, ScanLine } from "lucide-react"
 import Link from "next/link"
 import { Button } from "@/components/ui/Button"
-import { saveManualAnalysis } from "@/lib/supabase/analyses"
+import { getAnalysis, saveManualAnalysis } from "@/lib/supabase/analyses"
 import {
   calculateFertilizer,
   calculateAndSave,
@@ -174,6 +174,14 @@ export default function AnalyzeForm() {
   const [mapError, setMapError] = useState<string | null>(null)
   const [mapPick, setMapPick] = useState<MapPick | null>(null)
 
+  // มาจากหน้าอัปโหลดรูป (/analyze/form?from=<id>) — ค่าดินจากแบบจำลองวิเคราะห์ภาพ
+  // บันทึกแล้วจะเขียนทับรายการนั้น (พืช/ปุ๋ย/ค่าที่แก้) แทนการสร้างรายการใหม่
+  const [fromImage, setFromImage] = useState<{
+    id: string
+    notes: string | null
+    modelVersion: string | null
+  } | null>(null)
+
   // บันทึกได้เฉพาะคน login จริง (ไม่ใช่ anonymous) — ผู้ไม่ล็อกอินแค่คำนวณดูผล ไม่เก็บข้อมูล
   const { isAuthenticated, loading: userLoading } = useUser()
 
@@ -186,6 +194,27 @@ export default function AnalyzeForm() {
       .then(setFormulas)
       .catch(() => {})
       .finally(() => setFormulasLoading(false))
+
+    // อ่านจาก URL ตรง ๆ แทน useSearchParams (ไม่ต้องห่อ Suspense ทั้งหน้า)
+    const from = new URLSearchParams(window.location.search).get("from")
+    if (from) {
+      getAnalysis(from)
+        .then((rec) => {
+          if (!rec || rec.input_mode !== "image_upload") return
+          setOm(fmtSoil(rec.om_value))
+          setP(fmtSoil(rec.p_value))
+          setK(fmtSoil(rec.k_value))
+          if (rec.ph_value != null) setPh(String(rec.ph_value))
+          if (rec.crop_id) setCropId(rec.crop_id)
+          if (rec.blend_formula_ids?.length) setPicked(rec.blend_formula_ids)
+          setFromImage({
+            id: rec.id,
+            notes: rec.notes,
+            modelVersion: (rec.ai_result as { model_version?: string } | null)?.model_version ?? null,
+          })
+        })
+        .catch(() => setError("เปิดผลวิเคราะห์ภาพไม่สำเร็จ — กรอกค่าดินเองได้"))
+    }
   }, [])
 
   const num = (s: string) => (s.trim() === "" ? null : Number(s))
@@ -274,6 +303,7 @@ export default function AnalyzeForm() {
       const crop = crops.find((c) => c.id === cropId)
       // ค่าดินจากแผนที่เป็นค่าประมาณ — ระบุไว้ในหมายเหตุ ไม่ให้ปนกับผลตรวจดินจริงตอนวิเคราะห์ข้อมูล
       const notes = [
+        fromImage?.notes ?? null, // รหัสตัวอย่าง/เบอร์โทรจากหน้าอัปโหลดรูป
         crop ? `พืช: ${crop.name}` : null,
         usingMapValues && mapPick
           ? `ค่าดินประมาณจากแผนที่ ณ ${mapPick.lat.toFixed(5)}, ${mapPick.lng.toFixed(5)}`
@@ -293,6 +323,7 @@ export default function AnalyzeForm() {
         notes: notes || null,
         blend_formula_ids: picked.filter(Boolean),   // ปุ๋ยที่เลือกในขั้นที่ 3
         plan_tab: planTab,
+        analysis_id: fromImage?.id ?? null,
       })
       try {
         await calculateAndSave({
@@ -403,6 +434,18 @@ export default function AnalyzeForm() {
             <NutrientInput label="ฟอสฟอรัส (P)" unit="mg/kg" value={p} onChange={(v) => { setP(v); invalidate() }} level={pLevel} placeholder="เช่น 20" />
             <NutrientInput label="โพแทสเซียม (K)" unit="mg/kg" value={k} onChange={(v) => { setK(v); invalidate() }} level={kLevel} placeholder="เช่น 80" />
           </div>
+
+          {fromImage && (
+            <p className="mt-3 flex items-start gap-2 rounded-xl bg-[#F1F7F2] px-3 py-2 text-xs leading-relaxed text-[#1A4D2E]">
+              <ScanLine className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+              <span>
+                ค่าจากการวิเคราะห์ภาพแผ่นทดสอบ (แบบจำลอง AI) — ตรวจและแก้ไขได้ก่อนกดคำนวณ
+                {fromImage.modelVersion && (
+                  <span className="block break-all text-[11px] text-[#1A4D2E]/60">รุ่นแบบจำลอง {fromImage.modelVersion}</span>
+                )}
+              </span>
+            </p>
+          )}
 
           {mapError && (
             <p className="mt-3 rounded-xl bg-amber-50 px-3 py-2 text-xs text-amber-700">{mapError}</p>

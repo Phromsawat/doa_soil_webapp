@@ -2,7 +2,7 @@
 
 import { Suspense, useEffect, useMemo, useState } from "react"
 import { useSearchParams, useRouter } from "next/navigation"
-import { FileDown, Loader2, MapPin } from "lucide-react"
+import { Calculator, FileDown, Loader2, MapPin } from "lucide-react"
 import { Button } from "@/components/ui/Button"
 import { getAnalysis } from "@/lib/supabase/analyses"
 import { listCrops, calculateFertilizer, type CropOption, type FertilizerResult } from "@/lib/supabase/fertilizer"
@@ -106,10 +106,8 @@ function ResultContent() {
     )
   }
 
-  const om = record.om_value ?? 0
-  const p = record.p_value ?? 0
-  const k = record.k_value ?? 0
-  const ph = record.ph_value ?? 6.0
+  // ค่าที่ไม่ได้ตรวจ (null) แสดงเป็น "—" ไม่ใช่ 0 — 0 แปลว่า "ต่ำมาก" ซึ่งไม่จริง
+  const ph = record.ph_value
   // แสดงพื้นที่เต็ม "ตำบล อำเภอ จังหวัด" เท่าที่มี (เหมือนหน้าประวัติ)
   const areaLabel =
     [record.district, record.amphur, record.province].filter(Boolean).join(" ") || "ไม่ระบุ"
@@ -119,9 +117,14 @@ function ResultContent() {
     if (val > high) return { label: "สูง",      textColor: "#4a9e52", barColor: "#85c98a", pct: 90 }
     return            { label: "ปานกลาง", textColor: "#c47f17", barColor: "#ffd188", pct: 60 }
   }
-  const omLevel = classify(om, 1, 3)
-  const pLevel  = classify(p, 15, 45)
-  const kLevel  = classify(k, 50, 100)
+  const nutrients = [
+    { name: "อินทรียวัตถุ (OM)", unit: "%",     value: record.om_value as number | null, low: 1,  high: 3 },
+    { name: "ฟอสฟอรัส (P)",      unit: " mg/kg", value: record.p_value as number | null,  low: 15, high: 45 },
+    { name: "โพแทสเซียม (K)",    unit: " mg/kg", value: record.k_value as number | null,  low: 50, high: 100 },
+  ]
+  // รายการอัปโหลดรูปที่ยังไม่ได้เลือกพืช — ชวนไปเลือกพืชและคำนวณปุ๋ยต่อ
+  const needsCrop = record.input_mode === "image_upload" && !record.crop_id
+  const aiModel = (record.ai_result as { model_version?: string } | null)?.model_version ?? null
 
   return (
     <div className="font-thai pb-24 relative pt-6 px-4 max-w-2xl mx-auto">
@@ -137,37 +140,36 @@ function ResultContent() {
           </div>
 
           <div className="space-y-4">
-            <div>
-              <div className="flex justify-between text-xs mb-1.5 font-medium">
-                <span className="text-text-secondary">อินทรียวัตถุ (OM)</span>
-                <span className="text-text-secondary">{om}% ({omLevel.label})</span>
-              </div>
-              <div className="h-2 w-full bg-gray-100 rounded-full overflow-hidden">
-                <div className="h-full rounded-full transition-all" style={{ width: `${omLevel.pct}%`, backgroundColor: omLevel.barColor }}></div>
-              </div>
-            </div>
-            <div>
-              <div className="flex justify-between text-xs mb-1.5 font-medium">
-                <span className="text-text-secondary">ฟอสฟอรัส (P)</span>
-                <span className="text-text-secondary">{p} mg/kg ({pLevel.label})</span>
-              </div>
-              <div className="h-2 w-full bg-gray-100 rounded-full overflow-hidden">
-                <div className="h-full rounded-full transition-all" style={{ width: `${pLevel.pct}%`, backgroundColor: pLevel.barColor }}></div>
-              </div>
-            </div>
-            <div>
-              <div className="flex justify-between text-xs mb-1.5 font-medium">
-                <span className="text-text-secondary">โพแทสเซียม (K)</span>
-                <span className="text-text-secondary">{k} mg/kg ({kLevel.label})</span>
-              </div>
-              <div className="h-2 w-full bg-gray-100 rounded-full overflow-hidden">
-                <div className="h-full rounded-full transition-all" style={{ width: `${kLevel.pct}%`, backgroundColor: kLevel.barColor }}></div>
-              </div>
-            </div>
+            {nutrients.map((n) => {
+              const level = n.value == null ? null : classify(n.value, n.low, n.high)
+              return (
+                <div key={n.name}>
+                  <div className="flex justify-between text-xs mb-1.5 font-medium">
+                    <span className="text-text-secondary">{n.name}</span>
+                    <span className="text-text-secondary">
+                      {n.value == null
+                        ? "— (ไม่ได้ตรวจ)"
+                        : `${n.value.toLocaleString("th-TH", { maximumFractionDigits: 2 })}${n.unit} (${level!.label})`}
+                    </span>
+                  </div>
+                  <div className="h-2 w-full bg-gray-100 rounded-full overflow-hidden">
+                    {level && (
+                      <div className="h-full rounded-full transition-all" style={{ width: `${level.pct}%`, backgroundColor: level.barColor }}></div>
+                    )}
+                  </div>
+                </div>
+              )
+            })}
           </div>
 
+          {aiModel && (
+            <p className="mt-4 text-[11px] leading-relaxed text-gray-400">
+              ค่าดินจากการวิเคราะห์ภาพแผ่นทดสอบด้วยแบบจำลอง AI · <span className="break-all">รุ่น {aiModel}</span>
+            </p>
+          )}
+
           <div className="mt-5 pt-4 border-t border-gray-100 flex justify-center gap-4 text-xs text-text-secondary font-medium">
-            <span>pH: {ph}</span>
+            <span>pH: {ph ?? "ไม่ได้ระบุ"}</span>
             {record.notes && <><span>|</span><span className="text-gray-500 font-normal">{record.notes}</span></>}
           </div>
         </div>
@@ -224,7 +226,18 @@ function ResultContent() {
 
           <h2 className="text-base font-medium mb-4">คำแนะนำการจัดการปุ๋ย</h2>
 
-          {!calculation ? (
+          {needsCrop ? (
+            <div className="bg-white/10 rounded-xl p-4 text-center space-y-3">
+              <p className="text-sm text-white/80">ยังไม่ได้เลือกพืช — เลือกพืชเพื่อคำนวณปุ๋ยจากค่าดินนี้</p>
+              <button
+                type="button"
+                onClick={() => router.push(`/analyze/form?from=${record.id}`)}
+                className="inline-flex items-center justify-center gap-2 h-10 px-5 rounded-full bg-white text-[#1A2F2A] text-sm font-medium hover:bg-white/90"
+              >
+                <Calculator className="w-4 h-4" /> เลือกพืชและคำนวณปุ๋ย
+              </button>
+            </div>
+          ) : !calculation ? (
             <div className="bg-white/10 rounded-xl p-4 text-center text-sm text-white/70 italic">
               ไม่พบคำแนะนำสำหรับพืชนี้
             </div>

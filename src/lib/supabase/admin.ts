@@ -315,10 +315,11 @@ export async function adminDeleteUser(userId: string) {
   const { data: images } = analysisIds.length
     ? await supabase
         .from("analysis_images")
-        .select("storage_path")
+        .select("storage_path, original_path")
         .in("analysis_id", analysisIds)
-    : { data: [] as { storage_path: string }[] }
-  const paths = (images ?? []).map((i) => i.storage_path).filter(Boolean)
+    : { data: [] as { storage_path: string; original_path: string | null }[] }
+  // original_path = ต้นฉบับที่ยังไม่ได้ทำนาย (migration 041) — ต้องลบด้วย ไม่งั้นค้างใน storage
+  const paths = (images ?? []).flatMap((i) => [i.storage_path, i.original_path]).filter((x): x is string => !!x)
   if (paths.length > 0) {
     await admin.storage.from("soil-images").remove(paths)
   }
@@ -567,10 +568,11 @@ export async function adminDeleteAnalysis(analysisId: string) {
   // First fetch the images to know storage paths
   const { data: images } = await supabase
     .from("analysis_images")
-    .select("storage_path")
+    .select("storage_path, original_path")
     .eq("analysis_id", analysisId)
 
-  const paths = (images ?? []).map((i) => i.storage_path).filter(Boolean)
+  // original_path = ต้นฉบับที่ยังไม่ได้ทำนาย (migration 041) — ต้องลบด้วย ไม่งั้นค้างใน storage
+  const paths = (images ?? []).flatMap((i) => [i.storage_path, i.original_path]).filter((x): x is string => !!x)
   if (paths.length > 0) {
     // ต้องใช้ service_role เหมือน adminDeleteUser — policy ของ soil-images ยอมให้ลบ
     // เฉพาะเจ้าของโฟลเดอร์ ({user_id}/...) แอดมินที่ลบผลวิเคราะห์ของเกษตรกรจึงไม่เข้าเงื่อนไข
