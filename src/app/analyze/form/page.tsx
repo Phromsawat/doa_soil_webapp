@@ -176,11 +176,7 @@ export default function AnalyzeForm() {
 
   // มาจากหน้าอัปโหลดรูป (/analyze/form?from=<id>) — ค่าดินจากแบบจำลองวิเคราะห์ภาพ
   // บันทึกแล้วจะเขียนทับรายการนั้น (พืช/ปุ๋ย/ค่าที่แก้) แทนการสร้างรายการใหม่
-  const [fromImage, setFromImage] = useState<{
-    id: string
-    notes: string | null
-    modelVersion: string | null
-  } | null>(null)
+  const [fromImage, setFromImage] = useState<{ id: string; notes: string | null } | null>(null)
 
   // บันทึกได้เฉพาะคน login จริง (ไม่ใช่ anonymous) — ผู้ไม่ล็อกอินแค่คำนวณดูผล ไม่เก็บข้อมูล
   const { isAuthenticated, loading: userLoading } = useUser()
@@ -207,11 +203,7 @@ export default function AnalyzeForm() {
           if (rec.ph_value != null) setPh(String(rec.ph_value))
           if (rec.crop_id) setCropId(rec.crop_id)
           if (rec.blend_formula_ids?.length) setPicked(rec.blend_formula_ids)
-          setFromImage({
-            id: rec.id,
-            notes: rec.notes,
-            modelVersion: (rec.ai_result as { model_version?: string } | null)?.model_version ?? null,
-          })
+          setFromImage({ id: rec.id, notes: rec.notes })
         })
         .catch(() => setError("เปิดผลวิเคราะห์ภาพไม่สำเร็จ — กรอกค่าดินเองได้"))
     }
@@ -438,12 +430,7 @@ export default function AnalyzeForm() {
           {fromImage && (
             <p className="mt-3 flex items-start gap-2 rounded-xl bg-[#F1F7F2] px-3 py-2 text-xs leading-relaxed text-[#1A4D2E]">
               <ScanLine className="mt-0.5 h-3.5 w-3.5 shrink-0" />
-              <span>
-                ค่าจากการวิเคราะห์ภาพแผ่นทดสอบ (แบบจำลอง AI) — ตรวจและแก้ไขได้ก่อนกดคำนวณ
-                {fromImage.modelVersion && (
-                  <span className="block break-all text-[11px] text-[#1A4D2E]/60">รุ่นแบบจำลอง {fromImage.modelVersion}</span>
-                )}
-              </span>
+              <span>ค่าจากการวิเคราะห์ภาพแผ่นทดสอบ (แบบจำลอง AI) — ตรวจและแก้ไขได้ก่อนกดคำนวณ</span>
             </p>
           )}
 
@@ -541,7 +528,6 @@ export default function AnalyzeForm() {
             <StepHeader
               n={7}
               title="แผนการใส่ปุ๋ยตามระยะ"
-              hint="คำแนะนำตายตัวของกรมวิชาการเกษตร ตามช่วงค่าดิน"
             />
             <FertilizerPlanTable
               cropId={cropId}

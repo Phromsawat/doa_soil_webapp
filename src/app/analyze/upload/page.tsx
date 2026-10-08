@@ -483,9 +483,6 @@ export default function AnalyzeUpload() {
             </div>
             <p className="text-xs leading-relaxed text-gray-500">
               ค่าประมาณจากแบบจำลองวิเคราะห์ภาพแผ่นทดสอบ — ตรวจและแก้ค่าได้ในขั้นเลือกพืชและคำนวณปุ๋ย
-              {prediction.model_version && (
-                <span className="block break-all text-[11px] text-gray-400">รุ่นแบบจำลอง {prediction.model_version}</span>
-              )}
             </p>
             <div className="flex flex-col gap-2 sm:flex-row">
               <Link

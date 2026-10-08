@@ -124,7 +124,7 @@ function ResultContent() {
   ]
   // รายการอัปโหลดรูปที่ยังไม่ได้เลือกพืช — ชวนไปเลือกพืชและคำนวณปุ๋ยต่อ
   const needsCrop = record.input_mode === "image_upload" && !record.crop_id
-  const aiModel = (record.ai_result as { model_version?: string } | null)?.model_version ?? null
+  const fromAi = !!record.ai_result
 
   return (
     <div className="font-thai pb-24 relative pt-6 px-4 max-w-2xl mx-auto">
@@ -162,9 +162,9 @@ function ResultContent() {
             })}
           </div>
 
-          {aiModel && (
+          {fromAi && (
             <p className="mt-4 text-[11px] leading-relaxed text-gray-400">
-              ค่าดินจากการวิเคราะห์ภาพแผ่นทดสอบด้วยแบบจำลอง AI · <span className="break-all">รุ่น {aiModel}</span>
+              ค่าดินจากการวิเคราะห์ภาพแผ่นทดสอบด้วยแบบจำลอง AI
             </p>
           )}
 
@@ -277,8 +277,7 @@ function ResultContent() {
         {/* แผนการใส่ปุ๋ยตามระยะ (คำแนะนำกรมฯ ตายตัว) — ตัวหลัก */}
         {record.crop_id && (
           <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100">
-            <h2 className="text-base font-medium text-gray-800 mb-1">แผนการใส่ปุ๋ยตามระยะ</h2>
-            <p className="text-xs text-gray-500 mb-3">คำแนะนำตายตัวของกรมวิชาการเกษตร ตามช่วงค่าดินที่บันทึก</p>
+            <h2 className="text-base font-medium text-gray-800 mb-3">แผนการใส่ปุ๋ยตามระยะ</h2>
             <FertilizerPlanTable
               cropId={record.crop_id}
               om={record.om_value}
