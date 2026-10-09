@@ -1,9 +1,10 @@
 "use client"
 
-import { useEffect, useState, useTransition, useMemo } from "react"
+import { useEffect, useState, useTransition } from "react"
 import Link from "next/link"
-import { FileBarChart, Loader2, Search, ChevronLeft, ChevronRight, ImageIcon, Eye, Trash2, Camera, Pencil, Download } from "lucide-react"
-import { adminListAnalyses, adminDeleteAnalysis, adminExportAnalyses } from "@/lib/supabase/admin"
+import { FileBarChart, Loader2, Search, ChevronLeft, ChevronRight, ImageIcon, Eye, Trash2, Camera, Pencil, Download, X } from "lucide-react"
+import { adminListAnalyses, adminDeleteAnalysis, adminExportAnalyses, adminCountAnalysesByMode } from "@/lib/supabase/admin"
+import { INPUT_MODE_LABEL } from "@/lib/analysis/inputMode"
 import { ANALYSES_XLSX_COLUMNS, ANALYSES_XLSX_STICKY_ROWS, buildAnalysesSheet } from "@/lib/export/analysesXlsx"
 
 type Row = Awaited<ReturnType<typeof adminListAnalyses>>["rows"][number]
@@ -11,8 +12,8 @@ type Row = Awaited<ReturnType<typeof adminListAnalyses>>["rows"][number]
 const MODE_TABS = ["all", "image_upload", "manual_form"] as const
 const MODE_LABEL: Record<string, string> = {
   all: "ทั้งหมด",
-  image_upload: "วิเคราะห์ด้วย AI",
-  manual_form: "บันทึกผลด้วยตนเอง",
+  image_upload: INPUT_MODE_LABEL.image_upload,
+  manual_form: INPUT_MODE_LABEL.manual_form,
 }
 
 const STATUS_TABS = ["all", "completed", "pending", "failed"] as const
@@ -30,6 +31,48 @@ const STATUS_BADGE: Record<string, string> = {
 
 const PAGE_SIZE = 20
 
+// ช่องกรองแบบพิมพ์ (กด "ค้นหา" แล้วจึงใช้) — ประเภท/สถานะเป็นปุ่ม ใช้ทันที
+type TextFilters = {
+  search: string
+  dateFrom: string
+  dateTo: string
+  sampleCode: string
+  phone: string
+  district: string
+  amphur: string
+  province: string
+}
+const EMPTY_FILTERS: TextFilters = {
+  search: "", dateFrom: "", dateTo: "", sampleCode: "", phone: "", district: "", amphur: "", province: "",
+}
+const fmtDay = (iso: string) => {
+  const [y, m, d] = iso.split("-")
+  return `${d}/${m}/${Number(y) + 543}`
+}
+
+/** คำอธิบายเงื่อนไขที่ใช้ — หัวไฟล์ Excel */
+function describeFilters(f: TextFilters, mode: string, status: string): string {
+  const range =
+    f.dateFrom && f.dateTo ? `${fmtDay(f.dateFrom)} – ${fmtDay(f.dateTo)}`
+    : f.dateFrom ? `ตั้งแต่ ${fmtDay(f.dateFrom)}`
+    : f.dateTo ? `ถึง ${fmtDay(f.dateTo)}`
+    : ""
+  return [
+    range && `วันที่ ${range}`,
+    mode !== "all" && `ประเภท ${MODE_LABEL[mode]}`,
+    status !== "all" && `สถานะ ${STATUS_LABEL[status]}`,
+    f.sampleCode && `รหัสตัวอย่าง "${f.sampleCode}"`,
+    f.phone && `เบอร์โทร "${f.phone}"`,
+    f.district && `ตำบล "${f.district}"`,
+    f.amphur && `อำเภอ "${f.amphur}"`,
+    f.province && `จังหวัด "${f.province}"`,
+    f.search && `ค้นหา "${f.search}"`,
+  ].filter(Boolean).join(" · ") || "ทุกรายการ"
+}
+
+const INPUT =
+  "w-full h-10 px-4 rounded-full bg-gray-50 border border-gray-100 text-sm focus:outline-none focus:ring-2 focus:ring-[#1A4D2E]/20 focus:border-[#1A4D2E]"
+
 export default function AdminAnalysesPage() {
   const [rows, setRows] = useState<Row[]>([])
   const [total, setTotal] = useState(0)
@@ -38,29 +81,28 @@ export default function AdminAnalysesPage() {
 
   const [status, setStatus] = useState<(typeof STATUS_TABS)[number]>("all")
   const [mode, setMode] = useState<(typeof MODE_TABS)[number]>("all")
-  const [search, setSearch] = useState("")
-  const [searchInput, setSearchInput] = useState("")
+  // filters = ที่ใช้อยู่ (ตาราง/ตัวนับ/Excel), draft = ที่กำลังพิมพ์ในช่อง
+  const [filters, setFilters] = useState<TextFilters>(EMPTY_FILTERS)
+  const [draft, setDraft] = useState<TextFilters>(EMPTY_FILTERS)
+  const setField = (k: keyof TextFilters) => (e: React.ChangeEvent<HTMLInputElement>) =>
+    setDraft((d) => ({ ...d, [k]: e.target.value }))
+  const hasFilters = Object.values(filters).some(Boolean)
   const [page, setPage] = useState(0)
+  // จำนวนแต่ละประเภททั้งระบบ (ตามสถานะ/คำค้น) — ตัวเลขบนปุ่มกรองประเภท
+  const [modeCounts, setModeCounts] = useState<{ all: number; image_upload: number; manual_form: number } | null>(null)
 
   const [, startDelete] = useTransition()
   const [exporting, setExporting] = useState(false)
 
-  // ส่งออกตามตัวกรองที่เลือกอยู่ (สถานะ / คำค้น / ประเภท) — ทุกหน้า ไม่ใช่แค่หน้าที่เห็น
+  // ส่งออกตามตัวกรองที่ใช้อยู่ทั้งหมด — ทุกหน้า ไม่ใช่แค่หน้าที่เห็น
   const handleExport = async () => {
     setExporting(true)
     try {
       const [all, { default: writeXlsxFile }] = await Promise.all([
-        adminExportAnalyses({ status, search, mode }),
+        adminExportAnalyses({ ...filters, status, mode }),
         import("write-excel-file/browser"),
       ])
-      const filterText =
-        [
-          mode !== "all" && `ประเภท ${MODE_LABEL[mode]}`,
-          status !== "all" && `สถานะ ${STATUS_LABEL[status]}`,
-          search && `ค้นหา "${search}"`,
-        ]
-          .filter(Boolean)
-          .join(" · ") || "ทุกรายการ"
+      const filterText = describeFilters(filters, mode, status)
       const exportedAt = new Date().toLocaleString("th-TH", { dateStyle: "medium", timeStyle: "short" })
       await writeXlsxFile(buildAnalysesSheet(all, { filterText, exportedAt }), {
         sheet: "ประวัติการวิเคราะห์",
@@ -77,8 +119,9 @@ export default function AdminAnalysesPage() {
   const load = () => {
     setLoading(true)
     adminListAnalyses({
+      ...filters,
       status,
-      search,
+      mode,
       limit: PAGE_SIZE,
       offset: page * PAGE_SIZE,
     })
@@ -90,29 +133,44 @@ export default function AdminAnalysesPage() {
       .finally(() => setLoading(false))
   }
 
+  const loadCounts = () => {
+    adminCountAnalysesByMode({ ...filters, status })
+      .then(setModeCounts)
+      .catch(() => setModeCounts(null))
+  }
+
   useEffect(() => {
     load()
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [status, search, page])
+  }, [status, filters, mode, page])
 
-  // Client-side filter by mode (server returns all)
-  const filteredRows = useMemo(() => {
-    if (mode === "all") return rows
-    return rows.filter((r) => r.input_mode === mode)
-  }, [rows, mode])
+  useEffect(() => {
+    loadCounts()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [status, filters])
 
-  const modeCounts = useMemo(() => ({
-    image_upload: rows.filter((r) => r.input_mode === "image_upload").length,
-    manual_form: rows.filter((r) => r.input_mode === "manual_form").length,
-  }), [rows])
+  // กรองประเภทที่ฐานข้อมูลแล้ว แถวที่ได้คือแถวที่จะแสดง
+  const filteredRows = rows
 
   // Hide image column entirely when only showing manual-form rows
   const showImageColumn = mode !== "manual_form"
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault()
+    // วันที่สลับกัน (ถึง < จาก) — สลับให้เอง
+    const next = Object.fromEntries(Object.entries(draft).map(([k, v]) => [k, v.trim()])) as TextFilters
+    if (next.dateFrom && next.dateTo && next.dateFrom > next.dateTo) {
+      ;[next.dateFrom, next.dateTo] = [next.dateTo, next.dateFrom]
+    }
+    setDraft(next)
     setPage(0)
-    setSearch(searchInput.trim())
+    setFilters(next)
+  }
+
+  const clearFilters = () => {
+    setDraft(EMPTY_FILTERS)
+    setFilters(EMPTY_FILTERS)
+    setPage(0)
   }
 
   const handleDelete = (id: string) => {
@@ -121,6 +179,7 @@ export default function AdminAnalysesPage() {
       try {
         await adminDeleteAnalysis(id)
         load()
+        loadCounts()
       } catch (e) {
         alert(e instanceof Error ? e.message : String(e))
       }
@@ -154,27 +213,78 @@ export default function AdminAnalysesPage() {
 
       {/* Filters */}
       <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 space-y-3">
-        <form onSubmit={handleSearchSubmit} className="relative">
-          <Search className="absolute left-4 top-3 w-4 h-4 text-gray-400" />
-          <input
-            type="text"
-            value={searchInput}
-            onChange={(e) => setSearchInput(e.target.value)}
-            placeholder="ค้นหาในจังหวัด อำเภอ ตำบล หรือ notes..."
-            className="w-full h-10 pl-11 pr-4 rounded-full bg-gray-50 border border-gray-100 text-sm focus:outline-none focus:ring-2 focus:ring-[#1A4D2E]/20 focus:border-[#1A4D2E]"
-          />
+        <form onSubmit={handleSearchSubmit} className="space-y-3">
+          <div className="relative">
+            <Search className="absolute left-4 top-3 w-4 h-4 text-gray-400" />
+            <input
+              type="text"
+              value={draft.search}
+              onChange={setField("search")}
+              placeholder="ค้นหาในจังหวัด อำเภอ ตำบล หรือ notes..."
+              className={`${INPUT} pl-11`}
+            />
+          </div>
+
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            <label className="space-y-1">
+              <span className="text-[11px] font-bold text-gray-500">วันที่บันทึก</span>
+              <div className="flex items-center gap-2">
+                <input type="date" value={draft.dateFrom} onChange={setField("dateFrom")} aria-label="ตั้งแต่วันที่" className={INPUT} />
+                <span className="text-gray-400">–</span>
+                <input type="date" value={draft.dateTo} onChange={setField("dateTo")} aria-label="ถึงวันที่" className={INPUT} />
+              </div>
+            </label>
+            <label className="space-y-1">
+              <span className="text-[11px] font-bold text-gray-500">รหัสตัวอย่าง</span>
+              <input value={draft.sampleCode} onChange={setField("sampleCode")} className={INPUT} />
+            </label>
+            <label className="space-y-1">
+              <span className="text-[11px] font-bold text-gray-500">เบอร์โทร</span>
+              <input value={draft.phone} onChange={setField("phone")} inputMode="tel" className={INPUT} />
+            </label>
+            <label className="space-y-1">
+              <span className="text-[11px] font-bold text-gray-500">ตำบล</span>
+              <input value={draft.district} onChange={setField("district")} className={INPUT} />
+            </label>
+            <label className="space-y-1">
+              <span className="text-[11px] font-bold text-gray-500">อำเภอ</span>
+              <input value={draft.amphur} onChange={setField("amphur")} className={INPUT} />
+            </label>
+            <label className="space-y-1">
+              <span className="text-[11px] font-bold text-gray-500">จังหวัด</span>
+              <input value={draft.province} onChange={setField("province")} className={INPUT} />
+            </label>
+          </div>
+
+          <div className="flex flex-wrap gap-2">
+            <button
+              type="submit"
+              className="flex items-center gap-2 h-9 px-5 rounded-full bg-[#1A4D2E] hover:bg-[#143a22] text-white text-xs font-bold"
+            >
+              <Search className="w-3.5 h-3.5" /> ค้นหา
+            </button>
+            {(hasFilters || Object.values(draft).some(Boolean)) && (
+              <button
+                type="button"
+                onClick={clearFilters}
+                className="flex items-center gap-1.5 h-9 px-4 rounded-full border border-gray-200 text-xs font-bold text-gray-600 hover:bg-gray-50"
+              >
+                <X className="w-3.5 h-3.5" /> ล้างตัวกรอง
+              </button>
+            )}
+          </div>
         </form>
 
         <div className="space-y-2">
           <p className="text-[11px] font-bold text-gray-500 uppercase tracking-wide">ประเภท</p>
           <div className="flex gap-2 overflow-x-auto">
             {MODE_TABS.map((m) => {
-              const count = m === "all" ? rows.length : modeCounts[m as keyof typeof modeCounts]
+              const count = modeCounts?.[m]
               return (
                 <button
                   key={m}
                   type="button"
-                  onClick={() => setMode(m)}
+                  onClick={() => { setMode(m); setPage(0) }}
                   className={`px-4 py-1.5 rounded-full text-xs font-bold whitespace-nowrap transition-colors flex items-center gap-2 ${
                     mode === m
                       ? "bg-[#1A4D2E] text-white"
@@ -183,7 +293,7 @@ export default function AdminAnalysesPage() {
                 >
                   {MODE_LABEL[m]}
                   <span className={`px-1.5 py-0.5 rounded-full text-[9px] ${mode === m ? "bg-white/20" : "bg-gray-200 text-gray-600"}`}>
-                    {count}
+                    {count ?? "…"}
                   </span>
                 </button>
               )
@@ -275,11 +385,11 @@ export default function AdminAnalysesPage() {
                       <td className="px-4 py-3">
                         {row.input_mode === "image_upload" ? (
                           <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold bg-blue-100 text-blue-700 whitespace-nowrap">
-                            <Camera className="w-3 h-3" /> วิเคราะห์ด้วย AI
+                            <Camera className="w-3 h-3" /> {INPUT_MODE_LABEL.image_upload}
                           </span>
                         ) : (
                           <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold bg-amber-100 text-amber-700 whitespace-nowrap">
-                            <Pencil className="w-3 h-3" /> บันทึกด้วยตนเอง
+                            <Pencil className="w-3 h-3" /> {INPUT_MODE_LABEL.manual_form}
                           </span>
                         )}
                       </td>

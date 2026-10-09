@@ -17,6 +17,55 @@ function sanitizeFilterTerm(s: string | undefined | null): string {
   return (s ?? "").replace(/[,()*\\]/g, " ").trim()
 }
 
+/** ตัวกรองหน้าประวัติการวิเคราะห์ — ชุดเดียวกันทั้งตาราง ตัวเลขบนปุ่ม และไฟล์ Excel */
+export interface AnalysisFilters {
+  status?: "all" | "completed" | "pending" | "failed"
+  mode?: "all" | "image_upload" | "manual_form"
+  /** ค้นรวมใน notes / ตำบล / อำเภอ / จังหวัด */
+  search?: string
+  /** วันที่บันทึกตามเวลาไทย YYYY-MM-DD — รวมทั้งวันแรกและวันสุดท้าย */
+  dateFrom?: string
+  dateTo?: string
+  sampleCode?: string
+  phone?: string
+  district?: string
+  amphur?: string
+  province?: string
+}
+
+const ISO_DAY = /^\d{4}-\d{2}-\d{2}$/
+
+function applyAnalysisFilters<Q>(query: Q, f: AnalysisFilters, opts: { mode?: boolean } = {}): Q {
+  // builder ของ PostgREST มี generic ซับซ้อน — ใช้แบบหลวมในฟังก์ชันนี้แล้วคืนชนิดเดิม
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let q = query as any
+  if (f.status && f.status !== "all") q = q.eq("status", f.status)
+  if (opts.mode !== false && f.mode && f.mode !== "all") q = q.eq("input_mode", f.mode)
+
+  if (f.dateFrom && ISO_DAY.test(f.dateFrom)) q = q.gte("created_at", `${f.dateFrom}T00:00:00+07:00`)
+  if (f.dateTo && ISO_DAY.test(f.dateTo)) {
+    const [y, m, d] = f.dateTo.split("-").map(Number)
+    const next = new Date(Date.UTC(y, m - 1, d + 1)).toISOString().slice(0, 10)
+    q = q.lt("created_at", `${next}T00:00:00+07:00`)
+  }
+
+  const s = sanitizeFilterTerm(f.search)
+  if (s) q = q.or(`notes.ilike.%${s}%,province.ilike.%${s}%,amphur.ilike.%${s}%,district.ilike.%${s}%`)
+
+  // รหัสตัวอย่าง/เบอร์โทรเก็บอยู่ใน notes ("รหัสตัวอย่าง: S01 · 081-234-5678") ตามที่หน้าอัปโหลดบันทึก
+  const code = sanitizeFilterTerm(f.sampleCode)
+  if (code) q = q.ilike("notes", `%รหัสตัวอย่าง: ${code}%`)
+  // เบอร์โทร: เทียบเฉพาะตัวเลข ยอมให้มีขีด/เว้นวรรคคั่น (0812345678 ตรงกับ 081-234-5678)
+  const digits = (f.phone ?? "").replace(/\D/g, "").slice(0, 15)
+  if (digits) q = q.filter("notes", "imatch", digits.split("").join("[^0-9]?"))
+
+  for (const col of ["district", "amphur", "province"] as const) {
+    const t = sanitizeFilterTerm(f[col])
+    if (t) q = q.ilike(col, `%${t}%`)
+  }
+  return q as Q
+}
+
 /**
  * Throw if the current user is not an admin.
  * Use at the top of every admin server action.
@@ -93,11 +142,9 @@ export async function getAdminStats() {
 /**
  * List all analyses (admin sees all users' data).
  */
-export async function adminListAnalyses(opts: {
+export async function adminListAnalyses(opts: AnalysisFilters & {
   limit?: number
   offset?: number
-  status?: "all" | "completed" | "pending" | "failed"
-  search?: string
 } = {}) {
   await requirePermission("analyses", "view")
   const supabase = await createClient()
@@ -118,15 +165,8 @@ export async function adminListAnalyses(opts: {
     .order("created_at", { ascending: false })
     .range(offset, offset + limit - 1)
 
-  if (opts.status && opts.status !== "all") {
-    q = q.eq("status", opts.status)
-  }
-  const s = sanitizeFilterTerm(opts.search)
-  if (s) {
-    q = q.or(
-      `notes.ilike.%${s}%,province.ilike.%${s}%,amphur.ilike.%${s}%,district.ilike.%${s}%`
-    )
-  }
+  // กรองที่ฐานข้อมูลทั้งหมด (เดิมกรองประเภทในหน้าเว็บ ได้แค่ 20 แถวของหน้าที่เปิดอยู่)
+  q = applyAnalysisFilters(q, opts)
 
   const { data, error, count } = await q
   if (error) throw new Error(`adminListAnalyses: ${error.message}`)
@@ -614,10 +654,6 @@ export interface AnalysisExportRow {
   province: string | null
   latitude: number | null
   longitude: number | null
-  rec_n: number | null
-  rec_p2o5: number | null
-  rec_k2o: number | null
-  rec_unit: string | null
   notes: string | null
   owner_name: string | null
   owner_email: string | null
@@ -627,14 +663,29 @@ export interface AnalysisExportRow {
  * ทุกแถวที่ตรงตัวกรองเดียวกับหน้ารายการ (สถานะ / คำค้น / ประเภท) — ดึงทีละ 1,000 จนครบ
  * เติมชื่อ/อีเมลผู้ใช้ทีหลัง (analyses.user_id ชี้ auth.users จึง embed profiles ตรง ๆ ไม่ได้)
  */
-export async function adminExportAnalyses(opts: {
-  status?: "all" | "completed" | "pending" | "failed"
-  search?: string
-  mode?: "all" | "image_upload" | "manual_form"
-} = {}): Promise<AnalysisExportRow[]> {
+/**
+ * จำนวนรายการแต่ละประเภท ตามสถานะ/คำค้นที่เลือก — ตัวเลขบนปุ่มกรองประเภท
+ * นับทั้งระบบ (head count ไม่ดึงแถว) ไม่ใช่แค่หน้าที่เปิดอยู่
+ */
+export async function adminCountAnalysesByMode(
+  opts: AnalysisFilters = {}
+): Promise<{ all: number; image_upload: number; manual_form: number }> {
   await requirePermission("analyses", "view")
   const supabase = await createClient()
-  const s = sanitizeFilterTerm(opts.search)
+  const count = async (mode?: "image_upload" | "manual_form") => {
+    let q = applyAnalysisFilters(supabase.from("analyses").select("id", { count: "exact", head: true }), opts, { mode: false })
+    if (mode) q = q.eq("input_mode", mode)
+    const { count: n, error } = await q
+    if (error) throw new Error(`adminCountAnalysesByMode: ${error.message}`)
+    return n ?? 0
+  }
+  const [all, image_upload, manual_form] = await Promise.all([count(), count("image_upload"), count("manual_form")])
+  return { all, image_upload, manual_form }
+}
+
+export async function adminExportAnalyses(opts: AnalysisFilters = {}): Promise<AnalysisExportRow[]> {
+  await requirePermission("analyses", "view")
+  const supabase = await createClient()
 
   type Raw = {
     id: string; created_at: string; input_mode: string; status: string; user_id: string
@@ -642,7 +693,6 @@ export async function adminExportAnalyses(opts: {
     district: string | null; amphur: string | null; province: string | null
     latitude: number | null; longitude: number | null; notes: string | null
     crops: { name: string; crop_types: { name: string } | null } | null
-    analysis_results: { recommended_n: number | null; recommended_p2o5: number | null; recommended_k2o: number | null; unit: string | null }[] | null
   }
   const raw: Raw[] = []
   for (let from = 0; ; from += 1000) {
@@ -652,14 +702,11 @@ export async function adminExportAnalyses(opts: {
         `id, created_at, input_mode, status, user_id,
          om_value, p_value, k_value, ph_value,
          district, amphur, province, latitude, longitude, notes,
-         crops(name, crop_types(name)),
-         analysis_results(recommended_n, recommended_p2o5, recommended_k2o, unit)`
+         crops(name, crop_types(name))`
       )
       .order("created_at", { ascending: false })
       .range(from, from + 999)
-    if (opts.status && opts.status !== "all") q = q.eq("status", opts.status)
-    if (opts.mode && opts.mode !== "all") q = q.eq("input_mode", opts.mode)
-    if (s) q = q.or(`notes.ilike.%${s}%,province.ilike.%${s}%,amphur.ilike.%${s}%,district.ilike.%${s}%`)
+    q = applyAnalysisFilters(q, opts)
     const { data, error } = await q
     if (error) throw new Error(`adminExportAnalyses: ${error.message}`)
     raw.push(...((data ?? []) as unknown as Raw[]))
@@ -680,7 +727,6 @@ export async function adminExportAnalyses(opts: {
   const num = (v: unknown) => (v == null || v === "" ? null : Number(v))
   return raw.map((r) => {
     const p = people.get(r.user_id)
-    const rec = r.analysis_results?.[0] ?? null
     return {
       id: r.id,
       created_at: r.created_at,
@@ -697,10 +743,6 @@ export async function adminExportAnalyses(opts: {
       province: r.province,
       latitude: num(r.latitude),
       longitude: num(r.longitude),
-      rec_n: num(rec?.recommended_n),
-      rec_p2o5: num(rec?.recommended_p2o5),
-      rec_k2o: num(rec?.recommended_k2o),
-      rec_unit: rec?.unit ?? null,
       notes: r.notes,
       owner_name: p?.full_name?.trim() || p?.nickname?.trim() || null,
       owner_email: p?.email ?? null,

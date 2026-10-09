@@ -1,18 +1,14 @@
 // analysesXlsx.ts — แผ่นงาน Excel "ประวัติการวิเคราะห์" (แถวละ 1 ผลวิเคราะห์) สำหรับแอดมิน
 //
 // ฟังก์ชันล้วน หน้าแอดมินเอาไปเขียนไฟล์ด้วย write-excel-file
-// ค่าดิน/พิกัด/ค่าแนะนำเป็นตัวเลขจริง วันที่เป็นวันเวลาของ Excel (เวลาไทย) กรอง/เรียงได้
+// ค่าดิน/พิกัดเป็นตัวเลขจริง วันที่เป็นวันเวลาของ Excel (เวลาไทย) กรอง/เรียงได้
 
 import type { Cell, CellObject, SheetData } from "write-excel-file/browser"
 import type { AnalysisExportRow } from "@/lib/supabase/admin"
 import { classify, LEVEL_LABEL_TH, type Nutrient } from "@/lib/soil/grid"
-import { unitTh } from "@/lib/fertilizer/unit"
+import { INPUT_MODE_LABEL } from "@/lib/analysis/inputMode"
 
-const MODE_TH: Record<string, string> = {
-  image_upload: "วิเคราะห์ด้วย AI",
-  manual_form: "บันทึกผลด้วยตนเอง",
-  map_pin: "ปักหมุดแผนที่",
-}
+const MODE_TH: Record<string, string> = INPUT_MODE_LABEL
 const STATUS_TH: Record<string, string> = {
   completed: "เสร็จสิ้น",
   pending: "รอดำเนินการ",
@@ -22,14 +18,12 @@ const STATUS_TH: Record<string, string> = {
 const HEADERS = [
   "ลำดับ", "วันที่บันทึก", "ชื่อผู้ใช้", "อีเมล", "ประเภท", "สถานะ", "พืช", "ประเภทพืช",
   "OM (%)", "ระดับ OM", "P (มก./กก.)", "ระดับ P", "K (มก./กก.)", "ระดับ K", "pH",
-  "ตำบล", "อำเภอ", "จังหวัด", "ละติจูด", "ลองจิจูด",
-  "N ที่แนะนำ", "P₂O₅ ที่แนะนำ", "K₂O ที่แนะนำ", "หน่วยค่าแนะนำ", "หมายเหตุ",
+  "ตำบล", "อำเภอ", "จังหวัด", "ละติจูด", "ลองจิจูด", "หมายเหตุ",
 ]
 export const ANALYSES_XLSX_COLUMNS = [
   6, 16, 22, 26, 17, 12, 14, 10,
   9, 10, 11, 10, 11, 10, 7,
-  14, 14, 14, 11, 11,
-  11, 12, 12, 14, 40,
+  14, 14, 14, 11, 11, 40,
 ].map((width) => ({ width }))
 export const ANALYSES_XLSX_STICKY_ROWS = 4
 
@@ -88,8 +82,6 @@ export function buildAnalysesSheet(
       number(r.ph),
       text(r.district), text(r.amphur), text(r.province),
       number(r.latitude, "0.000000"), number(r.longitude, "0.000000"),
-      number(r.rec_n), number(r.rec_p2o5), number(r.rec_k2o),
-      text(r.rec_unit ? unitTh(r.rec_unit) : ""),
       cell({ value: r.notes ?? "", wrap: true }),
     ])
   })

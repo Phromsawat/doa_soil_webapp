@@ -2,6 +2,7 @@ import Link from "next/link"
 import { notFound } from "next/navigation"
 import { adminGetAnalysis } from "@/lib/supabase/admin"
 import { unitTh } from "@/lib/fertilizer/unit"
+import { inputModeLabel } from "@/lib/analysis/inputMode"
 import { ArrowLeft, MapPin, User, Calendar, FileText } from "lucide-react"
 
 export const dynamic = "force-dynamic"
@@ -73,7 +74,7 @@ export default async function AdminAnalysisDetailPage({ params }: PageProps) {
           </div>
           <div className="space-y-1">
             <p><span className="text-xs text-gray-500">พืช:</span> <span className="font-bold">{cropName}</span></p>
-            <p><span className="text-xs text-gray-500">โหมด:</span> <span className="font-medium">{record.input_mode === "image_upload" ? "อัปโหลดรูป" : "กรอกค่าเอง"}</span></p>
+            <p><span className="text-xs text-gray-500">โหมด:</span> <span className="font-medium">{inputModeLabel(record.input_mode)}</span></p>
             {record.notes && (
               <p className="text-xs text-gray-600 italic mt-2">📝 {record.notes}</p>
             )}
