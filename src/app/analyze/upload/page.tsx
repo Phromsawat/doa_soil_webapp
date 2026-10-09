@@ -516,11 +516,6 @@ export default function AnalyzeUpload() {
                 "ทำนายผล"
               )}
             </button>
-            {phase === "predicting" && (
-              <p className="text-center text-xs text-gray-500">
-                ระบบกำลังตรวจรูปและทำนายค่า ถ้าระบบเพิ่งเริ่มทำงานอาจใช้เวลา 1–2 นาที
-              </p>
-            )}
           </div>
         )}
 

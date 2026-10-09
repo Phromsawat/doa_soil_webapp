@@ -16,6 +16,7 @@ import {
 import { createClient } from "@/lib/supabase/client"
 import CropPlanEditor from "@/components/admin/CropPlanEditor"
 import CropImageField from "@/components/admin/CropImageField"
+import { unitTh } from "@/lib/fertilizer/unit"
 
 type CropType = { id: string; name: string; unit_basis: string }
 
@@ -406,8 +407,9 @@ export default function EditCropPage({ params }: PageProps) {
                   onChange={(e) => setNewRec({ ...newRec, target_unit: e.target.value })}
                   className="w-full h-9 px-3 rounded-lg bg-gray-50 border border-gray-100 text-xs focus:outline-none focus:ring-2 focus:ring-[#1A4D2E]/20"
                 >
-                  <option value="g/tree/year">g/tree/year</option>
-                  <option value="kg/rai">kg/rai</option>
+                  {/* ค่าที่เก็บยังเป็นอังกฤษ (ตรรกะคำนวณใช้อยู่) — แสดงเป็นไทย */}
+                  <option value="g/tree/year">{unitTh("g/tree/year")}</option>
+                  <option value="kg/rai">{unitTh("kg/rai")}</option>
                 </select>
               </div>
             </div>
@@ -515,8 +517,8 @@ function RecommendationRow({
           onChange={(e) => update("target_unit", e.target.value)}
           className="h-7 px-1.5 rounded bg-transparent text-xs focus:bg-gray-50"
         >
-          <option value="g/tree/year">g/tree</option>
-          <option value="kg/rai">kg/rai</option>
+          <option value="g/tree/year">{unitTh("g/tree/year")}</option>
+          <option value="kg/rai">{unitTh("kg/rai")}</option>
         </select>
       </td>
       <td className="px-2 py-2">
