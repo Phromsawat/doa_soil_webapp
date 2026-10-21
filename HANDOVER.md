@@ -79,20 +79,28 @@ npm run build && npm start     # ทดสอบแบบ production
 
 ## 5. ฐานข้อมูล (Supabase)
 
-### 5.1 กู้คืนจากไฟล์ dump (วิธีที่แนะนำ — ได้ครบเหมือนระบบจริง)
+### 5.1 กู้คืนจากไฟล์ dump (วิธีที่แนะนำ)
 
-ไฟล์ dump สร้างด้วย `scripts/export_database.ps1` (Supabase CLI) ได้ 3 ไฟล์ `roles.sql`, `schema.sql`, `data.sql`
-กู้คืนเข้าโปรเจกต์ Supabase ใหม่ (หรือ Postgres ที่มี PostGIS) ตามวิธีของ Supabase:
+ไฟล์ dump สร้างด้วย `scripts/export_database.ps1` (ต้องเปิด Docker Desktop) มี 2 แบบ
+
+| แบบ | ไฟล์ | มีอะไร |
+|---|---|---|
+| ค่าตั้งต้น (ส่งมอบปกติ) | `roles.sql`, `schema.sql`, `data_reference.sql` | โครงสร้างทุกตาราง + ข้อมูลอ้างอิงล่าสุด (พืช ปุ๋ย ตารางคำแนะนำ ขอบเขตพื้นที่ ตัวอย่างดิน เนื้อหาหน้าเว็บ บทบาท/สิทธิ์ การตั้งค่า bucket) — **ไม่มีข้อมูลผู้ใช้** |
+| `-WithUserData` (ต้องได้รับอนุมัติ) | `roles.sql`, `schema.sql`, `data_full.sql` | ทุกอย่างรวมบัญชีผู้ใช้ ผลวิเคราะห์ สมุดบัญชี — มีข้อมูลส่วนบุคคล |
+
+กู้คืนเข้าโปรเจกต์ Supabase ใหม่ (หรือ Postgres ที่มี PostGIS) ตามวิธีของ Supabase
+(เปลี่ยน `data_reference.sql` เป็น `data_full.sql` ถ้าใช้แบบรวมข้อมูลผู้ใช้):
 
 ```bash
 psql --single-transaction --variable ON_ERROR_STOP=1 \
   --file roles.sql --file schema.sql \
   --command 'SET session_replication_role = replica' \
-  --file data.sql \
+  --file data_reference.sql \
   --dbname "postgresql://postgres.<new-ref>:<password>@aws-0-<region>.pooler.supabase.com:5432/postgres"
 ```
 
-`data.sql` มีบัญชีผู้ใช้ (auth) และข้อมูลส่วนบุคคล — ดูหัวข้อ 8
+แบบไม่มีข้อมูลผู้ใช้: ระบบว่างพร้อมใช้ — สมัครบัญชีใหม่แล้วตั้งเป็นแอดมินตามข้อ 5.4
+ถ้า policy ของ Storage ไม่มาด้วย (บางเวอร์ชันของ CLI ไม่ dump schema `storage`) ให้รันส่วน policy ใน migration 026, 034, 039, 041
 
 ### 5.2 สร้างใหม่จาก migrations (ได้โครงสร้าง + ข้อมูลอ้างอิงส่วนใหญ่ ไม่มีข้อมูลผู้ใช้)
 
@@ -159,7 +167,7 @@ vercel --prod --yes   # build + deploy production
 | สคริปต์ | ทำอะไร |
 |---|---|
 | `build_soil_points.py` | ทำความสะอาด predict log ระบบเก่า → `043_soil_samples_data.sql` + `src/lib/soil/subdistrictCenters.json` |
-| `export_database.ps1` | dump ฐานข้อมูลทั้งหมด (roles/schema/data) |
+| `export_database.ps1` | dump ฐานข้อมูล — ค่าตั้งต้นไม่มีข้อมูลผู้ใช้, `-WithUserData` รวมทั้งหมด |
 | `export_storage.mjs` | ดาวน์โหลดไฟล์ทุก bucket |
 | `import_boundaries.js` | นำเข้าขอบเขตการปกครองเข้าฐานข้อมูล |
 | `extract_soil_grid.py` | สร้าง raster/grid ค่าดินรุ่นเดิม |
