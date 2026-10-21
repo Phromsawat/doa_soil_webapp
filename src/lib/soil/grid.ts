@@ -96,6 +96,9 @@ export const NUTRIENT_META: Record<
 
 export const NUTRIENTS: Nutrient[] = ["om", "p", "k"]
 
+// "ดึงค่าจากแผนที่" ใช้จุดตัวอย่าง (soil_points) ที่ใกล้ที่สุดได้ไม่เกินระยะนี้ — ไกลกว่านี้ถือว่าไม่มีข้อมูล
+export const NEAREST_MAX_KM = 30
+
 // layer ทั้งหมดที่แสดงบนแผนที่ (รวม sum เป็นแท็บที่ 4)
 export const LAYERS: Layer[] = ["om", "p", "k", "sum"]
 

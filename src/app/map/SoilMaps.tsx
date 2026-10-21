@@ -1,10 +1,10 @@
 "use client"
 
-import { useCallback, useEffect, useRef, useState } from "react"
+import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import {
   MapContainer,
   TileLayer,
-  ImageOverlay,
+  CircleMarker,
   Marker,
   useMap,
   useMapEvents,
@@ -60,13 +60,15 @@ import {
   NUTRIENT_META,
   LEVEL_COLORS,
   LEVEL_LABEL_TH,
+  NEAREST_MAX_KM,
   SOIL_BOUNDS,
   classify,
   soilScore,
   type Layer,
   type SoilLevel,
 } from "@/lib/soil/grid"
-import { getSoilAtPoint, type SoilAtPoint } from "@/lib/supabase/soilGrid"
+// แผนที่แสดงเป็นจุดรายตำบล (soil_points) — raster เดิม (soil_grid / public/soil-maps) ยังเก็บไว้แต่ไม่แสดงแล้ว
+import { getNearestSoil, listSoilPoints, type NearestSoil, type SoilPoint } from "@/lib/supabase/soilPoints"
 import { createClient } from "@/lib/supabase/client"
 
 type BoundaryId = "provinces" | "districts" | "subdistricts"
@@ -296,10 +298,28 @@ function LevelBadge({ level }: { level: SoilLevel | null }) {
   )
 }
 
+// เส้นขอบจุด — เข้มกว่าสีพื้น (พาสเทล) ให้เห็นชัดบนแผนที่ฐานสีอ่อน
+const POINT_STROKE: Record<SoilLevel, string> = {
+  low: "#C9574C",
+  medium: "#D4913A",
+  high: "#5E9E57",
+}
+
+function pointLevel(pt: SoilPoint, layer: Layer): SoilLevel | null {
+  if (layer === "sum") {
+    const score = soilScore(pt.om, pt.p, pt.k)
+    return score == null ? null : classify("sum", score)
+  }
+  return classify(layer, pt[layer])
+}
+
 export default function SoilMaps() {
   const [active, setActive] = useState<Layer | null>("om")
   const [picked, setPicked] = useState<{ lat: number; lng: number } | null>(null)
-  const [result, setResult] = useState<SoilAtPoint | null>(null)
+  const [result, setResult] = useState<NearestSoil | null>(null)
+  const [points, setPoints] = useState<SoilPoint[]>([])
+  // จุด 700+ จุด วาดบน canvas เร็วกว่า SVG มาก
+  const pointRenderer = useMemo(() => L.canvas({ padding: 0.5 }), [])
   const [loading, setLoading] = useState(false)
   const [outside, setOutside] = useState(false)
   const [errored, setErrored] = useState(false)
@@ -321,6 +341,10 @@ export default function SoilMaps() {
   const mapRef = useRef<L.Map | null>(null)
   const searchRequestRef = useRef(0)
   const handleMapReady = useCallback((map: L.Map) => { setMapInstance(map); mapRef.current = map }, [])
+
+  useEffect(() => {
+    listSoilPoints().then(setPoints).catch(() => setPoints([]))
+  }, [])
 
   function getBoundaryOpacity(_id: BoundaryId) { return boundaryOpacity }
   function updateBoundaryOpacity(val: number) {
@@ -478,7 +502,7 @@ export default function SoilMaps() {
     setOutside(false)
     setErrored(false)
     try {
-      const data = await getSoilAtPoint(lat, lng)
+      const data = await getNearestSoil(lat, lng)
       if (!data) {
         setResult(null)
         setOutside(true)
@@ -495,9 +519,7 @@ export default function SoilMaps() {
 
   return (
     <div className="relative h-[calc(100dvh-4rem)] w-full overflow-hidden">
-      {/* ให้ overlay สีกลืนกับ basemap แทนที่จะลอยทับ */}
       <style>{`
-        .leaflet-image-layer.soil-overlay{mix-blend-mode:multiply}
         .leaflet-tooltip.boundary-name-label{
           background:transparent;
           border:0;
@@ -525,15 +547,28 @@ export default function SoilMaps() {
           url={currentBase.url}
           {...(currentBase.subdomains ? { subdomains: currentBase.subdomains } : {})}
         />
-        {active && meta && (
-          <ImageOverlay
-            key={active}
-            url={meta.overlay}
-            bounds={SOIL_BOUNDS}
-            opacity={soilOpacity}
-            className="soil-overlay"
-          />
-        )}
+        {active &&
+          points.map((pt) => {
+            const lv = pointLevel(pt, active)
+            if (!lv) return null // ตำบลนี้ไม่มีข้อมูลของชั้นที่เลือก
+            return (
+              <CircleMarker
+                key={`${active}-${pt.id}`}
+                center={[pt.lat, pt.lng]}
+                radius={6}
+                renderer={pointRenderer}
+                bubblingMouseEvents={false}
+                pathOptions={{
+                  color: POINT_STROKE[lv],
+                  weight: 1,
+                  opacity: Math.min(1, soilOpacity + 0.15),
+                  fillColor: LEVEL_COLORS[lv],
+                  fillOpacity: soilOpacity,
+                }}
+                eventHandlers={{ click: () => handlePick(pt.lat, pt.lng) }}
+              />
+            )
+          })}
         {highlightFeature && <HighlightLayer key={JSON.stringify(highlightFeature.id ?? highlightFeature.properties)} feature={highlightFeature} />}
         {searchBoundaryData && (
           <BoundaryLayer
@@ -816,6 +851,7 @@ export default function SoilMaps() {
           <div className="mb-1 text-center">
             <div className="font-semibold text-gray-700">ระดับ ({meta.short})</div>
             <div className="font-semibold text-gray-700">{meta.label}</div>
+            <div className="text-[10px] text-gray-400">1 จุด = 1 ตำบล</div>
           </div>
           {(["high", "medium", "low"] as SoilLevel[]).map((lv) => (
             <div key={lv} className="flex items-center gap-2 py-0.5">
@@ -843,7 +879,7 @@ export default function SoilMaps() {
               </div>
               {!loading && outside && (
                 <p className="py-1 text-center text-sm text-red-400">
-                  จุดนี้อยู่นอกพื้นที่ข้อมูล (นอกประเทศไทย/ทะเล)
+                  ไม่มีจุดตัวอย่างดินในรัศมี {NEAREST_MAX_KM} กม. จากจุดนี้
                 </p>
               )}
               {!loading && errored && (
@@ -866,6 +902,7 @@ export default function SoilMaps() {
                     const m = NUTRIENT_META[n]
                     const val = result[n]
                     const lv = classify(n, val)
+                    const src = result.sources[n]
                     return (
                       <div
                         key={n}
@@ -882,10 +919,21 @@ export default function SoilMaps() {
                           {val == null ? "—" : val.toFixed(2)}
                         </div>
                         <LevelBadge level={lv} />
+                        <div
+                          className="mt-1 truncate text-[10px] leading-tight text-gray-400"
+                          title={src ? `ต.${src.subdistrict} อ.${src.district} จ.${src.province} · ${src.samples} ตัวอย่าง` : undefined}
+                        >
+                          {src
+                            ? `ต.${src.subdistrict}${src.distanceKm >= 0.1 ? ` · ${src.distanceKm} กม.` : ""}`
+                            : `ไม่มีข้อมูลใน ${NEAREST_MAX_KM} กม.`}
+                        </div>
                       </div>
                     )
                   })}
                   </div>
+                  <p className="mt-2 text-center text-[10px] text-gray-400">
+                    ค่ากลางของตัวอย่างดินในตำบลที่ใกล้ที่สุด (ไม่เกิน {NEAREST_MAX_KM} กม.) แยกทีละธาตุ
+                  </p>
                 </div>
               )}
         </div>

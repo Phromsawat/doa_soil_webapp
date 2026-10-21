@@ -32,7 +32,8 @@ import CropNote from "@/components/fertilizer/CropNote"
 import LeafStandardTable from "@/components/fertilizer/LeafStandardTable"
 import SoilRecommendationTable from "@/components/fertilizer/SoilRecommendationTable"
 import ImportPanel, { type FilledRow } from "@/components/analyze/ImportPanel"
-import { getSoilAtPoint } from "@/lib/supabase/soilGrid"
+import { getNearestSoil } from "@/lib/supabase/soilPoints"
+import { NEAREST_MAX_KM } from "@/lib/soil/grid"
 import type { PickedArea } from "@/app/analyze/map/MapPicker"
 
 // Leaflet ใช้ได้เฉพาะฝั่งเบราว์เซอร์ — โหลดตอนเปิดหน้าต่างแผนที่เท่านั้น
@@ -53,7 +54,7 @@ interface MapPick {
   values: { om: string; p: string; k: string }
 }
 
-// ค่าจาก soil_grid เป็นทศนิยมยาว — ตัดเหลือ 2 ตำแหน่ง (เหมือนหน้าแผนที่)
+// ค่าดินเป็นทศนิยมยาว — ตัดเหลือ 2 ตำแหน่ง (เหมือนหน้าแผนที่)
 const fmtSoil = (v: number | null) => (v == null ? "" : String(Number(v.toFixed(2))))
 
 /** ช่องกรอกตัวเลข + ป้ายระดับ (ต่ำ/ปานกลาง/สูง) */
@@ -298,7 +299,7 @@ export default function AnalyzeForm() {
         fromImage?.notes ?? null, // รหัสตัวอย่าง/เบอร์โทรจากหน้าอัปโหลดรูป
         crop ? `พืช: ${crop.name}` : null,
         usingMapValues && mapPick
-          ? `ค่าดินประมาณจากแผนที่ ณ ${mapPick.lat.toFixed(5)}, ${mapPick.lng.toFixed(5)}`
+          ? `ค่าดินจากจุดตัวอย่างใกล้เคียง (ไม่เกิน ${NEAREST_MAX_KM} กม.) ณ ${mapPick.lat.toFixed(5)}, ${mapPick.lng.toFixed(5)}`
           : null,
       ].filter(Boolean).join(" · ")
       const analysisId = await saveManualAnalysis({
@@ -348,7 +349,8 @@ export default function AnalyzeForm() {
     invalidate()
   }
 
-  // ปักหมุดแล้ว -> ดึง OM/P/K ของจุดนั้นจากแผนที่ดิน มาเติมในช่อง (ผู้ใช้แก้ต่อได้)
+  // ปักหมุดแล้ว -> ดึง OM/P/K จากจุดตัวอย่างดิน (รายตำบล) ที่ใกล้ที่สุด แยกทีละธาตุ ภายใน 30 กม.
+  // มาเติมในช่อง (ผู้ใช้แก้ต่อได้)
   async function handleMapConfirm(lat: number, lng: number, area?: PickedArea) {
     setMapOpen(false)
     setMapError(null)
@@ -356,7 +358,7 @@ export default function AnalyzeForm() {
     try {
       // MapPicker หาชื่อพื้นที่แบบหน่วงเวลา — ถ้ากดยืนยันเร็วกว่านั้น area จะยังว่าง จึงถามซ้ำที่นี่
       const [soil, place] = await Promise.all([
-        getSoilAtPoint(lat, lng),
+        getNearestSoil(lat, lng),
         area ??
           fetch(`/api/reverse-geocode?lat=${lat}&lng=${lng}`)
             .then((r) => (r.ok ? (r.json() as Promise<PickedArea>) : null))
@@ -364,8 +366,14 @@ export default function AnalyzeForm() {
       ])
       area = place ?? undefined
       if (!soil || (soil.om == null && soil.p == null && soil.k == null)) {
-        setMapError("จุดนี้อยู่นอกพื้นที่ของแผนที่ดิน ลองปักหมุดบนพื้นที่เกษตรในประเทศไทย")
+        setMapError(`ไม่มีจุดตัวอย่างดินในรัศมี ${NEAREST_MAX_KM} กม. จากจุดนี้ — กรอกค่าเองได้`)
         return
+      }
+      const missing = ([["OM", soil.om], ["P", soil.p], ["K", soil.k]] as const)
+        .filter(([, v]) => v == null)
+        .map(([name]) => name)
+      if (missing.length) {
+        setMapError(`ไม่มีข้อมูล ${missing.join(", ")} ในรัศมี ${NEAREST_MAX_KM} กม. — กรอกค่าเองได้`)
       }
       const values = { om: fmtSoil(soil.om), p: fmtSoil(soil.p), k: fmtSoil(soil.k) }
       setOm(values.om)
