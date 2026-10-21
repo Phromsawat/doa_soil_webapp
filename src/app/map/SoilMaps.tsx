@@ -60,15 +60,15 @@ import {
   NUTRIENT_META,
   LEVEL_COLORS,
   LEVEL_LABEL_TH,
-  NEAREST_MAX_KM,
   SOIL_BOUNDS,
   classify,
   soilScore,
   type Layer,
   type SoilLevel,
 } from "@/lib/soil/grid"
-// แผนที่แสดงเป็นจุดรายตำบล (soil_points) — raster เดิม (soil_grid / public/soil-maps) ยังเก็บไว้แต่ไม่แสดงแล้ว
-import { getNearestSoil, listSoilPoints, type NearestSoil, type SoilPoint } from "@/lib/supabase/soilPoints"
+// แผนที่แสดงเป็นจุดรายตำบล — raster เดิม (soil_grid / public/soil-maps) ยังเก็บไว้แต่ไม่แสดงแล้ว
+// กดที่จุดเพื่อดูค่า (กดที่ว่างไม่ขึ้นค่า) — การดึงค่าจากจุดใกล้สุดใช้ในหน้าคำนวณปุ๋ยเท่านั้น
+import { listSoilPoints, type SoilPoint } from "@/lib/supabase/soilPoints"
 import { createClient } from "@/lib/supabase/client"
 
 type BoundaryId = "provinces" | "districts" | "subdistricts"
@@ -171,6 +171,8 @@ function HighlightLayer({ feature }: { feature: Feature }) {
   const map = useMap()
   useEffect(() => {
     const layer = L.geoJSON(feature, {
+      // ไม่รับคลิก — ให้คลิกทะลุไปถึงจุดค่าดินที่อยู่ใต้กรอบ
+      interactive: false,
       style: {
         color: "#3b82f6",
         weight: 3,
@@ -199,6 +201,7 @@ function BoundaryLayer({ data, color, weight, opacity, labelProperty, smoothFact
   useEffect(() => {
     const labeledNames = new Set<string>()
     const layer = L.geoJSON(data, {
+      interactive: false, // เส้นขอบเขตไม่รับคลิก — คลิกจุดค่าดินที่อยู่ใต้เส้นได้ (ป้ายชื่อยังแสดง)
       style: {
         color,
         weight,
@@ -315,14 +318,12 @@ function pointLevel(pt: SoilPoint, layer: Layer): SoilLevel | null {
 
 export default function SoilMaps() {
   const [active, setActive] = useState<Layer | null>("om")
-  const [picked, setPicked] = useState<{ lat: number; lng: number } | null>(null)
-  const [result, setResult] = useState<NearestSoil | null>(null)
+  // จุดที่กดเลือก (การ์ดข้อมูลด้านล่าง) และตำแหน่งของฉัน (หมุด)
+  const [selected, setSelected] = useState<SoilPoint | null>(null)
+  const [myLocation, setMyLocation] = useState<{ lat: number; lng: number } | null>(null)
   const [points, setPoints] = useState<SoilPoint[]>([])
   // จุด 700+ จุด วาดบน canvas เร็วกว่า SVG มาก
   const pointRenderer = useMemo(() => L.canvas({ padding: 0.5 }), [])
-  const [loading, setLoading] = useState(false)
-  const [outside, setOutside] = useState(false)
-  const [errored, setErrored] = useState(false)
   const [mapInstance, setMapInstance] = useState<L.Map | null>(null)
   const [activeBase, setActiveBase] = useState<BaseMapId>("osm")
   const [showBasePanel, setShowBasePanel] = useState(false)
@@ -398,10 +399,12 @@ export default function SoilMaps() {
     const [minLng, minLat, maxLng, maxLat] = entry.b
     mapRef.current?.fitBounds([[minLat, minLng], [maxLat, maxLng]], { padding: [40, 40], maxZoom: 14 })
 
-    // ดึงค่าดินที่จุดกลางพื้นที่
-    const centerLat = (minLat + maxLat) / 2
-    const centerLng = (minLng + maxLng) / 2
-    handlePick(centerLat, centerLng)
+    // ค้นหาตำบลที่มีจุดข้อมูล → เลือกจุดนั้นให้เลย (ที่อื่นไม่ขึ้นค่า เพราะไม่ใช่จุดตัวอย่าง)
+    setSelected(
+      entry.t === "sub"
+        ? points.find((pt) => pt.subdistrict === entry.nth && pt.district === entry.dth && pt.province === entry.pth) ?? null
+        : null
+    )
 
     const boundaryId = FILE_TO_BOUNDARY_ID[entry.f]
     let geojson = boundaryData[boundaryId]
@@ -481,7 +484,7 @@ export default function SoilMaps() {
   const currentBase = BASE_MAPS.find((b) => b.id === activeBase)!
 
   const meta = active ? NUTRIENT_META[active] : null
-  const score = result ? soilScore(result.om, result.p, result.k) : null
+  const score = selected ? soilScore(selected.om, selected.p, selected.k) : null
   const sumLevel = score != null ? classify("sum", score) : null
 
   function goToMyLocation() {
@@ -489,32 +492,11 @@ export default function SoilMaps() {
     navigator.geolocation.getCurrentPosition(
       (pos) => {
         const { latitude: lat, longitude: lng } = pos.coords
-        mapInstance.setView([lat, lng], 14)
-        handlePick(lat, lng)
+        mapInstance.setView([lat, lng], 12)
+        setMyLocation({ lat, lng })
       },
       () => {}
     )
-  }
-
-  async function handlePick(lat: number, lng: number) {
-    setPicked({ lat, lng })
-    setLoading(true)
-    setOutside(false)
-    setErrored(false)
-    try {
-      const data = await getNearestSoil(lat, lng)
-      if (!data) {
-        setResult(null)
-        setOutside(true)
-      } else {
-        setResult(data)
-      }
-    } catch {
-      setResult(null)
-      setErrored(true)
-    } finally {
-      setLoading(false)
-    }
   }
 
   return (
@@ -565,10 +547,19 @@ export default function SoilMaps() {
                   fillColor: LEVEL_COLORS[lv],
                   fillOpacity: soilOpacity,
                 }}
-                eventHandlers={{ click: () => handlePick(pt.lat, pt.lng) }}
+                eventHandlers={{ click: () => setSelected(pt) }}
               />
             )
           })}
+        {selected && (
+          <CircleMarker
+            key={`selected-${selected.id}`}
+            center={[selected.lat, selected.lng]}
+            radius={10}
+            interactive={false}
+            pathOptions={{ color: "#1A4D2E", weight: 2.5, fill: false }}
+          />
+        )}
         {highlightFeature && <HighlightLayer key={JSON.stringify(highlightFeature.id ?? highlightFeature.properties)} feature={highlightFeature} />}
         {searchBoundaryData && (
           <BoundaryLayer
@@ -609,8 +600,9 @@ export default function SoilMaps() {
           iconSize: [80, 14],
           iconAnchor: [40, 7],
         })} interactive={false} />
-        {picked && <Marker position={[picked.lat, picked.lng]} icon={pinIcon} />}
-        <ClickHandler onPick={handlePick} />
+        {myLocation && <Marker position={[myLocation.lat, myLocation.lng]} icon={pinIcon} />}
+        {/* กดที่ว่างบนแผนที่ = ปิดการ์ดจุดที่เลือก */}
+        <ClickHandler onPick={() => setSelected(null)} />
         <FitThailand />
         <MapRef onReady={handleMapReady} />
         <MapSizeInvalidator />
@@ -862,33 +854,21 @@ export default function SoilMaps() {
         </div>
       )}
 
-      {/* การ์ดผลลัพธ์ — bottom sheet ลอย (มือถือ: ยกเหนือ BottomNav) */}
-      {picked && (
+      {/* การ์ดข้อมูลจุดที่เลือก — bottom sheet ลอย (มือถือ: ยกเหนือ BottomNav) — ขึ้นเฉพาะตอนกดที่จุด */}
+      {selected && (
       <div className="pointer-events-none absolute inset-x-0 bottom-[58px] z-[1001] flex justify-center px-3 lg:bottom-4">
         <div className="pointer-events-auto w-full max-w-[26rem] rounded-2xl bg-white/90 p-3 shadow-xl ring-1 ring-black/5 backdrop-blur">
-              <div className="relative mb-2 text-center text-xs text-gray-500">
-                พิกัด {picked.lat.toFixed(4)}, {picked.lng.toFixed(4)}
-                {loading && <span className="ml-2">กำลังดึงข้อมูล…</span>}
+              <div className="relative mb-2 px-6 text-center text-xs text-gray-500">
+                ต.{selected.subdistrict} อ.{selected.district} จ.{selected.province}
                 <button
-                  onClick={() => { setPicked(null); setResult(null); setOutside(false); setErrored(false) }}
+                  onClick={() => setSelected(null)}
                   className="absolute right-0 top-1/2 -translate-y-1/2 w-5 h-5 flex items-center justify-center rounded-full text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors"
                   aria-label="ปิด"
                 >
                   <X className="w-3.5 h-3.5" />
                 </button>
               </div>
-              {!loading && outside && (
-                <p className="py-1 text-center text-sm text-red-400">
-                  ไม่มีจุดตัวอย่างดินในรัศมี {NEAREST_MAX_KM} กม. จากจุดนี้
-                </p>
-              )}
-              {!loading && errored && (
-                <p className="py-1 text-center text-sm text-red-500">
-                  ดึงข้อมูลไม่สำเร็จ
-                </p>
-              )}
-              {!loading && result && (
-                <div className="space-y-0">
+              <div className="space-y-0">
                   <div
                     className={`mb-2 flex items-center justify-between rounded-xl border px-3 py-2 ${
                       active === "sum" ? "border-[#1A4D2E] bg-white/60" : "border-gray-100 bg-white/60"
@@ -900,9 +880,9 @@ export default function SoilMaps() {
                   <div className="grid grid-cols-3 gap-2">
                   {NUTRIENTS.map((n) => {
                     const m = NUTRIENT_META[n]
-                    const val = result[n]
+                    const val = selected[n]
                     const lv = classify(n, val)
-                    const src = result.sources[n]
+                    const count = selected[`${n}_n`]
                     return (
                       <div
                         key={n}
@@ -919,23 +899,14 @@ export default function SoilMaps() {
                           {val == null ? "—" : val.toFixed(2)}
                         </div>
                         <LevelBadge level={lv} />
-                        <div
-                          className="mt-1 truncate text-[10px] leading-tight text-gray-400"
-                          title={src ? `ต.${src.subdistrict} อ.${src.district} จ.${src.province} · ${src.samples} ตัวอย่าง` : undefined}
-                        >
-                          {src
-                            ? `ต.${src.subdistrict}${src.distanceKm >= 0.1 ? ` · ${src.distanceKm} กม.` : ""}`
-                            : `ไม่มีข้อมูลใน ${NEAREST_MAX_KM} กม.`}
+                        <div className="mt-1 text-[10px] leading-tight text-gray-400">
+                          {count > 0 ? `${count.toLocaleString()} ตัวอย่าง` : "ไม่มีข้อมูล"}
                         </div>
                       </div>
                     )
                   })}
                   </div>
-                  <p className="mt-2 text-center text-[10px] text-gray-400">
-                    ค่ากลางของตัวอย่างดินในตำบลที่ใกล้ที่สุด (ไม่เกิน {NEAREST_MAX_KM} กม.) แยกทีละธาตุ
-                  </p>
-                </div>
-              )}
+              </div>
         </div>
       </div>
       )}
