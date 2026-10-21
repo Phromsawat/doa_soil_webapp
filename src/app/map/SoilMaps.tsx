@@ -859,7 +859,11 @@ export default function SoilMaps() {
       <div className="pointer-events-none absolute inset-x-0 bottom-[58px] z-[1001] flex justify-center px-3 lg:bottom-4">
         <div className="pointer-events-auto w-full max-w-[26rem] rounded-2xl bg-white/90 p-3 shadow-xl ring-1 ring-black/5 backdrop-blur">
               <div className="relative mb-2 px-6 text-center text-xs text-gray-500">
-                ต.{selected.subdistrict} อ.{selected.district} จ.{selected.province}
+                <div>ต.{selected.subdistrict} อ.{selected.district} จ.{selected.province}</div>
+                {/* ข้อมูลเดิมไม่มีพิกัดจริง — จุดวางที่กลางตำบล */}
+                <div className="text-[11px] text-gray-400">
+                  พิกัดกลางตำบล {selected.lat.toFixed(5)}, {selected.lng.toFixed(5)}
+                </div>
                 <button
                   onClick={() => setSelected(null)}
                   className="absolute right-0 top-1/2 -translate-y-1/2 w-5 h-5 flex items-center justify-center rounded-full text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors"
@@ -882,7 +886,6 @@ export default function SoilMaps() {
                     const m = NUTRIENT_META[n]
                     const val = selected[n]
                     const lv = classify(n, val)
-                    const count = selected[`${n}_n`]
                     return (
                       <div
                         key={n}
@@ -899,9 +902,6 @@ export default function SoilMaps() {
                           {val == null ? "—" : val.toFixed(2)}
                         </div>
                         <LevelBadge level={lv} />
-                        <div className="mt-1 text-[10px] leading-tight text-gray-400">
-                          {count > 0 ? `${count.toLocaleString()} ตัวอย่าง` : "ไม่มีข้อมูล"}
-                        </div>
                       </div>
                     )
                   })}
