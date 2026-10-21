@@ -843,7 +843,6 @@ export default function SoilMaps() {
           <div className="mb-1 text-center">
             <div className="font-semibold text-gray-700">ระดับ ({meta.short})</div>
             <div className="font-semibold text-gray-700">{meta.label}</div>
-            <div className="text-[10px] text-gray-400">1 จุด = 1 ตำบล</div>
           </div>
           {(["high", "medium", "low"] as SoilLevel[]).map((lv) => (
             <div key={lv} className="flex items-center gap-2 py-0.5">
@@ -862,7 +861,7 @@ export default function SoilMaps() {
                 <div>ต.{selected.subdistrict} อ.{selected.district} จ.{selected.province}</div>
                 {/* ข้อมูลเดิมไม่มีพิกัดจริง — จุดวางที่กลางตำบล */}
                 <div className="text-[11px] text-gray-400">
-                  พิกัดกลางตำบล {selected.lat.toFixed(5)}, {selected.lng.toFixed(5)}
+                  พิกัด {selected.lat.toFixed(5)}, {selected.lng.toFixed(5)}
                 </div>
                 <button
                   onClick={() => setSelected(null)}
