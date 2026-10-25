@@ -7,26 +7,23 @@ interface TermsModalProps {
 }
 
 export function TermsModal({ isOpen, onClose }: TermsModalProps) {
+  // ล็อกการเลื่อนหน้าขณะเปิด แล้วคืนตำแหน่งเดิมตอนปิด
+  // เก็บ scrollY ไว้ใน closure — เดิมอ่านจาก body.style.top หลัง cleanup ล้างไปแล้ว หน้าเลยเด้งขึ้นบนสุด
   useEffect(() => {
-    if (isOpen) {
-      const scrollY = window.scrollY
-      document.body.style.overflow = 'hidden'
-      document.body.style.position = 'fixed'
-      document.body.style.top = `-${scrollY}px`
-      document.body.style.width = '100%'
-    } else {
-      const scrollY = document.body.style.top
-      document.body.style.overflow = ''
-      document.body.style.position = ''
-      document.body.style.top = ''
-      document.body.style.width = ''
-      window.scrollTo(0, parseInt(scrollY || '0') * -1)
-    }
+    if (!isOpen) return
+    const scrollY = window.scrollY
+    const body = document.body.style
+    body.overflow = 'hidden'
+    body.position = 'fixed'
+    body.top = `-${scrollY}px`
+    body.width = '100%'
     return () => {
-      document.body.style.overflow = ''
-      document.body.style.position = ''
-      document.body.style.top = ''
-      document.body.style.width = ''
+      body.overflow = ''
+      body.position = ''
+      body.top = ''
+      body.width = ''
+      // globals.css ตั้ง scroll-behavior: smooth — ใช้ instant ไม่ให้เห็นหน้าเลื่อนกลับ
+      window.scrollTo({ top: scrollY, behavior: 'instant' })
     }
   }, [isOpen]);
 

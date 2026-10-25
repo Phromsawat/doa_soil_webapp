@@ -4,10 +4,7 @@ import React, { useState } from "react"
 import Link from "next/link"
 import { useSearchParams } from "next/navigation"
 import { ArrowLeft, Loader2, Eye, EyeOff } from "lucide-react"
-import {
-  signInWithEmail,
-  signInAnonymously,
-} from "@/lib/supabase/auth"
+import { signInWithEmail } from "@/lib/supabase/auth"
 
 export default function LoginPage() {
   const searchParams = useSearchParams()
@@ -26,7 +23,6 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false)
 
   const [isLoadingEmail, setIsLoadingEmail] = useState(false)
-  const [isLoadingAnon, setIsLoadingAnon] = useState(false)
   const [error, setError] = useState<string | null>(authErrorParam ? "เข้าสู่ระบบไม่สำเร็จ ลองอีกครั้ง" : null)
 
   const handleEmailLogin = async (e: React.FormEvent) => {
@@ -52,17 +48,10 @@ export default function LoginPage() {
     }
   }
 
-  const handleAnonymousLogin = async () => {
-    setError(null)
-    setIsLoadingAnon(true)
-    try {
-      await signInAnonymously()
-      window.location.href = redirectTo
-    } catch (err) {
-      setError(err instanceof Error ? err.message : String(err))
-    } finally {
-      setIsLoadingAnon(false)
-    }
+  // ไม่สร้างบัญชีชั่วคราว (anonymous) แล้ว — ผู้ที่ไม่ได้ล็อกอินวิเคราะห์ คำนวณ และพิมพ์ PDF ได้
+  // โดยไม่มีอะไรถูกบันทึก หน้าที่ต้องเป็นสมาชิก (ประวัติ สมุดบัญชี โปรไฟล์ แอดมิน) ส่งไปหน้าแรกแทน
+  const handleGuest = () => {
+    window.location.href = /^\/(admin|history|ledger|profile|dashboard)(\/|\?|$)/.test(redirectTo) ? "/" : redirectTo
   }
 
   return (
@@ -158,13 +147,10 @@ export default function LoginPage() {
         {/* ใช้งานแบบไม่สมัครสมาชิก */}
         <div className="space-y-3">
           <button
-            onClick={handleAnonymousLogin}
-            disabled={isLoadingAnon}
-            className="w-full h-11 rounded-full bg-[#E6F4EA] hover:bg-[#D8E6DD] text-gray-700 font-medium text-sm transition-colors disabled:opacity-70 flex items-center justify-center"
+            onClick={handleGuest}
+            className="w-full h-11 rounded-full bg-[#E6F4EA] hover:bg-[#D8E6DD] text-gray-700 font-medium text-sm transition-colors flex items-center justify-center"
           >
-            {isLoadingAnon
-              ? <Loader2 className="w-4 h-4 animate-spin" />
-              : "ใช้งานต่อโดยไม่สมัครสมาชิก"}
+            ใช้งานต่อโดยไม่สมัครสมาชิก
           </button>
         </div>
 

@@ -7,8 +7,10 @@ import * as Dialog from "@radix-ui/react-dialog"
 import { Folder, Ban, Map, Loader2, CheckCircle2, Calculator, RotateCcw } from "lucide-react"
 import { createAnalysis, removeAnalysisImage } from "@/lib/supabase/analyses"
 import { predictAnalysis, type PredictResult } from "@/lib/supabase/prediction"
-import { checkPhoto, uploadSoilPhoto } from "@/lib/image/soilPhoto"
-import { ensureSession } from "@/lib/supabase/auth"
+import { predictGuest } from "@/lib/supabase/guestPrediction"
+import { checkPhoto, uploadGuestPhotos, uploadSoilPhoto } from "@/lib/image/soilPhoto"
+import { useUser } from "@/lib/supabase/useUser"
+import { saveGuestSoil } from "@/lib/analysis/guestSession"
 import type { NutrientCode } from "@/types/database"
 import type { PickedArea } from "@/app/analyze/map/MapPicker"
 
@@ -60,6 +62,8 @@ function toZipOption(e: {
 }
 
 export default function AnalyzeUpload() {
+  // ไม่ได้ล็อกอิน (รวมบัญชี anonymous ที่ค้างจากระบบเดิม) = ทำนายได้แต่ไม่บันทึกอะไร
+  const { isAuthenticated, loading: userLoading } = useUser()
   const [files, setFiles] = useState<Record<NutrientCode, File | null>>({
     OM: null, P: null, K: null,
   })
@@ -202,47 +206,7 @@ export default function AnalyzeUpload() {
 
     setPhase("uploading")
     try {
-      // 1. Make sure user has a session (anonymous if not signed in)
-      await ensureSession()
-
-      // 2. Create analysis row (ครั้งแรกเท่านั้น)
-      let id = analysisId
-      if (!id) {
-        id = await createAnalysis({
-          crop_id: null,
-          input_mode: "image_upload",
-          status: "pending",
-          om_value: null,
-          p_value: null,
-          k_value: null,
-          ph_value: null,
-          province: area?.province ?? null,
-          amphur: area?.amphur ?? null,
-          district: area?.district ?? null,
-          latitude: lat ? Number(lat) : null,
-          longitude: lng ? Number(lng) : null,
-          notes: sampleCode ? `รหัสตัวอย่าง: ${sampleCode}${phone ? ` · ${phone}` : ""}` : null,
-        })
-        setAnalysisId(id)
-      }
-
-      // 3. อัปโหลดรูปที่ใหม่/เปลี่ยน (ต้นฉบับ + สำเนาย่อ ตรงเข้า Storage) และเอารูปที่ผู้ใช้กดยกเลิกออก
-      for (const { code } of NUTRIENT_FIELDS) {
-        const file = files[code]
-        const sent = uploadedRef.current[code]
-        if (file && file !== sent) {
-          await uploadSoilPhoto(id, code, file)
-          uploadedRef.current[code] = file
-        } else if (!file && sent) {
-          await removeAnalysisImage(id, code)
-          delete uploadedRef.current[code]
-        }
-      }
-
-      // 4. ให้แบบจำลองทำนายค่า — บันทึกค่าและเปลี่ยนสถานะเป็น completed ฝั่ง server เมื่อสำเร็จ
-      setPhase("predicting")
-      const codes = NUTRIENT_FIELDS.map((f) => f.code).filter((c) => files[c])
-      const r = await predictAnalysis(id, codes)
+      const r = isAuthenticated ? await predictAndSave() : await predictOnly()
       if (r.ok) {
         setPrediction(r)
         setRejected({})
@@ -257,6 +221,75 @@ export default function AnalyzeUpload() {
     } finally {
       setPhase("idle")
     }
+  }
+
+  // ผู้ที่ไม่ได้ล็อกอิน: ส่งรูปให้แบบจำลองแล้วลบทิ้ง ผลอยู่ในหน้านี้ (และ sessionStorage) เท่านั้น
+  // ทำนายซ้ำ = อัปโหลดรูปที่เลือกอยู่ใหม่ทั้งชุด เพราะรูปรอบก่อนถูกลบไปแล้ว
+  const predictOnly = async (): Promise<PredictResult> => {
+    const { key, paths } = await uploadGuestPhotos({
+      OM: files.OM ?? undefined,
+      P: files.P ?? undefined,
+      K: files.K ?? undefined,
+    })
+    setPhase("predicting")
+    return predictGuest(key, paths)
+  }
+
+  // ผู้ที่ล็อกอิน: สร้างรายการวิเคราะห์ เก็บรูป แล้วบันทึกค่าที่ทำนายลงประวัติ
+  const predictAndSave = async (): Promise<PredictResult> => {
+    // 1. Create analysis row (ครั้งแรกเท่านั้น)
+    let id = analysisId
+    if (!id) {
+      id = await createAnalysis({
+        crop_id: null,
+        input_mode: "image_upload",
+        status: "pending",
+        om_value: null,
+        p_value: null,
+        k_value: null,
+        ph_value: null,
+        province: area?.province ?? null,
+        amphur: area?.amphur ?? null,
+        district: area?.district ?? null,
+        latitude: lat ? Number(lat) : null,
+        longitude: lng ? Number(lng) : null,
+        notes: sampleCode ? `รหัสตัวอย่าง: ${sampleCode}${phone ? ` · ${phone}` : ""}` : null,
+      })
+      setAnalysisId(id)
+    }
+
+    // 2. อัปโหลดรูปที่ใหม่/เปลี่ยน (ต้นฉบับ + สำเนาย่อ ตรงเข้า Storage) และเอารูปที่ผู้ใช้กดยกเลิกออก
+    for (const { code } of NUTRIENT_FIELDS) {
+      const file = files[code]
+      const sent = uploadedRef.current[code]
+      if (file && file !== sent) {
+        await uploadSoilPhoto(id, code, file)
+        uploadedRef.current[code] = file
+      } else if (!file && sent) {
+        await removeAnalysisImage(id, code)
+        delete uploadedRef.current[code]
+      }
+    }
+
+    // 3. ให้แบบจำลองทำนายค่า — บันทึกค่าและเปลี่ยนสถานะเป็น completed ฝั่ง server เมื่อสำเร็จ
+    setPhase("predicting")
+    const codes = NUTRIENT_FIELDS.map((f) => f.code).filter((c) => files[c])
+    return predictAnalysis(id, codes)
+  }
+
+  // ผู้ที่ไม่ได้ล็อกอินไม่มีรายการในฐานข้อมูล — ส่งค่าที่ทำนาย + พื้นที่ไปหน้าคำนวณผ่าน sessionStorage
+  const handleGuestContinue = () => {
+    if (!prediction) return
+    saveGuestSoil({
+      om_value: prediction.om_value,
+      p_value: prediction.p_value,
+      k_value: prediction.k_value,
+      province: area?.province ?? null,
+      amphur: area?.amphur ?? null,
+      district: area?.district ?? null,
+      latitude: lat ? Number(lat) : null,
+      longitude: lng ? Number(lng) : null,
+    })
   }
 
   // เริ่มตัวอย่างใหม่ — คงพื้นที่/เบอร์โทรไว้ (มักเป็นแปลงเดียวกัน)
@@ -484,9 +517,19 @@ export default function AnalyzeUpload() {
             <p className="text-xs leading-relaxed text-gray-500">
               ค่าประมาณจากแบบจำลองวิเคราะห์ภาพแผ่นทดสอบ — ตรวจและแก้ค่าได้ในขั้นเลือกพืชและคำนวณปุ๋ย
             </p>
+            {!isAuthenticated && (
+              <p className="text-xs text-gray-400">
+                ผลนี้ไม่ถูกบันทึก ·{" "}
+                <Link href="/login?redirect=/analyze/upload" className="font-medium text-[#1A4D2E] hover:underline">
+                  เข้าสู่ระบบ
+                </Link>{" "}
+                เพื่อเก็บผลไว้ในประวัติ
+              </p>
+            )}
             <div className="flex flex-col gap-2 sm:flex-row">
               <Link
-                href={`/analyze/form?from=${analysisId}`}
+                href={isAuthenticated ? `/analyze/form?from=${analysisId}` : "/analyze/form?from=guest"}
+                onClick={isAuthenticated ? undefined : handleGuestContinue}
                 className="flex flex-1 items-center justify-center gap-2 h-11 rounded-full bg-[#1A4D2E] hover:bg-[#143a22] text-white text-[15px] font-medium shadow-sm"
               >
                 <Calculator className="w-4 h-4" /> เลือกพืชและคำนวณปุ๋ย
@@ -504,7 +547,7 @@ export default function AnalyzeUpload() {
           <div className="flex flex-col items-center gap-2 pt-8 pb-4">
             <button
               onClick={handleSubmit}
-              disabled={submitting || !hasAnyFile}
+              disabled={submitting || !hasAnyFile || userLoading}
               className="flex items-center justify-center gap-2 px-12 h-10 bg-[#1A4D2E] hover:bg-[#143a22] text-white rounded-full font-medium text-[15px] shadow-sm hover:shadow-md transition-all disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {submitting ? (

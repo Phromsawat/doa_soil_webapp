@@ -1,6 +1,7 @@
 "use server"
 
 import { createClient } from "@/lib/supabase/server"
+import { createServiceClient } from "@/lib/supabase/service"
 import { revalidatePath } from "next/cache"
 import { predictSoil, type ModelElement } from "@/lib/soilModel/client"
 import type { NutrientCode } from "@/types/database"
@@ -11,6 +12,7 @@ import type { NutrientCode } from "@/types/database"
 //   2. อ่านภาพต้นฉบับจาก Storage ของเราเอง (bucket soil-images, path ขึ้นต้นด้วย uid/analysis)
 //      — ไม่ใช่สำเนาย่อ: แบบจำลองอ่านค่าจากสี ต้องได้ไฟล์เดียวกับที่ผู้ใช้ถ่าย
 //   3. ส่งให้แบบจำลอง แล้วบันทึกค่าลงรายการ — สถานะ "completed" หลังบันทึกสำเร็จเท่านั้น
+//      บันทึกด้วย service role: ผู้ใช้เขียน ai_result เองไม่ได้ (migration 044 — กันค่าปลอมบนแผนที่)
 //   4. ลบต้นฉบับทิ้ง เหลือสำเนาย่อไว้ในประวัติ (migration 041)
 // ข้อผิดพลาดที่คาดได้คืนเป็นค่า (ไม่ throw) เพื่อให้หน้าเว็บแสดงข้อความภาษาไทยได้ตรง ๆ
 // =============================================================================
@@ -98,7 +100,8 @@ export async function predictAnalysis(analysisId: string, elements: NutrientCode
   }
 
   const p = outcome.prediction
-  const { data: updated, error: upErr } = await supabase
+  // ตรวจความเป็นเจ้าของด้วย session ของผู้ใช้ไปแล้วด้านบน — ยังกรอง user_id ซ้ำกันพลาด
+  const { data: updated, error: upErr } = await createServiceClient()
     .from("analyses")
     .update({
       om_value: p.om_value,

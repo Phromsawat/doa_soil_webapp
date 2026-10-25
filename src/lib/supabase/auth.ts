@@ -6,17 +6,8 @@ import { createClient } from "@/lib/supabase/client"
 // AUTH HELPERS — use these from client components
 // =============================================================================
 
-/**
- * Sign in as an anonymous user.
- * Creates a temporary user identity tied to the current browser session.
- * The user can later sign up with email to make it permanent.
- */
-export async function signInAnonymously() {
-  const supabase = createClient()
-  const { data, error } = await supabase.auth.signInAnonymously()
-  if (error) throw error
-  return data.user
-}
+// ไม่มีการเข้าสู่ระบบแบบ anonymous แล้ว — ผู้ที่ไม่ได้ล็อกอินใช้งานได้โดยไม่สร้างบัญชีและไม่บันทึกข้อมูล
+// (ทำนายจากรูป: guestPrediction.ts, ส่งต่อค่าระหว่างหน้า: lib/analysis/guestSession.ts)
 
 /**
  * Sign up with email + password.
@@ -115,15 +106,4 @@ export async function getCurrentUser() {
  */
 export function isAnonymousUser(user: { is_anonymous?: boolean } | null) {
   return user?.is_anonymous === true
-}
-
-/**
- * Ensure the user has *some* session — either an existing one or a fresh anonymous.
- * Useful for "guest access" routes that still need RLS-scoped data access.
- */
-export async function ensureSession() {
-  const supabase = createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (user) return user
-  return signInAnonymously()
 }

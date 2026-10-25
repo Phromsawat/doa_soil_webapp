@@ -97,24 +97,6 @@ export default async function AdminDashboardPage() {
           </Link>
         </div>
       </div>
-
-      {/* Coming soon */}
-      <div className="bg-[#1A4D2E] text-white rounded-2xl p-6">
-        <h2 className="text-sm font-medium mb-2">ฟีเจอร์ที่กำลังพัฒนา</h2>
-        <ul className="text-sm text-white/70 space-y-2">
-          {[
-            "CMS แก้ banner / ข้อความหน้าเว็บ",
-            "Export ข้อมูลเป็น CSV / Excel",
-            "Audit log บันทึกการแก้ไข",
-            "เชื่อม AI prediction (รอ endpoint จากทีม)",
-          ].map((item) => (
-            <li key={item} className="flex items-center gap-2.5">
-              <span className="w-1.5 h-1.5 rounded-full bg-white/40 shrink-0" />
-              {item}
-            </li>
-          ))}
-        </ul>
-      </div>
     </div>
   )
 }

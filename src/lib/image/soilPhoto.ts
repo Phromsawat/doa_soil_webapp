@@ -5,9 +5,11 @@
 // - สำเนาย่อ (ด้านยาวสุด 1280 px, JPEG 85%) เก็บถาวรไว้แสดงในประวัติ/หน้าแอดมิน
 //   ต้นฉบับถูกลบฝั่ง server เมื่อทำนายสำเร็จ (predictAnalysis)
 // ทั้งสองไฟล์ส่งตรงเข้า Storage ด้วย signed upload URL ไม่ผ่าน Vercel (รับได้แค่ 4.5 MB ต่อคำขอ)
+// ผู้ที่ไม่ได้ล็อกอินใช้ uploadGuestPhotos — ส่งแค่ต้นฉบับไปที่พักชั่วคราว ไม่เก็บถาวร
 
 import { createClient } from "@/lib/supabase/client"
 import { finishAnalysisImageUpload, prepareAnalysisImageUpload } from "@/lib/supabase/analyses"
+import { prepareGuestImageUpload } from "@/lib/supabase/guestPrediction"
 import type { NutrientCode } from "@/types/database"
 
 export const MAX_PHOTO_BYTES = 12 * 1024 * 1024
@@ -54,6 +56,33 @@ export async function makeDisplayCopy(file: File): Promise<Blob> {
   const blob = await new Promise<Blob | null>((r) => canvas.toBlob(r, "image/jpeg", DISPLAY_QUALITY))
   if (!blob) throw new Error("ย่อรูปไม่สำเร็จ")
   return blob
+}
+
+/**
+ * ผู้ที่ไม่ได้ล็อกอิน: ส่งเฉพาะต้นฉบับขึ้นที่พักชั่วคราว (guest/<key>/) ให้ predictGuest อ่านแล้วลบทิ้ง
+ * ไม่มีสำเนาย่อ เพราะไม่เก็บอะไรไว้แสดงในประวัติ
+ */
+export async function uploadGuestPhotos(files: Partial<Record<NutrientCode, File>>) {
+  const picked = (Object.entries(files) as Array<[NutrientCode, File | undefined]>).filter(
+    (e): e is [NutrientCode, File] => !!e[1]
+  )
+  for (const [, file] of picked) {
+    const problem = checkPhoto(file)
+    if (problem) throw new Error(problem)
+  }
+  const { key, uploads } = await prepareGuestImageUpload(
+    picked.map(([code, file]) => ({ code, type: photoType(file)!, size: file.size }))
+  )
+  const bucket = createClient().storage.from(BUCKET)
+  const results = await Promise.all(
+    uploads.map((u) => {
+      const file = files[u.code]!
+      return bucket.uploadToSignedUrl(u.path, u.token, file, { contentType: photoType(file)! })
+    })
+  )
+  const err = results.find((r) => r.error)?.error
+  if (err) throw new Error(`อัปโหลดรูปไม่สำเร็จ: ${err.message}`)
+  return { key, paths: uploads.map((u) => u.path) }
 }
 
 export async function uploadSoilPhoto(analysisId: string, code: NutrientCode, file: File): Promise<void> {

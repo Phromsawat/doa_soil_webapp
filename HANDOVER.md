@@ -36,7 +36,7 @@ src/lib/supabase/       Server Actions ทั้งหมด (อ่าน/เ�
 src/lib/soilModel/      ตัวเรียก API ทำนายภาพ
 src/lib/soil/           เกณฑ์ระดับดิน + จุดกลางตำบล (subdistrictCenters.json)
 src/lib/fertilizer/     ตรรกะคำนวณปุ๋ย
-supabase/migrations/    SQL 001–043 (ตาราง, RLS, ฟังก์ชัน, ข้อมูลอ้างอิง)
+supabase/migrations/    SQL 001–044 (ตาราง, RLS, ฟังก์ชัน, ข้อมูลอ้างอิง)
 scripts/                สคริปต์นำเข้า/ส่งออกข้อมูล (ดูหัวข้อ 7)
 public/boundaries/      ขอบเขตจังหวัด/อำเภอ/ตำบล (GeoJSON) + ดัชนีค้นหา/รหัสไปรษณีย์
 public/soil-maps/       ภาพแผนที่ดินแบบ raster รุ่นเดิม (ยังเก็บไว้ ไม่ได้แสดงแล้ว)
@@ -104,7 +104,7 @@ psql --single-transaction --variable ON_ERROR_STOP=1 \
 
 ### 5.2 สร้างใหม่จาก migrations (ได้โครงสร้าง + ข้อมูลอ้างอิงส่วนใหญ่ ไม่มีข้อมูลผู้ใช้)
 
-รัน `supabase/migrations/*.sql` ตามลำดับเลข 001 → 043 ใน SQL Editor
+รัน `supabase/migrations/*.sql` ตามลำดับเลข 001 → 044 ใน SQL Editor
 ข้อมูลบางชุดนำเข้าด้วยสคริปต์ ไม่ได้อยู่ใน migration:
 
 - ขอบเขตจังหวัด/อำเภอ/ตำบลในฐานข้อมูล — `scripts/import_boundaries.js`

@@ -2,8 +2,9 @@
 
 import { useEffect, useState } from "react"
 import dynamic from "next/dynamic"
+import { useRouter } from "next/navigation"
 import * as Dialog from "@radix-ui/react-dialog"
-import { Loader2, Sprout, Check, History, Calculator, ChevronDown, MapPin, ScanLine } from "lucide-react"
+import { Loader2, Sprout, Check, History, Calculator, ChevronDown, MapPin, ScanLine, FileDown } from "lucide-react"
 import Link from "next/link"
 import { Button } from "@/components/ui/Button"
 import { getAnalysis, saveManualAnalysis } from "@/lib/supabase/analyses"
@@ -18,8 +19,8 @@ import {
   listFertilizerFormulas,
   type FertilizerFormulaRow,
 } from "@/lib/supabase/fertilizerFormulas"
-import { ensureSession } from "@/lib/supabase/auth"
 import { useUser } from "@/lib/supabase/useUser"
+import { readGuestSoil, saveGuestReport, type GuestSoil } from "@/lib/analysis/guestSession"
 import { classify, LEVEL_COLORS, LEVEL_LABEL_TH } from "@/lib/soil/grid"
 import { blendFertilizer, type BlendResult } from "@/lib/fertilizer/blend"
 import { unitTh } from "@/lib/fertilizer/unit"
@@ -178,9 +179,12 @@ export default function AnalyzeForm() {
   // มาจากหน้าอัปโหลดรูป (/analyze/form?from=<id>) — ค่าดินจากแบบจำลองวิเคราะห์ภาพ
   // บันทึกแล้วจะเขียนทับรายการนั้น (พืช/ปุ๋ย/ค่าที่แก้) แทนการสร้างรายการใหม่
   const [fromImage, setFromImage] = useState<{ id: string; notes: string | null } | null>(null)
+  // ผู้ที่ไม่ได้ล็อกอินมาจากหน้าอัปโหลดรูป (?from=guest) — ค่าที่ทำนาย + พื้นที่อยู่ใน sessionStorage ไม่มีรายการใน DB
+  const [guestSoil, setGuestSoil] = useState<GuestSoil | null>(null)
 
-  // บันทึกได้เฉพาะคน login จริง (ไม่ใช่ anonymous) — ผู้ไม่ล็อกอินแค่คำนวณดูผล ไม่เก็บข้อมูล
+  // บันทึกได้เฉพาะคน login จริง (ไม่ใช่ anonymous) — ผู้ไม่ล็อกอินคำนวณและพิมพ์ PDF ได้ แต่ไม่เก็บข้อมูล
   const { isAuthenticated, loading: userLoading } = useUser()
+  const router = useRouter()
 
   useEffect(() => {
     listCrops()
@@ -194,7 +198,15 @@ export default function AnalyzeForm() {
 
     // อ่านจาก URL ตรง ๆ แทน useSearchParams (ไม่ต้องห่อ Suspense ทั้งหน้า)
     const from = new URLSearchParams(window.location.search).get("from")
-    if (from) {
+    if (from === "guest") {
+      const g = readGuestSoil()
+      if (g) {
+        setOm(fmtSoil(g.om_value))
+        setP(fmtSoil(g.p_value))
+        setK(fmtSoil(g.k_value))
+        setGuestSoil(g)
+      }
+    } else if (from) {
       getAnalysis(from)
         .then((rec) => {
           if (!rec || rec.input_mode !== "image_upload") return
@@ -292,7 +304,6 @@ export default function AnalyzeForm() {
     setError(null)
     setSaving(true)
     try {
-      await ensureSession()
       const crop = crops.find((c) => c.id === cropId)
       // ค่าดินจากแผนที่เป็นค่าประมาณ — ระบุไว้ในหมายเหตุ ไม่ให้ปนกับผลตรวจดินจริงตอนวิเคราะห์ข้อมูล
       const notes = [
@@ -335,6 +346,39 @@ export default function AnalyzeForm() {
     } finally {
       setSaving(false)
     }
+  }
+
+  // ผู้ที่ไม่ได้ล็อกอิน: ไม่มีรายการให้หน้ารายงานอ่าน — ส่งค่าทั้งหมดไปทาง sessionStorage แทน
+  function handleGuestPdf() {
+    if (!ready || !calc) return
+    // พื้นที่: จุดที่ปักตอนดึงค่าจากแผนที่ก่อน ไม่มีก็ใช้พื้นที่ที่กรอกตอนอัปโหลดรูป
+    const place = mapPick
+      ? {
+          province: mapPick.area?.province ?? null,
+          amphur: mapPick.area?.amphur ?? null,
+          district: mapPick.area?.district ?? null,
+          latitude: mapPick.lat,
+          longitude: mapPick.lng,
+        }
+      : {
+          province: guestSoil?.province ?? null,
+          amphur: guestSoil?.amphur ?? null,
+          district: guestSoil?.district ?? null,
+          latitude: guestSoil?.latitude ?? null,
+          longitude: guestSoil?.longitude ?? null,
+        }
+    saveGuestReport({
+      crop_id: cropId,
+      om_value: omN,
+      p_value: pN,
+      k_value: kN,
+      ph_value: num(ph),
+      ...place,
+      blend_formula_ids: picked.filter(Boolean),
+      plan_tab: planTab,
+      created_at: new Date().toISOString(),
+    })
+    router.push(`/analyze/result/print?guest=1&use=${planTab}`)
   }
 
   // เติมค่าจากไฟล์ที่นำเข้า (กรณีไฟล์มีแถวเดียว) — ผู้ใช้ยังต้องกดคำนวณเอง
@@ -401,7 +445,7 @@ export default function AnalyzeForm() {
         </div>
 
         {/* ① เลือกพืช */}
-        <StepHeader n={1} title="เลือกพืชที่จะปลูก" hint="เลือกประเภทก่อน แล้วเลือกพืช" />
+        <StepHeader n={1} title="เลือกพืชที่ปลูก" hint="เลือกประเภท แล้วเลือกพืช" />
         {cropsLoading ? (
           <div className="flex items-center gap-2 text-sm text-gray-500">
             <Loader2 className="h-4 w-4 animate-spin" /> กำลังโหลดรายการพืช…
@@ -435,7 +479,7 @@ export default function AnalyzeForm() {
             <NutrientInput label="โพแทสเซียม (K)" unit="mg/kg" value={k} onChange={(v) => { setK(v); invalidate() }} level={kLevel} placeholder="เช่น 80" />
           </div>
 
-          {fromImage && (
+          {(fromImage || guestSoil) && (
             <p className="mt-3 flex items-start gap-2 rounded-xl bg-[#F1F7F2] px-3 py-2 text-xs leading-relaxed text-[#1A4D2E]">
               <ScanLine className="mt-0.5 h-3.5 w-3.5 shrink-0" />
               <span>ค่าจากการวิเคราะห์ภาพแผ่นทดสอบ (แบบจำลอง AI) — ตรวจและแก้ไขได้ก่อนกดคำนวณ</span>
@@ -457,7 +501,7 @@ export default function AnalyzeForm() {
           <StepHeader
             n={3}
             title="เลือกปุ๋ยที่จะใช้"
-            hint="เลือกปุ๋ยที่หาซื้อได้ 1–3 สูตร"
+            hint="เลือกปุ๋ย 1–3 สูตร"
           />
           <FertilizerPicker
             formulas={formulas}
@@ -610,11 +654,20 @@ export default function AnalyzeForm() {
           </div>
         )}
 
-        {/* ผู้ไม่ล็อกอิน: แค่คำนวณดูผล ไม่เก็บข้อมูล/ไม่บันทึก */}
+        {/* ผู้ไม่ล็อกอิน: คำนวณดูผลและพิมพ์ PDF ได้ ไม่เก็บข้อมูล/ไม่บันทึก */}
         {!userLoading && !isAuthenticated && calc && (
           <div className="mt-6 border-t border-gray-100 pt-5 text-center">
-            <p className="text-xs text-gray-400">
-              คำนวณดูผลได้เลยโดยไม่ต้องบันทึก ·{" "}
+            <Button
+              onClick={handleGuestPdf}
+              disabled={!ready}
+              className="h-12 w-full rounded-full bg-[#1A4D2E] font-medium text-white hover:bg-[#143a22] disabled:opacity-50"
+            >
+              <span className="flex items-center justify-center gap-2">
+                <FileDown className="h-4 w-4" /> บันทึก PDF
+              </span>
+            </Button>
+            <p className="mt-2 text-xs text-gray-400">
+              ผลนี้ไม่ถูกบันทึก ·{" "}
               <Link href="/login" className="font-medium text-[#1A4D2E] hover:underline">
                 เข้าสู่ระบบ
               </Link>{" "}
