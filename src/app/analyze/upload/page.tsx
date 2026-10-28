@@ -314,7 +314,7 @@ export default function AnalyzeUpload() {
             <div className="flex items-center gap-2 text-gray-800 font-semibold text-lg">
               <span>สารอาหารในดิน</span>
             </div>
-            <p className="mt-0.5 text-xs text-gray-500">รูปแผ่นทดสอบ JPG, PNG หรือ WebP ไม่เกิน 12 MB ต่อรูป</p>
+            <p className="mt-0.5 text-xs text-gray-500">รูปแผ่นทดสอบ JPG, PNG หรือ WebP</p>
           </div>
 
           {NUTRIENT_FIELDS.map(({ label, code }) => (
