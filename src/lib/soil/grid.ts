@@ -96,8 +96,19 @@ export const NUTRIENT_META: Record<
 
 export const NUTRIENTS: Nutrient[] = ["om", "p", "k"]
 
-// "ดึงค่าจากแผนที่" ใช้จุดตัวอย่าง (soil_points) ที่ใกล้ที่สุดได้ไม่เกินระยะนี้ — ไกลกว่านี้ถือว่าไม่มีข้อมูล
+// "ดึงค่าจากแผนที่" (หน้าคำนวณปุ๋ย) และการกดบนหน้าแผนที่ ใช้จุดตัวอย่างที่ใกล้ที่สุดได้ไม่เกินระยะนี้
+// ไกลกว่านี้ถือว่าไม่มีข้อมูล
 export const NEAREST_MAX_KM = 30
+
+/** ระยะทางบนผิวโลก (กม.) ระหว่างสองพิกัด */
+export function haversineKm(lat1: number, lng1: number, lat2: number, lng2: number) {
+  const R = 6371
+  const rad = Math.PI / 180
+  const dLat = (lat2 - lat1) * rad
+  const dLng = (lng2 - lng1) * rad
+  const a = Math.sin(dLat / 2) ** 2 + Math.cos(lat1 * rad) * Math.cos(lat2 * rad) * Math.sin(dLng / 2) ** 2
+  return 2 * R * Math.asin(Math.sqrt(a))
+}
 
 // layer ทั้งหมดที่แสดงบนแผนที่ (รวม sum เป็นแท็บที่ 4)
 export const LAYERS: Layer[] = ["om", "p", "k", "sum"]

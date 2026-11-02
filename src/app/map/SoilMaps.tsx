@@ -63,11 +63,13 @@ import {
   SOIL_BOUNDS,
   classify,
   soilScore,
+  haversineKm,
+  NEAREST_MAX_KM,
   type Layer,
   type SoilLevel,
 } from "@/lib/soil/grid"
 // แผนที่แสดงเป็นจุดรายตำบล — raster เดิม (soil_grid / public/soil-maps) ยังเก็บไว้แต่ไม่แสดงแล้ว
-// กดที่จุดเพื่อดูค่า (กดที่ว่างไม่ขึ้นค่า) — การดึงค่าจากจุดใกล้สุดใช้ในหน้าคำนวณปุ๋ยเท่านั้น
+// กดที่จุด = ดูค่าของจุดนั้น, กดที่อื่น / ตำแหน่งของฉัน = ดูค่าของจุดที่ใกล้ที่สุด (ไม่เกิน 30 กม.)
 import { listSoilPoints, type SoilPoint } from "@/lib/supabase/soilPoints"
 import { createClient } from "@/lib/supabase/client"
 
@@ -321,6 +323,8 @@ export default function SoilMaps() {
   // จุดที่กดเลือก (การ์ดข้อมูลด้านล่าง) และตำแหน่งของฉัน (หมุด)
   const [selected, setSelected] = useState<SoilPoint | null>(null)
   const [myLocation, setMyLocation] = useState<{ lat: number; lng: number } | null>(null)
+  // ตำแหน่งที่ใช้หาจุดใกล้สุด (กดบนแผนที่ / ตำแหน่งของฉัน) — km = ระยะถึงจุดที่เลือก, null = ไม่มีในรัศมี
+  const [origin, setOrigin] = useState<{ lat: number; lng: number; fromMe: boolean; km: number | null } | null>(null)
   const [points, setPoints] = useState<SoilPoint[]>([])
   // จุด 700+ จุด วาดบน canvas เร็วกว่า SVG มาก
   const pointRenderer = useMemo(() => L.canvas({ padding: 0.5 }), [])
@@ -399,12 +403,20 @@ export default function SoilMaps() {
     const [minLng, minLat, maxLng, maxLat] = entry.b
     mapRef.current?.fitBounds([[minLat, minLng], [maxLat, maxLng]], { padding: [40, 40], maxZoom: 14 })
 
-    // ค้นหาตำบลที่มีจุดข้อมูล → เลือกจุดนั้นให้เลย (ที่อื่นไม่ขึ้นค่า เพราะไม่ใช่จุดตัวอย่าง)
-    setSelected(
-      entry.t === "sub"
-        ? points.find((pt) => pt.subdistrict === entry.nth && pt.district === entry.dth && pt.province === entry.pth) ?? null
-        : null
-    )
+    // ค้นหาตำบล → ตำบลที่มีจุดข้อมูลเลือกจุดนั้น ไม่มีก็ใช้จุดที่ใกล้กลางตำบลที่สุด
+    // (ค้นอำเภอ/จังหวัดกว้างเกินจะเลือกจุดเดียว จึงไม่เลือก)
+    const own = entry.t === "sub"
+      ? points.find((pt) => pt.subdistrict === entry.nth && pt.district === entry.dth && pt.province === entry.pth)
+      : undefined
+    if (own) {
+      setSelected(own)
+      setOrigin(null)
+    } else if (entry.t === "sub") {
+      selectNearest((minLat + maxLat) / 2, (minLng + maxLng) / 2, false)
+    } else {
+      setSelected(null)
+      setOrigin(null)
+    }
 
     const boundaryId = FILE_TO_BOUNDARY_ID[entry.f]
     let geojson = boundaryData[boundaryId]
@@ -487,6 +499,24 @@ export default function SoilMaps() {
   const score = selected ? soilScore(selected.om, selected.p, selected.k) : null
   const sumLevel = score != null ? classify("sum", score) : null
 
+  // จุดตัวอย่างที่ใกล้ที่สุด — นับเฉพาะจุดที่แสดงอยู่ในชั้นข้อมูลที่เปิด (ผู้ใช้เห็นว่าเลือกจุดไหน)
+  // ไกลเกิน NEAREST_MAX_KM ถือว่าไม่มีข้อมูล เกณฑ์เดียวกับ "ดึงค่าจากแผนที่" ในหน้าคำนวณปุ๋ย
+  function selectNearest(lat: number, lng: number, fromMe: boolean) {
+    let best: SoilPoint | null = null
+    let bestKm = Infinity
+    for (const pt of points) {
+      if (active && !pointLevel(pt, active)) continue
+      const km = haversineKm(lat, lng, pt.lat, pt.lng)
+      if (km < bestKm) {
+        best = pt
+        bestKm = km
+      }
+    }
+    const found = best && bestKm <= NEAREST_MAX_KM ? best : null
+    setSelected(found)
+    setOrigin({ lat, lng, fromMe, km: found ? bestKm : null })
+  }
+
   function goToMyLocation() {
     if (!navigator.geolocation || !mapInstance) return
     navigator.geolocation.getCurrentPosition(
@@ -494,6 +524,7 @@ export default function SoilMaps() {
         const { latitude: lat, longitude: lng } = pos.coords
         mapInstance.setView([lat, lng], 12)
         setMyLocation({ lat, lng })
+        selectNearest(lat, lng, true)
       },
       () => {}
     )
@@ -547,7 +578,7 @@ export default function SoilMaps() {
                   fillColor: LEVEL_COLORS[lv],
                   fillOpacity: soilOpacity,
                 }}
-                eventHandlers={{ click: () => setSelected(pt) }}
+                eventHandlers={{ click: () => { setSelected(pt); setOrigin(null) } }}
               />
             )
           })}
@@ -600,9 +631,19 @@ export default function SoilMaps() {
           iconSize: [80, 14],
           iconAnchor: [40, 7],
         })} interactive={false} />
+        {/* ตำแหน่งที่กดบนแผนที่ (ตำแหน่งของฉันมีหมุดของตัวเองอยู่แล้ว) */}
+        {origin && !origin.fromMe && (
+          <CircleMarker
+            key={`origin-${origin.lat}-${origin.lng}`}
+            center={[origin.lat, origin.lng]}
+            radius={4}
+            interactive={false}
+            pathOptions={{ color: "#ffffff", weight: 2, fillColor: "#1A4D2E", fillOpacity: 1 }}
+          />
+        )}
         {myLocation && <Marker position={[myLocation.lat, myLocation.lng]} icon={pinIcon} />}
-        {/* กดที่ว่างบนแผนที่ = ปิดการ์ดจุดที่เลือก */}
-        <ClickHandler onPick={() => setSelected(null)} />
+        {/* กดที่ว่างบนแผนที่ = ดูค่าของจุดตัวอย่างที่ใกล้ที่สุด */}
+        <ClickHandler onPick={(lat, lng) => selectNearest(lat, lng, false)} />
         <FitThailand />
         <MapRef onReady={handleMapReady} />
         <MapSizeInvalidator />
@@ -853,7 +894,23 @@ export default function SoilMaps() {
         </div>
       )}
 
-      {/* การ์ดข้อมูลจุดที่เลือก — bottom sheet ลอย (มือถือ: ยกเหนือ BottomNav) — ขึ้นเฉพาะตอนกดที่จุด */}
+      {/* กดที่ไกลจากจุดตัวอย่างทุกจุด (ทะเล / ต่างประเทศ / พื้นที่ไม่มีข้อมูล) */}
+      {!selected && origin && origin.km == null && (
+      <div className="pointer-events-none absolute inset-x-0 bottom-[58px] z-[1001] flex justify-center px-3 lg:bottom-4">
+        <div className="pointer-events-auto relative w-full max-w-[26rem] rounded-2xl bg-white/90 px-9 py-3 text-center text-xs text-gray-500 shadow-xl ring-1 ring-black/5 backdrop-blur">
+          ไม่มีจุดตัวอย่างดินในรัศมี {NEAREST_MAX_KM} กม. จาก{origin.fromMe ? "ตำแหน่งของคุณ" : "จุดนี้"}
+          <button
+            onClick={() => setOrigin(null)}
+            className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 flex items-center justify-center rounded-full text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors"
+            aria-label="ปิด"
+          >
+            <X className="w-3.5 h-3.5" />
+          </button>
+        </div>
+      </div>
+      )}
+
+      {/* การ์ดข้อมูลจุดที่เลือก — bottom sheet ลอย (มือถือ: ยกเหนือ BottomNav) */}
       {selected && (
       <div className="pointer-events-none absolute inset-x-0 bottom-[58px] z-[1001] flex justify-center px-3 lg:bottom-4">
         <div className="pointer-events-auto w-full max-w-[26rem] rounded-2xl bg-white/90 p-3 shadow-xl ring-1 ring-black/5 backdrop-blur">
@@ -863,8 +920,14 @@ export default function SoilMaps() {
                 <div className="text-[11px] text-gray-400">
                   พิกัด {selected.lat.toFixed(5)}, {selected.lng.toFixed(5)}
                 </div>
+                {/* เลือกจากจุดใกล้สุด — บอกระยะ (กดตรงจุดพอดีไม่ต้องบอก) */}
+                {origin?.km != null && origin.km >= 0.05 && (
+                  <div className="text-[11px] text-gray-400">
+                    {origin.fromMe ? "ห่างจากตำแหน่งของคุณ" : "ห่างจากจุดที่เลือก"} {origin.km.toFixed(1)} กม.
+                  </div>
+                )}
                 <button
-                  onClick={() => setSelected(null)}
+                  onClick={() => { setSelected(null); setOrigin(null) }}
                   className="absolute right-0 top-1/2 -translate-y-1/2 w-5 h-5 flex items-center justify-center rounded-full text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors"
                   aria-label="ปิด"
                 >

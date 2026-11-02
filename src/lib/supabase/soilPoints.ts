@@ -1,7 +1,7 @@
 "use server"
 
 import { createClient } from "@/lib/supabase/server"
-import { classify, NEAREST_MAX_KM, type Nutrient, type SoilLevel } from "@/lib/soil/grid"
+import { classify, haversineKm, NEAREST_MAX_KM, type Nutrient, type SoilLevel } from "@/lib/soil/grid"
 import CENTERS from "@/lib/soil/subdistrictCenters.json"
 
 // =============================================================================
@@ -85,14 +85,6 @@ export async function listSoilPoints(): Promise<SoilPoint[]> {
   return out
 }
 
-function haversineKm(lat1: number, lng1: number, lat2: number, lng2: number) {
-  const R = 6371
-  const rad = Math.PI / 180
-  const dLat = (lat2 - lat1) * rad
-  const dLng = (lng2 - lng1) * rad
-  const a = Math.sin(dLat / 2) ** 2 + Math.cos(lat1 * rad) * Math.cos(lat2 * rad) * Math.sin(dLng / 2) ** 2
-  return 2 * R * Math.asin(Math.sqrt(a))
-}
 
 /**
  * ค่าดิน ณ จุดที่ปักหมุด: แต่ละธาตุใช้จุดตัวอย่างที่ใกล้ที่สุดที่มีค่าธาตุนั้น ภายใน 30 กม.
