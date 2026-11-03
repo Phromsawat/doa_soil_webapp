@@ -64,12 +64,13 @@ import {
   classify,
   soilScore,
   haversineKm,
-  NEAREST_MAX_KM,
   type Layer,
   type SoilLevel,
 } from "@/lib/soil/grid"
+import { lookupThaiArea } from "@/lib/soil/thaiArea"
 // แผนที่แสดงเป็นจุดรายตำบล — raster เดิม (soil_grid / public/soil-maps) ยังเก็บไว้แต่ไม่แสดงแล้ว
-// กดที่จุด = ดูค่าของจุดนั้น, กดที่อื่น / ตำแหน่งของฉัน = ดูค่าของจุดที่ใกล้ที่สุด (ไม่เกิน 30 กม.)
+// กดที่จุด = ดูค่าของจุดนั้น, กดที่อื่น / ตำแหน่งของฉัน = ดูค่าของจุดที่ใกล้ที่สุด
+// (ไม่จำกัดระยะ แต่กดนอกประเทศไทยไม่ขึ้นค่า)
 import { listSoilPoints, type SoilPoint } from "@/lib/supabase/soilPoints"
 import { createClient } from "@/lib/supabase/client"
 
@@ -323,8 +324,17 @@ export default function SoilMaps() {
   // จุดที่กดเลือก (การ์ดข้อมูลด้านล่าง) และตำแหน่งของฉัน (หมุด)
   const [selected, setSelected] = useState<SoilPoint | null>(null)
   const [myLocation, setMyLocation] = useState<{ lat: number; lng: number } | null>(null)
-  // ตำแหน่งที่ใช้หาจุดใกล้สุด (กดบนแผนที่ / ตำแหน่งของฉัน) — km = ระยะถึงจุดที่เลือก, null = ไม่มีในรัศมี
-  const [origin, setOrigin] = useState<{ lat: number; lng: number; fromMe: boolean; km: number | null } | null>(null)
+  // ตำแหน่งที่ใช้หาจุดใกล้สุด (กดบนแผนที่ / ตำแหน่งของฉัน) — km = ระยะถึงจุดที่เลือก
+  // outside = อยู่นอกประเทศไทย (ไม่ขึ้นค่า)
+  const [origin, setOrigin] = useState<{
+    lat: number
+    lng: number
+    fromMe: boolean
+    km: number | null
+    outside: boolean
+  } | null>(null)
+  // กดหลายครั้งติดกัน — ใช้ผลของครั้งล่าสุดเท่านั้น (ตรวจพื้นที่ผ่าน API ช้ากว่าการกด)
+  const pickRequestRef = useRef(0)
   const [points, setPoints] = useState<SoilPoint[]>([])
   // จุด 700+ จุด วาดบน canvas เร็วกว่า SVG มาก
   const pointRenderer = useMemo(() => L.canvas({ padding: 0.5 }), [])
@@ -408,11 +418,17 @@ export default function SoilMaps() {
     const own = entry.t === "sub"
       ? points.find((pt) => pt.subdistrict === entry.nth && pt.district === entry.dth && pt.province === entry.pth)
       : undefined
+    // ตำบลจากผลค้นหาอยู่ในไทยแน่นอน ไม่ต้องตรวจพื้นที่ (กลางกรอบของตำบลริมทะเลอาจตกทะเล)
+    pickRequestRef.current++
     if (own) {
       setSelected(own)
       setOrigin(null)
     } else if (entry.t === "sub") {
-      selectNearest((minLat + maxLat) / 2, (minLng + maxLng) / 2, false)
+      const lat = (minLat + maxLat) / 2
+      const lng = (minLng + maxLng) / 2
+      const near = nearestPoint(lat, lng)
+      setSelected(near?.pt ?? null)
+      setOrigin({ lat, lng, fromMe: false, km: near?.km ?? null, outside: false })
     } else {
       setSelected(null)
       setOrigin(null)
@@ -499,22 +515,32 @@ export default function SoilMaps() {
   const score = selected ? soilScore(selected.om, selected.p, selected.k) : null
   const sumLevel = score != null ? classify("sum", score) : null
 
-  // จุดตัวอย่างที่ใกล้ที่สุด — นับเฉพาะจุดที่แสดงอยู่ในชั้นข้อมูลที่เปิด (ผู้ใช้เห็นว่าเลือกจุดไหน)
-  // ไกลเกิน NEAREST_MAX_KM ถือว่าไม่มีข้อมูล เกณฑ์เดียวกับ "ดึงค่าจากแผนที่" ในหน้าคำนวณปุ๋ย
-  function selectNearest(lat: number, lng: number, fromMe: boolean) {
-    let best: SoilPoint | null = null
-    let bestKm = Infinity
+  // จุดตัวอย่างที่ใกล้ที่สุด (ไม่จำกัดระยะ) — นับเฉพาะจุดที่แสดงอยู่ในชั้นข้อมูลที่เปิด
+  // ผู้ใช้จึงเห็นว่าค่ามาจากจุดไหน
+  function nearestPoint(lat: number, lng: number): { pt: SoilPoint; km: number } | null {
+    let best: { pt: SoilPoint; km: number } | null = null
     for (const pt of points) {
       if (active && !pointLevel(pt, active)) continue
       const km = haversineKm(lat, lng, pt.lat, pt.lng)
-      if (km < bestKm) {
-        best = pt
-        bestKm = km
-      }
+      if (!best || km < best.km) best = { pt, km }
     }
-    const found = best && bestKm <= NEAREST_MAX_KM ? best : null
-    setSelected(found)
-    setOrigin({ lat, lng, fromMe, km: found ? bestKm : null })
+    return best
+  }
+
+  // กดบนแผนที่ / ตำแหน่งของฉัน — นอกประเทศไทย (ทะเล, ประเทศเพื่อนบ้าน) ไม่ขึ้นค่า
+  async function selectNearest(lat: number, lng: number, fromMe: boolean) {
+    const req = ++pickRequestRef.current
+    const place = await lookupThaiArea(lat, lng)
+    if (req !== pickRequestRef.current) return
+    // ตรวจพื้นที่ไม่ได้ (เครือข่าย) — ยังให้ค่าจุดใกล้สุด ดีกว่าไม่ขึ้นอะไรเลย
+    if (place.status === "outside") {
+      setSelected(null)
+      setOrigin({ lat, lng, fromMe, km: null, outside: true })
+      return
+    }
+    const near = nearestPoint(lat, lng)
+    setSelected(near?.pt ?? null)
+    setOrigin({ lat, lng, fromMe, km: near?.km ?? null, outside: false })
   }
 
   function goToMyLocation() {
@@ -578,7 +604,13 @@ export default function SoilMaps() {
                   fillColor: LEVEL_COLORS[lv],
                   fillOpacity: soilOpacity,
                 }}
-                eventHandlers={{ click: () => { setSelected(pt); setOrigin(null) } }}
+                eventHandlers={{
+                  click: () => {
+                    pickRequestRef.current++
+                    setSelected(pt)
+                    setOrigin(null)
+                  },
+                }}
               />
             )
           })}
@@ -894,11 +926,13 @@ export default function SoilMaps() {
         </div>
       )}
 
-      {/* กดที่ไกลจากจุดตัวอย่างทุกจุด (ทะเล / ต่างประเทศ / พื้นที่ไม่มีข้อมูล) */}
-      {!selected && origin && origin.km == null && (
+      {/* กดนอกประเทศไทย (ทะเล / ประเทศเพื่อนบ้าน) หรือยังโหลดจุดตัวอย่างไม่ได้ */}
+      {!selected && origin && (
       <div className="pointer-events-none absolute inset-x-0 bottom-[58px] z-[1001] flex justify-center px-3 lg:bottom-4">
         <div className="pointer-events-auto relative w-full max-w-[26rem] rounded-2xl bg-white/90 px-9 py-3 text-center text-xs text-gray-500 shadow-xl ring-1 ring-black/5 backdrop-blur">
-          ไม่มีจุดตัวอย่างดินในรัศมี {NEAREST_MAX_KM} กม. จาก{origin.fromMe ? "ตำแหน่งของคุณ" : "จุดนี้"}
+          {origin.outside
+            ? `${origin.fromMe ? "ตำแหน่งของคุณ" : "จุดนี้"}อยู่นอกพื้นที่ประเทศไทย`
+            : "ยังไม่มีข้อมูลจุดตัวอย่างดิน"}
           <button
             onClick={() => setOrigin(null)}
             className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 flex items-center justify-center rounded-full text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors"

@@ -34,7 +34,7 @@ import LeafStandardTable from "@/components/fertilizer/LeafStandardTable"
 import SoilRecommendationTable from "@/components/fertilizer/SoilRecommendationTable"
 import ImportPanel, { type FilledRow } from "@/components/analyze/ImportPanel"
 import { getNearestSoil } from "@/lib/supabase/soilPoints"
-import { NEAREST_MAX_KM } from "@/lib/soil/grid"
+import { lookupThaiArea } from "@/lib/soil/thaiArea"
 import type { PickedArea } from "@/app/analyze/map/MapPicker"
 
 // Leaflet ใช้ได้เฉพาะฝั่งเบราว์เซอร์ — โหลดตอนเปิดหน้าต่างแผนที่เท่านั้น
@@ -53,7 +53,13 @@ interface MapPick {
   lng: number
   area: PickedArea | null
   values: { om: string; p: string; k: string }
+  /** ระยะถึงจุดตัวอย่างที่ใช้ (กม.) — แต่ละธาตุอาจมาจากคนละจุด จึงเป็นช่วง ใกล้สุด–ไกลสุด */
+  km: { min: number; max: number } | null
 }
+
+/** "4.2 กม." หรือ "4.2–12.0 กม." ถ้าแต่ละธาตุมาจากจุดที่ระยะต่างกัน */
+const fmtKm = (km: MapPick["km"]) =>
+  !km ? "" : km.min.toFixed(1) === km.max.toFixed(1) ? `${km.min.toFixed(1)} กม.` : `${km.min.toFixed(1)}–${km.max.toFixed(1)} กม.`
 
 // ค่าดินเป็นทศนิยมยาว — ตัดเหลือ 2 ตำแหน่ง (เหมือนหน้าแผนที่)
 const fmtSoil = (v: number | null) => (v == null ? "" : String(Number(v.toFixed(2))))
@@ -310,7 +316,7 @@ export default function AnalyzeForm() {
         fromImage?.notes ?? null, // รหัสตัวอย่าง/เบอร์โทรจากหน้าอัปโหลดรูป
         crop ? `พืช: ${crop.name}` : null,
         usingMapValues && mapPick
-          ? `ค่าดินจากจุดตัวอย่างใกล้เคียง (ไม่เกิน ${NEAREST_MAX_KM} กม.) ณ ${mapPick.lat.toFixed(5)}, ${mapPick.lng.toFixed(5)}`
+          ? `ค่าดินจากจุดตัวอย่างที่ใกล้ที่สุด${mapPick.km ? ` (ห่าง ${fmtKm(mapPick.km)})` : ""} ณ ${mapPick.lat.toFixed(5)}, ${mapPick.lng.toFixed(5)}`
           : null,
       ].filter(Boolean).join(" · ")
       const analysisId = await saveManualAnalysis({
@@ -393,8 +399,8 @@ export default function AnalyzeForm() {
     invalidate()
   }
 
-  // ปักหมุดแล้ว -> ดึง OM/P/K จากจุดตัวอย่างดิน (รายตำบล) ที่ใกล้ที่สุด แยกทีละธาตุ ภายใน 30 กม.
-  // มาเติมในช่อง (ผู้ใช้แก้ต่อได้)
+  // ปักหมุดแล้ว -> ดึง OM/P/K จากจุดตัวอย่างดิน (รายตำบล) ที่ใกล้ที่สุด แยกทีละธาตุ ไม่จำกัดระยะ
+  // มาเติมในช่อง (ผู้ใช้แก้ต่อได้) — หมุดนอกประเทศไทยไม่ดึงค่า
   async function handleMapConfirm(lat: number, lng: number, area?: PickedArea) {
     setMapOpen(false)
     setMapError(null)
@@ -403,27 +409,37 @@ export default function AnalyzeForm() {
       // MapPicker หาชื่อพื้นที่แบบหน่วงเวลา — ถ้ากดยืนยันเร็วกว่านั้น area จะยังว่าง จึงถามซ้ำที่นี่
       const [soil, place] = await Promise.all([
         getNearestSoil(lat, lng),
-        area ??
-          fetch(`/api/reverse-geocode?lat=${lat}&lng=${lng}`)
-            .then((r) => (r.ok ? (r.json() as Promise<PickedArea>) : null))
-            .catch(() => null),
+        area ? Promise.resolve({ status: "inside" as const, area }) : lookupThaiArea(lat, lng),
       ])
-      area = place ?? undefined
+      if (place.status === "outside") {
+        setMapError("จุดนี้อยู่นอกพื้นที่ประเทศไทย — ปักหมุดในประเทศไทย หรือกรอกค่าเองได้")
+        return
+      }
+      area = place.status === "inside" ? place.area : undefined
       if (!soil || (soil.om == null && soil.p == null && soil.k == null)) {
-        setMapError(`ไม่มีจุดตัวอย่างดินในรัศมี ${NEAREST_MAX_KM} กม. จากจุดนี้ — กรอกค่าเองได้`)
+        setMapError("ยังไม่มีข้อมูลจุดตัวอย่างดิน — กรอกค่าเองได้")
         return
       }
       const missing = ([["OM", soil.om], ["P", soil.p], ["K", soil.k]] as const)
         .filter(([, v]) => v == null)
         .map(([name]) => name)
       if (missing.length) {
-        setMapError(`ไม่มีข้อมูล ${missing.join(", ")} ในรัศมี ${NEAREST_MAX_KM} กม. — กรอกค่าเองได้`)
+        setMapError(`ไม่มีข้อมูล ${missing.join(", ")} — กรอกค่าเองได้`)
       }
+      const dists = [soil.sources.om, soil.sources.p, soil.sources.k]
+        .filter((s): s is NonNullable<typeof s> => !!s)
+        .map((s) => s.distanceKm)
       const values = { om: fmtSoil(soil.om), p: fmtSoil(soil.p), k: fmtSoil(soil.k) }
       setOm(values.om)
       setP(values.p)
       setK(values.k)
-      setMapPick({ lat, lng, area: area ?? null, values })
+      setMapPick({
+        lat,
+        lng,
+        area: area ?? null,
+        values,
+        km: dists.length ? { min: Math.min(...dists), max: Math.max(...dists) } : null,
+      })
       invalidate()
     } catch {
       setMapError("ดึงค่าจากแผนที่ไม่สำเร็จ ลองใหม่อีกครั้ง")
@@ -483,6 +499,14 @@ export default function AnalyzeForm() {
             <p className="mt-3 flex items-start gap-2 rounded-xl bg-[#F1F7F2] px-3 py-2 text-xs leading-relaxed text-[#1A4D2E]">
               <ScanLine className="mt-0.5 h-3.5 w-3.5 shrink-0" />
               <span>ค่าจากการวิเคราะห์ภาพแผ่นทดสอบ (แบบจำลอง AI) — ตรวจและแก้ไขได้ก่อนกดคำนวณ</span>
+            </p>
+          )}
+
+          {/* ยังใช้ค่าจากแผนที่อยู่ — บอกว่าจุดตัวอย่างที่ใช้อยู่ห่างแค่ไหน */}
+          {usingMapValues && mapPick?.km && (
+            <p className="mt-3 flex items-start gap-2 rounded-xl bg-gray-50 px-3 py-2 text-xs leading-relaxed text-gray-600">
+              <MapPin className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+              <span>ค่าจากจุดตัวอย่างที่ใกล้ที่สุด ห่าง {fmtKm(mapPick.km)}</span>
             </p>
           )}
 

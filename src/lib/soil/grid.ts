@@ -96,11 +96,10 @@ export const NUTRIENT_META: Record<
 
 export const NUTRIENTS: Nutrient[] = ["om", "p", "k"]
 
-// "ดึงค่าจากแผนที่" (หน้าคำนวณปุ๋ย) และการกดบนหน้าแผนที่ ใช้จุดตัวอย่างที่ใกล้ที่สุดได้ไม่เกินระยะนี้
-// ไกลกว่านี้ถือว่าไม่มีข้อมูล
-export const NEAREST_MAX_KM = 30
-
-/** ระยะทางบนผิวโลก (กม.) ระหว่างสองพิกัด */
+/**
+ * ระยะทางบนผิวโลก (กม.) ระหว่างสองพิกัด
+ * ใช้หาจุดตัวอย่างที่ใกล้ที่สุด (หน้าแผนที่ + "ดึงค่าจากแผนที่") — ไม่จำกัดระยะ แต่ต้องอยู่ในประเทศไทย
+ */
 export function haversineKm(lat1: number, lng1: number, lat2: number, lng2: number) {
   const R = 6371
   const rad = Math.PI / 180

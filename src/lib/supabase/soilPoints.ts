@@ -1,7 +1,7 @@
 "use server"
 
 import { createClient } from "@/lib/supabase/server"
-import { classify, haversineKm, NEAREST_MAX_KM, type Nutrient, type SoilLevel } from "@/lib/soil/grid"
+import { classify, haversineKm, type Nutrient, type SoilLevel } from "@/lib/soil/grid"
 import CENTERS from "@/lib/soil/subdistrictCenters.json"
 
 // =============================================================================
@@ -9,7 +9,8 @@ import CENTERS from "@/lib/soil/subdistrictCenters.json"
 //   ค่ารายตำบลคำนวณในฐานข้อมูล (get_soil_point_stats) จากตัวอย่างระบบเก่า + รายการวิเคราะห์ด้วย AI
 //   ตำแหน่งจุด = กลางตำบลจาก subdistrictCenters.json (สร้างโดย scripts/build_soil_points.py)
 //   - listSoilPoints: จุดทั้งหมดสำหรับวาดบนแผนที่
-//   - getNearestSoil: ค่าดิน ณ จุดที่ปักหมุด = จุดที่ใกล้ที่สุด "แยกทีละธาตุ" ในรัศมี 30 กม.
+//   - getNearestSoil: ค่าดิน ณ จุดที่ปักหมุด = จุดที่ใกล้ที่สุด "แยกทีละธาตุ" ไม่จำกัดระยะ
+//     (หน้าเว็บตรวจเองว่าหมุดอยู่ในประเทศไทย — lib/soil/thaiArea.ts)
 // =============================================================================
 
 export interface SoilPoint {
@@ -87,14 +88,13 @@ export async function listSoilPoints(): Promise<SoilPoint[]> {
 
 
 /**
- * ค่าดิน ณ จุดที่ปักหมุด: แต่ละธาตุใช้จุดตัวอย่างที่ใกล้ที่สุดที่มีค่าธาตุนั้น ภายใน 30 กม.
- * คืน null ถ้าไม่มีจุดตัวอย่างใดเลยในรัศมี
+ * ค่าดิน ณ จุดที่ปักหมุด: แต่ละธาตุใช้จุดตัวอย่างที่ใกล้ที่สุดที่มีค่าธาตุนั้น (ไม่จำกัดระยะ)
+ * คืน null ถ้ายังไม่มีจุดตัวอย่างเลย
  */
 export async function getNearestSoil(lat: number, lng: number): Promise<NearestSoil | null> {
   if (!Number.isFinite(lat) || !Number.isFinite(lng)) return null
   const near = (await listSoilPoints())
     .map((pt) => ({ pt, km: haversineKm(lat, lng, pt.lat, pt.lng) }))
-    .filter((x) => x.km <= NEAREST_MAX_KM)
     .sort((a, b) => a.km - b.km)
 
   const pick = (n: Nutrient) => near.find((x) => x.pt[n] != null) ?? null
