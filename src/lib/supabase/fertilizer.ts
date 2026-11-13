@@ -2,6 +2,8 @@
 
 import { createClient } from "@/lib/supabase/server"
 import { revalidatePath } from "next/cache"
+import { bandIndex, bandLevel, bandsFromRows, type BandNutrient, type CropBands } from "@/lib/fertilizer/soilBands"
+import type { SoilLevel } from "@/lib/soil/grid"
 
 // =============================================================================
 // FERTILIZER CALCULATION
@@ -17,7 +19,24 @@ export interface FertilizerResult {
     p: boolean
     k: boolean
   }
+  /** ระดับดินตามช่วงของพืชนี้ (null = พืชแบ่งช่วงแบบอื่น ใช้เกณฑ์ทั่วไปแทน) */
+  levels: Record<BandNutrient, SoilLevel | null>
   notes: string[]
+}
+
+/**
+ * ช่วงค่าดินของพืช (จากตารางการใช้ปุ๋ยตามค่าวิเคราะห์ดิน) — หน้ากรอกค่าใช้บอกระดับ ต่ำ/ปานกลาง/สูง
+ * ตามเกณฑ์ของพืชที่เลือก ตั้งแต่ก่อนกดคำนวณ
+ */
+export async function getCropBands(cropId: string): Promise<CropBands | null> {
+  const supabase = await createClient()
+  const { data, error } = await supabase
+    .from("fertilizer_recommendations")
+    .select("om_min, om_max, p_min, p_max, k_min, k_max")
+    .eq("crop_id", cropId)
+    .eq("mode", "100%")
+  if (error || !data?.length) return null
+  return bandsFromRows(data)
 }
 
 export interface CropOption {
@@ -59,7 +78,8 @@ export async function listCrops(): Promise<CropOption[]> {
  *
  * Algorithm (per nutrient):
  *   1. For nutrient X (OM | P | K), query all recommendations of this crop where x_min/x_max not null
- *   2. Find the row where x_min <= value <= x_max → use its target N/P2O5/K2O
+ *   2. Find the row whose range holds the value (bandIndex — ขอบตามเอกสาร ไม่มีช่องว่างระหว่างช่วง)
+ *      → use its target N/P2O5/K2O
  *   3. Sum the matched targets across all 3 nutrients
  */
 export async function calculateFertilizer(input: {
@@ -85,23 +105,38 @@ export async function calculateFertilizer(input: {
       target_k2o: null,
       unit: "g/tree/year",
       matched: { om: false, p: false, k: false },
+      levels: { om: null, p: null, k: null },
       notes: ["ไม่พบข้อมูลคำแนะนำสำหรับพืชนี้"],
     }
   }
 
   type Rec = typeof recs[number]
+  const bands = bandsFromRows(recs)
   const result: FertilizerResult = {
     target_n: null,
     target_p2o5: null,
     target_k2o: null,
     unit: recs[0].target_unit,
     matched: { om: false, p: false, k: false },
+    levels: {
+      om: bandLevel(bands.om, input.om_value),
+      p: bandLevel(bands.p, input.p_value),
+      k: bandLevel(bands.k, input.k_value),
+    },
     notes: [],
+  }
+
+  // แถวคำแนะนำของช่วงที่ค่าดินตกอยู่ (ช่วงเดียวกับที่แผนใส่ปุ๋ยตามระยะใช้)
+  const rowFor = (n: BandNutrient, value: number): Rec | undefined => {
+    const i = bandIndex(bands[n], value)
+    if (i === null) return undefined
+    const b = bands[n][i]
+    return recs.find((r: Rec) => toNum(r[`${n}_min`]) === b.min && toNum(r[`${n}_max`]) === b.max)
   }
 
   // OM lookup → contributes target_n
   if (input.om_value !== null) {
-    const omRow = recs.find((r: Rec) => r.om_min !== null && r.om_max !== null && r.om_min <= input.om_value! && input.om_value! <= r.om_max)
+    const omRow = rowFor("om", input.om_value)
     if (omRow?.target_n !== undefined && omRow.target_n !== null) {
       result.target_n = (result.target_n ?? 0) + Number(omRow.target_n)
       result.matched.om = true
@@ -112,7 +147,7 @@ export async function calculateFertilizer(input: {
 
   // P lookup → contributes target_p2o5
   if (input.p_value !== null) {
-    const pRow = recs.find((r: Rec) => r.p_min !== null && r.p_max !== null && r.p_min <= input.p_value! && input.p_value! <= r.p_max)
+    const pRow = rowFor("p", input.p_value)
     if (pRow?.target_p2o5 !== undefined && pRow.target_p2o5 !== null) {
       result.target_p2o5 = (result.target_p2o5 ?? 0) + Number(pRow.target_p2o5)
       result.matched.p = true
@@ -123,7 +158,7 @@ export async function calculateFertilizer(input: {
 
   // K lookup → contributes target_k2o
   if (input.k_value !== null) {
-    const kRow = recs.find((r: Rec) => r.k_min !== null && r.k_max !== null && r.k_min <= input.k_value! && input.k_value! <= r.k_max)
+    const kRow = rowFor("k", input.k_value)
     if (kRow?.target_k2o !== undefined && kRow.target_k2o !== null) {
       result.target_k2o = (result.target_k2o ?? 0) + Number(kRow.target_k2o)
       result.matched.k = true
@@ -134,6 +169,8 @@ export async function calculateFertilizer(input: {
 
   return result
 }
+
+const toNum = (v: number | string | null) => (v === null ? null : Number(v))
 
 /**
  * Persist the computed recommendation to analysis_results.

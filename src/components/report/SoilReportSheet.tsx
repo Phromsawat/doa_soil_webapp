@@ -109,7 +109,8 @@ export default function SoilReportSheet({
             <h2 className="h2">ระดับธาตุอาหารในดิน</h2>
             <div className="levels">
               {nutrients.map((n) => {
-                const lv = classify(n.key, n.value)
+                // ระดับตามช่วงของพืช (เหมือนหน้ากรอกค่า/หน้าผล) — ไม่มีก็ใช้เกณฑ์ทั่วไป
+                const lv = n.value == null ? null : calculation?.levels?.[n.key] ?? classify(n.key, n.value)
                 return (
                   <div className="level" key={n.key}>
                     <div className="level-top">

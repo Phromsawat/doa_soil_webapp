@@ -3,6 +3,7 @@
 import { createClient } from "@/lib/supabase/server"
 import { revalidatePath } from "next/cache"
 import { blendFertilizer, type Formula } from "@/lib/fertilizer/blend"
+import { bandIndex, bandsFromRows, type BandNutrient } from "@/lib/fertilizer/soilBands"
 
 // =============================================================================
 // นำเข้าผลวิเคราะห์ดินหลายรายการพร้อมกัน (จากไฟล์ Excel/CSV)
@@ -73,6 +74,7 @@ const num = (v: string | undefined): number | null => {
   const n = Number(c)
   return Number.isFinite(n) ? n : null
 }
+const toNum = (v: number | string | null) => (v === null ? null : Number(v))
 
 async function requireUser() {
   const supabase = await createClient()
@@ -157,7 +159,7 @@ async function resolveRows(
     }
     if (picked.length === 0) errors.push("ไม่ได้เลือกปุ๋ย")
 
-    // คำนวณธาตุอาหารเป้าหมาย — กติกาเดียวกับ calculateFertilizer (min ≤ ค่า ≤ max)
+    // คำนวณธาตุอาหารเป้าหมาย — กติกาเดียวกับ calculateFertilizer (bandIndex: ขอบตามเอกสาร)
     let target: BulkRowResult["target"] = null
     let unit: string | null = null
     let blend: BulkRowResult["blend"] = []
@@ -167,15 +169,16 @@ async function resolveRows(
       if (list.length === 0) errors.push(`ยังไม่มีตารางคำแนะนำสำหรับ${crop.name}`)
       else {
         unit = list[0].target_unit
-        const hit = (lo: keyof RecRow, hi: keyof RecRow, v: number | null) =>
-          v === null ? undefined : list.find((r) => {
-            const a = r[lo] as number | null
-            const b = r[hi] as number | null
-            return a !== null && b !== null && a <= v && v <= b
-          })
-        const omRow = hit("om_min", "om_max", om)
-        const pRow = hit("p_min", "p_max", p)
-        const kRow = hit("k_min", "k_max", k)
+        const bands = bandsFromRows(list)
+        const hit = (n: BandNutrient, v: number | null) => {
+          const i = v === null ? null : bandIndex(bands[n], v)
+          if (i === null) return undefined
+          const b = bands[n][i]
+          return list.find((r) => toNum(r[`${n}_min`]) === b.min && toNum(r[`${n}_max`]) === b.max)
+        }
+        const omRow = hit("om", om)
+        const pRow = hit("p", p)
+        const kRow = hit("k", k)
         if (om !== null && omRow?.target_n == null) errors.push(`ค่า OM=${om} ไม่อยู่ในช่วงของตาราง`)
         if (p !== null && pRow?.target_p2o5 == null) errors.push(`ค่า P=${p} ไม่อยู่ในช่วงของตาราง`)
         if (k !== null && kRow?.target_k2o == null) errors.push(`ค่า K=${k} ไม่อยู่ในช่วงของตาราง`)

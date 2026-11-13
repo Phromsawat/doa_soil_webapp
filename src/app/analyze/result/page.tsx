@@ -13,6 +13,7 @@ import FertilizerPlanTable from "@/components/fertilizer/FertilizerPlanTable"
 import CropNote from "@/components/fertilizer/CropNote"
 import type { PlanTab } from "@/lib/fertilizer/chemicalPlan"
 import { unitTh } from "@/lib/fertilizer/unit"
+import { classify as classifySoil, type Nutrient, type SoilLevel } from "@/lib/soil/grid"
 
 type AnalysisRecord = Awaited<ReturnType<typeof getAnalysis>>
 
@@ -112,15 +113,20 @@ function ResultContent() {
   const areaLabel =
     [record.district, record.amphur, record.province].filter(Boolean).join(" ") || "ไม่ระบุ"
 
-  const classify = (val: number, low: number, high: number) => {
-    if (val < low)  return { label: "ต่ำ",      textColor: "#ff000d", barColor: "#ff000d", pct: 30 }
-    if (val > high) return { label: "สูง",      textColor: "#4a9e52", barColor: "#85c98a", pct: 90 }
-    return            { label: "ปานกลาง", textColor: "#c47f17", barColor: "#ffd188", pct: 60 }
+  // ระดับตามช่วงของพืชที่บันทึก (ผลคำนวณ) — ไม่มีพืช/พืชแบ่งช่วงแบบอื่น ใช้เกณฑ์ทั่วไปเหมือนหน้ากรอกค่า
+  const LEVEL_STYLE: Record<SoilLevel, { label: string; barColor: string; pct: number }> = {
+    low:    { label: "ต่ำ",      barColor: "#ff000d", pct: 30 },
+    medium: { label: "ปานกลาง", barColor: "#ffd188", pct: 60 },
+    high:   { label: "สูง",      barColor: "#85c98a", pct: 90 },
+  }
+  const levelOf = (key: Nutrient, val: number) => {
+    const lv = calculation?.levels?.[key] ?? classifySoil(key, val)
+    return lv ? LEVEL_STYLE[lv] : null
   }
   const nutrients = [
-    { name: "อินทรียวัตถุ (OM)", unit: "%",     value: record.om_value as number | null, low: 1,  high: 3 },
-    { name: "ฟอสฟอรัส (P)",      unit: " mg/kg", value: record.p_value as number | null,  low: 15, high: 45 },
-    { name: "โพแทสเซียม (K)",    unit: " mg/kg", value: record.k_value as number | null,  low: 50, high: 100 },
+    { key: "om" as const, name: "อินทรียวัตถุ (OM)", unit: "%",     value: record.om_value as number | null },
+    { key: "p" as const,  name: "ฟอสฟอรัส (P)",      unit: " mg/kg", value: record.p_value as number | null },
+    { key: "k" as const,  name: "โพแทสเซียม (K)",    unit: " mg/kg", value: record.k_value as number | null },
   ]
   // รายการอัปโหลดรูปที่ยังไม่ได้เลือกพืช — ชวนไปเลือกพืชและคำนวณปุ๋ยต่อ
   const needsCrop = record.input_mode === "image_upload" && !record.crop_id
@@ -141,7 +147,7 @@ function ResultContent() {
 
           <div className="space-y-4">
             {nutrients.map((n) => {
-              const level = n.value == null ? null : classify(n.value, n.low, n.high)
+              const level = n.value == null ? null : levelOf(n.key, n.value)
               return (
                 <div key={n.name}>
                   <div className="flex justify-between text-xs mb-1.5 font-medium">
@@ -149,7 +155,7 @@ function ResultContent() {
                     <span className="text-text-secondary">
                       {n.value == null
                         ? "— (ไม่ได้ตรวจ)"
-                        : `${n.value.toLocaleString("th-TH", { maximumFractionDigits: 2 })}${n.unit} (${level!.label})`}
+                        : `${n.value.toLocaleString("th-TH", { maximumFractionDigits: 2 })}${n.unit}${level ? ` (${level.label})` : ""}`}
                     </span>
                   </div>
                   <div className="h-2 w-full bg-gray-100 rounded-full overflow-hidden">

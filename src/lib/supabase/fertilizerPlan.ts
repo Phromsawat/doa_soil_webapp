@@ -1,14 +1,17 @@
 "use server"
 
 import { createClient } from "@/lib/supabase/server"
+import { bandIndex, bandsFromRows, distinctBands, type BandNutrient } from "@/lib/fertilizer/soilBands"
 
 // =============================================================================
 // แผนการใส่ปุ๋ยตายตัวตามค่าวิเคราะห์ดิน (crop_fertilizer_plan)
 //   ดินอยู่ช่วงไหน -> ดึงปริมาณปุ๋ยแต่ละสูตร แยกตามระยะ (ตามตารางกรมฯ)
 //   ไม่ผ่าน solver — เป็น lookup ตรง ๆ
 //
-// การจับคู่ช่วง: ใช้ [min, max) — min รวม, max ไม่รวม — ให้ค่าดินตกลงช่องเดียวเสมอ
-//   เช่น เกณฑ์ <2 / 2-3 / >3 : ค่า 2.0 -> "2-3", ค่า 3.0 -> ">3"
+// การจับคู่ช่วง: หาว่าค่าดินอยู่ช่วงที่เท่าไรของตารางการใช้ปุ๋ยตามค่าวิเคราะห์ดิน (fertilizer_recommendations)
+//   แล้วใช้ช่วงลำดับเดียวกันของตารางแผน — ช่วงเดียวกับที่คำนวณธาตุอาหารที่พืชต้องการเสมอ
+//   ขอบตามเอกสาร: <2 / 2-3 / >3 — ค่า 2.0 และ 3.0 อยู่ช่วง "2-3"
+//   (เดิมจับด้วยตัวเลขขอบของตารางแผนเอง ซึ่งบางพืชไม่ตรงกับตารางคำแนะนำ เช่น มะม่วง 2/3 กับ 1.5/2.5)
 // =============================================================================
 
 export type UseType = "straight" | "compound" | "organic70"
@@ -37,11 +40,14 @@ export interface FertilizerPlan {
   stages: PlanStage[]
 }
 
+// จับช่วงด้วยตัวเลขขอบของตารางแผนเอง [min, max) — ใช้เฉพาะเมื่อพืชไม่มีตารางคำแนะนำให้เทียบลำดับช่วง
 function inRange(v: number, min: number | null, max: number | null): boolean {
   if (min !== null && v < min) return false
   if (max !== null && v >= max) return false
   return true
 }
+
+const toNum = (v: number | string | null) => (v === null ? null : Number(v))
 
 // คีย์เรียงสูตรปุ๋ย: สูตรมาตรฐาน "N-P-K" มาก่อน เรียง N มาก→น้อย แล้ว P แล้ว K
 // (46-0-0 → 18-46-0 → 0-0-60); สูตรที่ไม่ใช่รูปแบบนี้ (เช่น ปุ๋ยอินทรีย์) อยู่ท้ายสุด
@@ -124,14 +130,21 @@ export async function getFertilizerPlan(input: {
   const supabase = await createClient()
   const useType: UseType = input.use_type ?? "straight"
 
-  const { data, error } = await supabase
-    .from("crop_fertilizer_plan")
-    .select(
-      "use_type, om_min, om_max, p_min, p_max, k_min, k_max, stage, stage_order, grade, amount, unit"
-    )
-    .eq("crop_id", input.crop_id)
-    .eq("use_type", useType)
-    .order("stage_order", { ascending: true })
+  const [{ data, error }, { data: recs }] = await Promise.all([
+    supabase
+      .from("crop_fertilizer_plan")
+      .select(
+        "use_type, om_min, om_max, p_min, p_max, k_min, k_max, stage, stage_order, grade, amount, unit"
+      )
+      .eq("crop_id", input.crop_id)
+      .eq("use_type", useType)
+      .order("stage_order", { ascending: true }),
+    supabase
+      .from("fertilizer_recommendations")
+      .select("om_min, om_max, p_min, p_max, k_min, k_max")
+      .eq("crop_id", input.crop_id)
+      .eq("mode", "100%"),
+  ])
   if (error) throw new Error(`getFertilizerPlan: ${error.message}`)
   if (!data || data.length === 0) return null
 
@@ -142,12 +155,24 @@ export async function getFertilizerPlan(input: {
   if (input.om === null || input.p === null || input.k === null) {
     return { use_type: useType, unit, stages: [] }
   }
+  const soil: Record<BandNutrient, number> = { om: input.om, p: input.p, k: input.k }
 
-  const matched = rows.filter(
-    (r) =>
-      inRange(input.om!, r.om_min, r.om_max) &&
-      inRange(input.p!, r.p_min, r.p_max) &&
-      inRange(input.k!, r.k_min, r.k_max)
+  // ช่วงลำดับที่เท่าไร — ใช้ตารางคำแนะนำของพืชเป็นหลัก ถ้าจำนวนช่วงไม่เท่าตารางแผน
+  // (ข้อมูลไม่ครบ) ค่อยจับด้วยตัวเลขขอบของตารางแผนเอง
+  const recBands = bandsFromRows(recs ?? [])
+  const nutrients: BandNutrient[] = ["om", "p", "k"]
+  const want = {} as Record<BandNutrient, string | null>
+  for (const n of nutrients) {
+    const planBands = distinctBands(rows, n)
+    const i =
+      recBands[n].length === planBands.length
+        ? bandIndex(recBands[n], soil[n])
+        : planBands.findIndex((b) => inRange(soil[n], b.min, b.max))
+    want[n] = i === null || i < 0 ? null : `${planBands[i].min}|${planBands[i].max}`
+  }
+
+  const matched = rows.filter((r) =>
+    nutrients.every((n) => want[n] === `${toNum(r[`${n}_min`])}|${toNum(r[`${n}_max`])}`)
   )
 
   // จัดกลุ่มตามระยะ เรียงตาม stage_order

@@ -11,6 +11,7 @@ import { getAnalysis, saveManualAnalysis } from "@/lib/supabase/analyses"
 import {
   calculateFertilizer,
   calculateAndSave,
+  getCropBands,
   listCrops,
   type CropOption,
   type FertilizerResult,
@@ -22,6 +23,7 @@ import {
 import { useUser } from "@/lib/supabase/useUser"
 import { readGuestSoil, saveGuestReport, type GuestSoil } from "@/lib/analysis/guestSession"
 import { classify, LEVEL_COLORS, LEVEL_LABEL_TH } from "@/lib/soil/grid"
+import { bandLevel, type CropBands } from "@/lib/fertilizer/soilBands"
 import { blendFertilizer, type BlendResult } from "@/lib/fertilizer/blend"
 import { unitTh } from "@/lib/fertilizer/unit"
 import type { PlanTab } from "@/lib/fertilizer/chemicalPlan"
@@ -192,6 +194,18 @@ export default function AnalyzeForm() {
   const { isAuthenticated, loading: userLoading } = useUser()
   const router = useRouter()
 
+  // ช่วงค่าดินของพืชที่เลือก — ผูกกับ cropId ที่โหลดมา กันช่วงของพืชก่อนหน้าค้างตอนเปลี่ยนพืช
+  const [bandsOf, setBandsOf] = useState<{ cropId: string; bands: CropBands | null } | null>(null)
+  const cropBands = bandsOf && bandsOf.cropId === cropId ? bandsOf.bands : null
+  useEffect(() => {
+    if (!cropId) return
+    let alive = true
+    getCropBands(cropId)
+      .then((bands) => { if (alive) setBandsOf({ cropId, bands }) })
+      .catch(() => {})
+    return () => { alive = false }
+  }, [cropId])
+
   useEffect(() => {
     listCrops()
       .then(setCrops)
@@ -233,9 +247,11 @@ export default function AnalyzeForm() {
   const pN = num(p)
   const kN = num(k)
 
-  const omLevel = classify("om", omN)
-  const pLevel = classify("p", pN)
-  const kLevel = classify("k", kN)
+  // ระดับใต้ช่องกรอก — ใช้ช่วงของพืชที่เลือก (ตามตารางการใช้ปุ๋ยตามค่าวิเคราะห์ดินของพืชนั้น)
+  // ยังไม่เลือกพืช / พืชแบ่งช่วงแบบอื่น -> เกณฑ์ทั่วไป
+  const omLevel = bandLevel(cropBands?.om, omN) ?? classify("om", omN)
+  const pLevel = bandLevel(cropBands?.p, pN) ?? classify("p", pN)
+  const kLevel = bandLevel(cropBands?.k, kN) ?? classify("k", kN)
 
   // ชื่อพืชที่เลือก — ใช้เปิดตารางอ้างอิงในขั้นที่ 4-5 (ตารางผูกกับชื่อพืช ไม่ใช่ id)
   const cropName = crops.find((c) => c.id === cropId)?.name ?? ""
