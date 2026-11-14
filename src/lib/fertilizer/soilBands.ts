@@ -79,18 +79,16 @@ export function bandIndex(bands: Band[], v: number): number | null {
   return null
 }
 
-const LEVELS_BY_COUNT: Record<number, SoilLevel[]> = {
-  2: ["low", "high"],
-  3: ["low", "medium", "high"],
-}
-
 /**
- * ระดับ ต่ำ/ปานกลาง/สูง ตามช่วงของพืช — ใช้กับพืชที่แบ่ง 2 หรือ 3 ช่วง
- * แบ่งแบบอื่น (เช่น อ้อย 4 ช่วง) คืน null ให้ผู้เรียกใช้เกณฑ์ทั่วไปแทน
+ * ระดับ ต่ำ/ปานกลาง/สูง ตามช่วงของพืช: ช่วงแรก = ต่ำ, ช่วงสุดท้าย = สูง, ช่วงที่เหลือ = ปานกลาง
+ *   3 ช่วง (ไม้ผล):          ต่ำ / ปานกลาง / สูง
+ *   2 ช่วง (ผัก <1.5 / ≥1.5): ต่ำ / สูง
+ *   4 ช่วง (OM อ้อย):         ต่ำ / ปานกลาง / ปานกลาง / สูง — เอกสารไม่ได้ตั้งชื่อระดับเพิ่ม จึงไม่สร้างชื่อใหม่
+ * มีช่วงเดียว (ไม่มีอะไรให้เทียบ) คืน null ให้ผู้เรียกใช้เกณฑ์ทั่วไปแทน
  */
 export function bandLevel(bands: Band[] | undefined, v: number | null | undefined): SoilLevel | null {
-  if (!bands || v === null || v === undefined) return null
-  const names = LEVELS_BY_COUNT[bands.length]
+  if (!bands || bands.length < 2 || v === null || v === undefined) return null
   const i = bandIndex(bands, v)
-  return names && i !== null ? names[i] : null
+  if (i === null) return null
+  return i === 0 ? "low" : i === bands.length - 1 ? "high" : "medium"
 }

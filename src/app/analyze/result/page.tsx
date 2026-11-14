@@ -113,7 +113,7 @@ function ResultContent() {
   const areaLabel =
     [record.district, record.amphur, record.province].filter(Boolean).join(" ") || "ไม่ระบุ"
 
-  // ระดับตามช่วงของพืชที่บันทึก (ผลคำนวณ) — ไม่มีพืช/พืชแบ่งช่วงแบบอื่น ใช้เกณฑ์ทั่วไปเหมือนหน้ากรอกค่า
+  // ระดับตามช่วงของพืชที่บันทึก (ผลคำนวณ) — ไม่มีพืช/ไม่มีตารางคำแนะนำ ใช้เกณฑ์ทั่วไปเหมือนหน้ากรอกค่า
   const LEVEL_STYLE: Record<SoilLevel, { label: string; barColor: string; pct: number }> = {
     low:    { label: "ต่ำ",      barColor: "#ff000d", pct: 30 },
     medium: { label: "ปานกลาง", barColor: "#ffd188", pct: 60 },

@@ -248,7 +248,7 @@ export default function AnalyzeForm() {
   const kN = num(k)
 
   // ระดับใต้ช่องกรอก — ใช้ช่วงของพืชที่เลือก (ตามตารางการใช้ปุ๋ยตามค่าวิเคราะห์ดินของพืชนั้น)
-  // ยังไม่เลือกพืช / พืชแบ่งช่วงแบบอื่น -> เกณฑ์ทั่วไป
+  // ยังไม่เลือกพืช / พืชไม่มีตารางคำแนะนำ -> เกณฑ์ทั่วไป
   const omLevel = bandLevel(cropBands?.om, omN) ?? classify("om", omN)
   const pLevel = bandLevel(cropBands?.p, pN) ?? classify("p", pN)
   const kLevel = bandLevel(cropBands?.k, kN) ?? classify("k", kN)

@@ -19,7 +19,7 @@ export interface FertilizerResult {
     p: boolean
     k: boolean
   }
-  /** ระดับดินตามช่วงของพืชนี้ (null = พืชแบ่งช่วงแบบอื่น ใช้เกณฑ์ทั่วไปแทน) */
+  /** ระดับดินตามช่วงของพืชนี้ (null = ไม่มีค่า หรือพืชไม่มีช่วงให้เทียบ ใช้เกณฑ์ทั่วไปแทน) */
   levels: Record<BandNutrient, SoilLevel | null>
   notes: string[]
 }

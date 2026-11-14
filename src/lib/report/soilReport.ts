@@ -8,7 +8,7 @@ import {
   type UseType,
   type FertilizerPlan,
 } from "@/lib/supabase/fertilizerPlan"
-import { chooseChemicalPlan, missingGradesNote, PLAN_TABS, type PlanTab } from "@/lib/fertilizer/chemicalPlan"
+import { chooseChemicalPlan, missingGradesNote, organicAbsentNote, PLAN_TABS, type PlanTab } from "@/lib/fertilizer/chemicalPlan"
 import { listFertilizerFormulas } from "@/lib/supabase/fertilizerFormulas"
 import { blendFertilizer, type Formula } from "@/lib/fertilizer/blend"
 
@@ -145,7 +145,7 @@ export async function buildSoilReport(raw: ReportInput, selectedTab: PlanTab | n
       note:
         t === "chemical" && chemical && chemical.missingGrades.length > 0
           ? missingGradesNote(chemical.missingGrades)
-          : null,
+          : organicAbsentNote(tabPlan[t]),
     })
   )
 

@@ -48,6 +48,19 @@ export function missingGradesNote(missing: string[]): string {
   )
 }
 
+/**
+ * แผนปุ๋ยเคมีร่วมกับปุ๋ยอินทรีย์ที่ไม่มีปุ๋ยอินทรีย์ในทุกระยะ (เช่น ส้ม OM >3 กับ P <15)
+ * ตารางของกรมฯ ใช้ปุ๋ยอินทรีย์แทนเฉพาะ 46-0-0 ส่วนที่ลดลง 30% — ช่วงดินที่คำแนะนำเต็มอัตราไม่ใช้ 46-0-0
+ * จึงไม่มีอะไรให้แทน แจ้งไว้ไม่ให้ผู้ใช้สงสัยว่าทำไมแถบนี้ไม่มีปุ๋ยอินทรีย์ — ใช้ทั้งหน้าจอและรายงาน
+ */
+export function organicAbsentNote(plan: FertilizerPlan | null): string | null {
+  if (!plan || plan.use_type !== "organic70" || plan.stages.length === 0) return null
+  const hasOrganic = plan.stages.some((s) => s.items.some((it) => it.grade.includes("อินทรีย์")))
+  return hasOrganic
+    ? null
+    : "ดินช่วงนี้ไม่ต้องใช้ปุ๋ยอินทรีย์ เพราะคำแนะนำเต็มอัตราไม่มีปุ๋ยยูเรีย (46-0-0) ส่วนที่ต้องลดแล้วใช้ปุ๋ยอินทรีย์แทน"
+}
+
 const hasStages = (p: FertilizerPlan | null): p is FertilizerPlan => !!p && p.stages.length > 0
 const gradesOf = (p: FertilizerPlan) => new Set(p.stages.flatMap((s) => s.items.map((it) => it.grade)))
 

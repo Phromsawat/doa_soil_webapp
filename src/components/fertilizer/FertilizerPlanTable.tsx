@@ -14,6 +14,7 @@ import type { BlendResult } from "@/lib/fertilizer/blend"
 import {
   chooseChemicalPlan,
   missingGradesNote,
+  organicAbsentNote,
   PLAN_TABS,
   PLAN_TAB_LABEL,
   type PlanTab,
@@ -149,9 +150,14 @@ export default function FertilizerPlanTable({
         </div>
       ) : shown ? (
         <div className="space-y-2">
-          {choice && choice.missingGrades.length > 0 && (
+          {tab === "chemical" && choice && choice.missingGrades.length > 0 && (
             <p className="rounded-xl bg-amber-50 px-4 py-2 text-xs text-amber-700">
               {missingGradesNote(choice.missingGrades)}
+            </p>
+          )}
+          {organicAbsentNote(organic) && (
+            <p className="rounded-xl bg-gray-50 px-4 py-2 text-xs text-gray-600">
+              {organicAbsentNote(organic)}
             </p>
           )}
           {shown.stages.map((s) => (
