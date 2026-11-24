@@ -2,18 +2,26 @@
 //
 // หน้าจอแสดง 2 แถบ: ปุ๋ยเคมี / ปุ๋ยเคมีร่วมกับปุ๋ยอินทรีย์ (organic70 = ตารางตายตัวตรง ๆ)
 // แถบ "ปุ๋ยเคมี" รวมข้อมูล 3 แหล่ง เลือกตามปุ๋ยที่ผู้ใช้เลือกไว้:
-//   1. ปุ๋ยที่เลือกเป็นแม่ปุ๋ยทั้งหมด (หรือยังไม่ได้เลือก) → ตารางแม่ปุ๋ยของกรมฯ ตรง ๆ
+//   1. ทุกสูตรที่เลือกมีในตารางแม่ปุ๋ยของกรมฯ (หรือยังไม่ได้เลือก) → ตารางแม่ปุ๋ยตรง ๆ
 //      ไม่คำนวณใหม่ เพราะผลคำนวณ (solver + สัดส่วนแบ่งระยะ) ปัดไม่ตรงกับตัวเลขในตารางกรมฯ
 //      ทำให้ปุ๋ยสูตรเดียวกันได้ปริมาณไม่เท่ากัน
-//   2. มีสูตรอื่นปน + พืชมีตารางปุ๋ยผสม (พืชไร่ เช่น 16-16-8) → ตารางปุ๋ยผสมของกรมฯ
-//   3. ไม้ผลที่มีสัดส่วนแบ่งระยะ → แบ่งผลคำนวณจากปุ๋ยที่เลือกตามระยะ
-//   4. ไม่มีทางอื่น → ตารางแม่ปุ๋ย
-// กรณี 2 และ 4 ตารางกรมฯ อาจไม่มีบางสูตรที่ผู้ใช้เลือก → missingGrades ไว้ให้หน้าจอแจ้งผู้ใช้
+//   2. ทุกสูตรที่เลือกมีในตารางปุ๋ยผสมของกรมฯ (พืชไร่ เช่น 16-16-8) → ตารางปุ๋ยผสมตรง ๆ
+//   3. มีสูตรที่ตารางกรมฯ ไม่มี (เช่น 40-0-0) → คำนวณจากปุ๋ยที่เลือก แล้วแบ่งตามระยะ
+//      ไม้ผล: สัดส่วนของพืช (crop_stage_split) · พืชอื่น: จังหวะการใส่ในตารางกรมฯ (splitRowsFromPlan)
+//   4. คำนวณไม่ได้ (ยังไม่มีผลคำนวณ / ตารางแบบทางเลือก เช่นถั่ว) → ตารางกรมฯ
+//      ซึ่งอาจไม่มีบางสูตรที่ผู้ใช้เลือก → missingGrades ไว้ให้หน้าจอแจ้งผู้ใช้
 // ใช้ร่วมกันทั้งหน้าจอ (FertilizerPlanTable) และรายงาน PDF ให้ได้ผลเดียวกันเสมอ
 
-import type { FertilizerPlan } from "@/lib/supabase/fertilizerPlan"
-import type { BlendResult } from "./blend"
-import { splitBlendByStage, type StageSplitRow } from "./stageSplit"
+import type { FertilizerPlan, PlanStage } from "@/lib/supabase/fertilizerPlan"
+import { blendFertilizer, type BlendResult } from "./blend"
+import {
+  isFixedStage,
+  splitBlendByStage,
+  splitRowsFromPlan,
+  type StageSplitItem,
+  type StageSplitResult,
+  type StageSplitRow,
+} from "./stageSplit"
 
 export type PlanTab = "chemical" | "organic70"
 
@@ -64,6 +72,15 @@ export function organicAbsentNote(plan: FertilizerPlan | null): string | null {
 const hasStages = (p: FertilizerPlan | null): p is FertilizerPlan => !!p && p.stages.length > 0
 const gradesOf = (p: FertilizerPlan) => new Set(p.stages.flatMap((s) => s.items.map((it) => it.grade)))
 
+// สูตรที่เลือกและได้ใช้จริง (ปริมาณ > 0) — สูตรที่ดินช่วงนี้ไม่ต้องใช้ (เช่น 0-0-60 เมื่อ K สูง)
+// ตารางย่อมไม่มี ไม่ควรทำให้หลุดไปคำนวณเอง
+const used = (picked: string[], blend: BlendResult | null) =>
+  blend ? picked.filter((g) => blend.items.some((it) => (it.formula.grade ?? it.formula.name) === g)) : picked
+
+// ปริมาณที่คำนวณได้ ปัดเป็นจำนวนเต็มแบบ Excel (ปัดครึ่งขึ้น) เหมือนการ์ด "ปริมาณปุ๋ยที่ต้องใช้"
+// และตารางในไฟล์คำนวณปุ๋ย — บวก 1e-9 กันเศษทศนิยมจากการคูณ (25.4999999 ต้องได้ 26 แบบ Excel)
+const roundAmount = (x: number) => Math.round(x + 1e-9)
+
 export function chooseChemicalPlan(input: {
   straight: FertilizerPlan | null
   compound: FertilizerPlan | null
@@ -85,31 +102,153 @@ export function chooseChemicalPlan(input: {
 
   if (hasStages(straight)) {
     const straightGrades = gradesOf(straight)
-    if (picked.every((g) => straightGrades.has(g))) return staticChoice("straight", straight)
+    if (used(picked, blend).every((g) => straightGrades.has(g))) return staticChoice("straight", straight)
+  }
+
+  if (hasStages(compound)) {
+    const compoundGrades = gradesOf(compound)
+    if (used(picked, blend).every((g) => compoundGrades.has(g))) return staticChoice("compound", compound)
+  }
+
+  // มีสูตรที่ตารางกรมฯ ไม่มี -> คำนวณจากปุ๋ยที่เลือก แบ่งตามระยะ
+  const split = blend ? splitForPicks({ blend, straight, compound, splitRows }) : null
+  if (split) {
+    const stages = [
+      ...split.split
+        .map((s) => ({
+          stage: stageLabel(s),
+          order: s.order,
+          items: s.items
+            .map((it) => ({ grade: it.grade, amount: roundAmount(it.amount), unit: massUnit }))
+            .filter((it) => it.amount > 0),
+        }))
+        .filter((s) => s.items.length > 0),
+      ...split.fixed,
+    ]
+    if (stages.length > 0) {
+      return { source: "computed", missingGrades: [], plan: { use_type: "compound", unit: massUnit, stages } }
+    }
   }
 
   if (hasStages(compound)) return staticChoice("compound", compound)
+  if (hasStages(straight)) return staticChoice("straight", straight)
+  return null
+}
 
-  if (blend && splitRows.length > 0) {
-    const split = splitBlendByStage(blend, splitRows)
-    if (split.length > 0) {
-      return {
-        source: "computed",
-        missingGrades: [],
-        plan: {
-          use_type: "compound",
-          unit: massUnit,
-          stages: split.map((s) => ({
-            // stage_desc เก็บวงเล็บมาในตัวแล้ว เช่น "(ก่อนออกดอก 1-2 เดือน)"
-            stage: s.stage_desc ? `${s.stage_name} ${s.stage_desc}` : s.stage_name,
-            order: s.order,
-            items: s.items.map((it) => ({ grade: it.grade, amount: Math.round(it.amount), unit: massUnit })),
-          })),
-        },
+// stage_desc เก็บวงเล็บมาในตัวแล้ว เช่น "(ก่อนออกดอก 1-2 เดือน)"
+const stageLabel = (s: StageSplitResult) => (s.stage_desc ? `${s.stage_name} ${s.stage_desc}` : s.stage_name)
+
+/**
+ * แบ่งผลคำนวณจากปุ๋ยที่เลือกออกตามระยะ — ใช้ทั้งแถบปุ๋ยเคมีและแถบปุ๋ยเคมีร่วมกับปุ๋ยอินทรีย์
+ * ไม้ผล: สัดส่วนของพืช (crop_stage_split) · พืชอื่น: จังหวะการใส่ในตาราง (splitRowsFromPlan)
+ * คืนระยะปริมาณคงที่ของตาราง (fixed, เช่นหน่อไม้ฝรั่งระยะเก็บเกี่ยว/พักต้น) แยกไว้ให้ต่อท้าย
+ * null = แบ่งไม่ได้ (ไม่มีตารางให้อ่านจังหวะ / ตารางแบบทางเลือก เช่นถั่ว)
+ */
+function splitForPlan(
+  blend: BlendResult,
+  rows: StageSplitRow[],
+  fromPlan: boolean,
+  fixedFrom: FertilizerPlan | null
+): { split: StageSplitResult[]; fixed: PlanStage[] } | null {
+  if (rows.length === 0) return null
+  const split = splitBlendByStage(blend, rows, { preferP: fromPlan })
+  const fixed = fromPlan && fixedFrom ? fixedFrom.stages.filter((s) => isFixedStage(s.stage)) : []
+  return { split, fixed }
+}
+
+function splitRowsFor(input: {
+  straight: FertilizerPlan | null
+  compound: FertilizerPlan | null
+  splitRows: StageSplitRow[]
+}): { rows: StageSplitRow[]; fromPlan: boolean; base: FertilizerPlan | null } {
+  const base = hasStages(input.straight) ? input.straight : hasStages(input.compound) ? input.compound : null
+  if (input.splitRows.length > 0) return { rows: input.splitRows, fromPlan: false, base }
+  return { rows: base ? splitRowsFromPlan(base) : [], fromPlan: true, base }
+}
+
+function splitForPicks(input: {
+  blend: BlendResult
+  straight: FertilizerPlan | null
+  compound: FertilizerPlan | null
+  splitRows: StageSplitRow[]
+}) {
+  const { rows, fromPlan, base } = splitRowsFor(input)
+  return splitForPlan(input.blend, rows, fromPlan, base)
+}
+
+// %N ของปุ๋ยอินทรีย์ที่ใช้คำนวณปริมาณทดแทน — ตามไฟล์คำนวณปุ๋ย (ช่อง "กรอก %N ที่ได้จากปุ๋ยอินทรีย์" = 0.2)
+// ยูเรียที่ลดลง 1 กก. (N 0.46 กก.) จึงแทนด้วยปุ๋ยอินทรีย์ 0.46 / 0.002 = 230 กก. ตรงกับตารางเดิม
+const ORGANIC_N_FRACTION = 0.002
+const ORGANIC_GRADE = "ปุ๋ยอินทรีย์"
+
+export interface OrganicPlanChoice {
+  source: "table" | "computed"
+  plan: FertilizerPlan
+  /** สูตรที่เลือกแต่ตารางที่แสดงไม่มี (คำนวณไม่ได้ เช่นถั่ว) — แจ้งผู้ใช้แบบแถบปุ๋ยเคมี */
+  missingGrades: string[]
+}
+
+/**
+ * แถบ "ปุ๋ยเคมีร่วมกับปุ๋ยอินทรีย์"
+ *   - ทุกสูตรที่เลือกมีในตาราง (หรือยังไม่ได้เลือก) → ตารางตรง ๆ
+ *   - มีสูตรอื่น → คำนวณจากปุ๋ยที่เลือกด้วยวิธีเดียวกับไฟล์คำนวณปุ๋ย (ส่วน 70% + ปุ๋ยอินทรีย์ 30%):
+ *       ไนโตรเจนเหลือ 70% (หัก N ที่ได้จากปุ๋ย P ก่อน) ฟอสฟอรัส/โพแทสเซียมเต็มอัตรา
+ *       แบ่งตามระยะแบบเดียวกับแถบปุ๋ยเคมี
+ *       ปุ๋ยอินทรีย์ในแต่ละระยะ = N ที่ลดลงในระยะนั้น ÷ %N ของปุ๋ยอินทรีย์ (0.2%)
+ *       ผลที่หน่วยเป็นกรัม (ไม้ผล) แปลงปุ๋ยอินทรีย์เป็น กก. แบบตารางเดิม
+ *     ระยะปริมาณคงที่ (หน่อไม้ฝรั่ง) ใช้ตามตาราง
+ */
+export function chooseOrganicPlan(input: {
+  organic: FertilizerPlan | null
+  straight: FertilizerPlan | null
+  compound: FertilizerPlan | null
+  splitRows: StageSplitRow[]
+  blend: BlendResult | null
+  pickedGrades: string[]
+  massUnit: string
+}): OrganicPlanChoice | null {
+  const { organic, blend, massUnit } = input
+  const picked = input.pickedGrades.filter(Boolean)
+  const table = hasStages(organic) ? organic : null
+
+  if (table && used(picked, blend).every((g) => gradesOf(table).has(g))) {
+    return { source: "table", plan: table, missingGrades: [] }
+  }
+
+  if (blend) {
+    const { rows, fromPlan, base } = splitRowsFor(input)
+    const t = blend.target
+    const blend70 = blendFertilizer(
+      { n: t.n * 0.7, p2o5: t.p2o5, k2o: t.k2o },
+      blend.items.map((it) => it.formula)
+    )
+    const full = splitForPlan(blend, rows, fromPlan, table ?? base)
+    const cut = splitForPlan(blend70, rows, fromPlan, table ?? base)
+    if (full && cut) {
+      const grams = massUnit === "กรัม"
+      const nOf = (items: StageSplitItem[]) => items.reduce((s, it) => s + (it.amount * it.n_pct) / 100, 0)
+      const stages: PlanStage[] = full.split.map((s) => {
+        const c = cut.split.find((x) => x.order === s.order)
+        const items = (c?.items ?? [])
+          .map((it) => ({ grade: it.grade, amount: roundAmount(it.amount), unit: massUnit }))
+          .filter((it) => it.amount > 0)
+        const organicMass = Math.max(0, nOf(s.items) - nOf(c?.items ?? [])) / ORGANIC_N_FRACTION
+        const organicAmount = roundAmount(grams ? organicMass / 1000 : organicMass)
+        if (organicAmount > 0) items.push({ grade: ORGANIC_GRADE, amount: organicAmount, unit: "กก." })
+        return { stage: stageLabel(s), order: s.order, items }
+      })
+      const all = [...stages.filter((s) => s.items.length > 0), ...full.fixed]
+      if (all.length > 0) {
+        return {
+          source: "computed",
+          plan: { use_type: "organic70", unit: massUnit, stages: all },
+          missingGrades: [],
+        }
       }
     }
   }
 
-  if (hasStages(straight)) return staticChoice("straight", straight)
-  return null
+  if (!table) return null
+  const grades = gradesOf(table)
+  return { source: "table", plan: table, missingGrades: picked.filter((g) => !grades.has(g)) }
 }

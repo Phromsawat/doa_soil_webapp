@@ -2,17 +2,12 @@
 
 import { useEffect, useState } from "react"
 import { Loader2 } from "lucide-react"
-import {
-  getCropPlanUseTypes,
-  getCropStageSplit,
-  getFertilizerPlan,
-  type FertilizerPlan,
-  type UseType,
-} from "@/lib/supabase/fertilizerPlan"
+import { getCropPlanBundle, type FertilizerPlan, type UseType } from "@/lib/supabase/fertilizerPlan"
 import type { StageSplitRow } from "@/lib/fertilizer/stageSplit"
 import type { BlendResult } from "@/lib/fertilizer/blend"
 import {
   chooseChemicalPlan,
+  chooseOrganicPlan,
   missingGradesNote,
   organicAbsentNote,
   PLAN_TABS,
@@ -64,36 +59,19 @@ export default function FertilizerPlanTable({
   const [splitRows, setSplitRows] = useState<StageSplitRow[]>([])
   const [loading, setLoading] = useState(true)
 
-  // โหมดที่พืชนี้มีตาราง (ไว้ทำแถบที่ไม่มีข้อมูลให้จาง) + สัดส่วนแบ่งระยะ (ไม้ผล)
-  useEffect(() => {
-    let cancelled = false
-    getCropPlanUseTypes(cropId)
-      .then((t) => !cancelled && setTypes(t))
-      .catch(() => !cancelled && setTypes([]))
-    getCropStageSplit(cropId)
-      .then((r) => !cancelled && setSplitRows(r))
-      .catch(() => !cancelled && setSplitRows([]))
-    return () => {
-      cancelled = true
-    }
-  }, [cropId])
-
-  // ดึงตารางตายตัวทั้ง 3 ชนิดพร้อมกัน — แถบปุ๋ยเคมีต้องใช้ทั้งแม่ปุ๋ยและปุ๋ยผสมมาเลือก
+  // ข้อมูลทั้งหมดในคำขอเดียว (server action ถูกต่อคิวทีละคำขอ แยกหลายครั้งจะช้า):
+  // โหมดที่พืชนี้มีตาราง (ทำแถบที่ไม่มีข้อมูลให้จาง) + สัดส่วนแบ่งระยะ (ไม้ผล)
+  // + ตารางตายตัวทั้ง 3 ชนิด (แถบปุ๋ยเคมีใช้ทั้งแม่ปุ๋ยและปุ๋ยผสมมาเลือก)
   useEffect(() => {
     let cancelled = false
     async function load() {
       setLoading(true)
-      const get = (use_type: UseType) =>
-        getFertilizerPlan({ crop_id: cropId, om, p, k, use_type }).catch(() => null)
-      const [straight, compound, organic70] = await Promise.all([
-        get("straight"),
-        get("compound"),
-        get("organic70"),
-      ])
-      if (!cancelled) {
-        setPlans({ straight, compound, organic70 })
-        setLoading(false)
-      }
+      const bundle = await getCropPlanBundle({ crop_id: cropId, om, p, k }).catch(() => null)
+      if (cancelled) return
+      setTypes(bundle?.types ?? [])
+      setSplitRows(bundle?.split ?? [])
+      setPlans(bundle?.plans ?? { straight: null, compound: null, organic70: null })
+      setLoading(false)
     }
     load()
     return () => {
@@ -115,9 +93,23 @@ export default function FertilizerPlanTable({
           massUnit: massLabel(unit ?? splitRows[0]?.unit ?? undefined),
         })
       : null
-  const organic = tab === "organic70" ? plans?.organic70 ?? null : null
+  // แถบอินทรีย์: ตาราง หรือคำนวณจากปุ๋ยที่เลือก (ส่วน 70% + ปุ๋ยอินทรีย์) — ดู chooseOrganicPlan
+  const organicChoice =
+    tab === "organic70" && plans
+      ? chooseOrganicPlan({
+          organic: plans.organic70,
+          straight: plans.straight,
+          compound: plans.compound,
+          splitRows,
+          blend: blend ?? null,
+          pickedGrades,
+          massUnit: massLabel(unit ?? splitRows[0]?.unit ?? undefined),
+        })
+      : null
+  const organic = organicChoice?.plan ?? null
   const shown: FertilizerPlan | null =
     tab === "chemical" ? choice?.plan ?? null : organic && organic.stages.length > 0 ? organic : null
+  const computed = tab === "chemical" ? choice?.source === "computed" : organicChoice?.source === "computed"
 
   // แถบ organic70 จางลงถ้าพืชนี้ไม่มีตาราง (แต่กดดูได้)
   const hasData = (t: PlanTab) => t === "chemical" || (types?.includes("organic70") ?? false)
@@ -150,11 +142,12 @@ export default function FertilizerPlanTable({
         </div>
       ) : shown ? (
         <div className="space-y-2">
-          {tab === "chemical" && choice && choice.missingGrades.length > 0 && (
-            <p className="rounded-xl bg-amber-50 px-4 py-2 text-xs text-amber-700">
-              {missingGradesNote(choice.missingGrades)}
-            </p>
-          )}
+          {(() => {
+            const missing = tab === "chemical" ? choice?.missingGrades : organicChoice?.missingGrades
+            return missing && missing.length > 0 ? (
+              <p className="rounded-xl bg-amber-50 px-4 py-2 text-xs text-amber-700">{missingGradesNote(missing)}</p>
+            ) : null
+          })()}
           {organicAbsentNote(organic) && (
             <p className="rounded-xl bg-gray-50 px-4 py-2 text-xs text-gray-600">
               {organicAbsentNote(organic)}
@@ -180,9 +173,13 @@ export default function FertilizerPlanTable({
             </div>
           ))}
           <p className="pt-1 text-center text-[11px] text-gray-400">
-            {choice?.source === "computed"
-              ? "คำนวณจากสูตรปุ๋ยที่เลือก แบ่งใส่ตามระยะตามคำแนะนำกรมวิชาการเกษตร"
-              : tab === "organic70"
+            {computed
+              ? tab === "organic70"
+                ? "คำนวณจากสูตรปุ๋ยที่เลือก (ไนโตรเจน 70% ใช้ปุ๋ยอินทรีย์ N 0.2% แทนส่วนที่ลด) แบ่งใส่ตามระยะตามคำแนะนำกรมวิชาการเกษตร"
+                : "คำนวณจากสูตรปุ๋ยที่เลือก แบ่งใส่ตามระยะตามคำแนะนำกรมวิชาการเกษตร"
+              : // แม่ปุ๋ยของพืชไร่/ข้าว/ผัก (ไม่มีสัดส่วนแบ่งระยะแบบไม้ผล) มาจากไฟล์คำนวณปุ๋ย (migration 049)
+                // ไม่ใช่ตารางของกรมฯ — ข้อความเดียวกับแถบอินทรีย์
+                tab === "organic70" || (choice?.source === "straight" && splitRows.length === 0)
                 ? "คำนวณจากอัตราแนะนำของกรมวิชาการเกษตร"
                 : "ที่มา: คำแนะนำการใช้ปุ๋ยตามค่าวิเคราะห์ดิน กรมวิชาการเกษตร"}
           </p>

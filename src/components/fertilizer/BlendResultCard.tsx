@@ -57,7 +57,8 @@ export default function BlendResultCard({
               ) : null}
             </span>
             <span className="font-bold text-gray-900">
-              {Math.ceil(it.kg).toLocaleString()} {mass}
+              {/* ปัดแบบ Excel (ปัดครึ่งขึ้น) ให้ตรงกับไฟล์คำนวณปุ๋ยและแผนตามระยะ */}
+              {Math.round(it.kg + 1e-9).toLocaleString()} {mass}
             </span>
           </div>
         ))}

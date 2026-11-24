@@ -8,7 +8,14 @@ import {
   type UseType,
   type FertilizerPlan,
 } from "@/lib/supabase/fertilizerPlan"
-import { chooseChemicalPlan, missingGradesNote, organicAbsentNote, PLAN_TABS, type PlanTab } from "@/lib/fertilizer/chemicalPlan"
+import {
+  chooseChemicalPlan,
+  chooseOrganicPlan,
+  missingGradesNote,
+  organicAbsentNote,
+  PLAN_TABS,
+  type PlanTab,
+} from "@/lib/fertilizer/chemicalPlan"
 import { listFertilizerFormulas } from "@/lib/supabase/fertilizerFormulas"
 import { blendFertilizer, type Formula } from "@/lib/fertilizer/blend"
 
@@ -120,20 +127,24 @@ export async function buildSoilReport(raw: ReportInput, selectedTab: PlanTab | n
     getPlan("compound"),
     getPlan("organic70"),
   ])
-  const chemical = chooseChemicalPlan({
+  const choiceInput = {
     straight: straightPlan,
     compound: compoundPlan,
     splitRows,
     blend,
     pickedGrades: picked.map((f) => f.grade ?? ""),
     massUnit: mass,
-  })
+  }
+  const chemical = chooseChemicalPlan(choiceInput)
+  // แถบอินทรีย์: ตาราง หรือคำนวณจากปุ๋ยที่เลือก — แบบเดียวกับหน้าจอ
+  const organicChoice = chooseOrganicPlan({ ...choiceInput, organic: organicPlan })
+  const organic = organicChoice?.plan ?? null
 
   // พิมพ์เฉพาะแถบที่เลือกมา และเฉพาะที่มีข้อมูลจริง
   // (ไม่พิมพ์ตารางเปล่าที่เต็มไปด้วย "-" เหมือนรายงานแบบเดิม)
   const tabPlan: Record<PlanTab, FertilizerPlan | null> = {
     chemical: chemical?.plan ?? null,
-    organic70: organicPlan && organicPlan.stages.length > 0 ? organicPlan : null,
+    organic70: organic && organic.stages.length > 0 ? organic : null,
   }
   const wanted = PLAN_TABS.filter((t) => (!selectedTab || t === selectedTab) && tabPlan[t])
   const plans = (wanted.length > 0 ? wanted : PLAN_TABS.filter((t) => tabPlan[t])).map(
@@ -143,7 +154,9 @@ export async function buildSoilReport(raw: ReportInput, selectedTab: PlanTab | n
       note:
         t === "chemical" && chemical && chemical.missingGrades.length > 0
           ? missingGradesNote(chemical.missingGrades)
-          : organicAbsentNote(tabPlan[t]),
+          : t === "organic70" && organicChoice && organicChoice.missingGrades.length > 0
+            ? missingGradesNote(organicChoice.missingGrades)
+            : organicAbsentNote(tabPlan[t]),
     })
   )
 

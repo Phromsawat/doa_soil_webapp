@@ -210,7 +210,7 @@ async function resolveRows(
       )
       blend = r.items.map((it) => ({
         grade: it.formula.grade ?? it.formula.name,
-        amount: Math.round(it.kg),
+        amount: Math.round(it.kg + 1e-9), // ปัดแบบ Excel เหมือนการ์ดปริมาณปุ๋ย
       }))
     }
 

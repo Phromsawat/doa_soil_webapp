@@ -192,3 +192,29 @@ export async function getFertilizerPlan(input: {
 
   return { use_type: useType, unit, stages }
 }
+
+/**
+ * ข้อมูลแผนปุ๋ยทั้งหมดของพืช + ค่าดิน ในคำขอเดียว (หน้าจอ FertilizerPlanTable)
+ * server action ที่เรียกจากเบราว์เซอร์ถูก Next ต่อคิวทำทีละคำขอ — เดิมเรียกแยก 5 ครั้ง (โหมดที่มี,
+ * สัดส่วนแบ่งระยะ, ตาราง 3 แบบ) จึงรอนานหลายวินาที รวมเป็นครั้งเดียวแล้วดึงพร้อมกันบนเซิร์ฟเวอร์
+ */
+export async function getCropPlanBundle(input: {
+  crop_id: string
+  om: number | null
+  p: number | null
+  k: number | null
+}): Promise<{
+  types: UseType[]
+  split: Awaited<ReturnType<typeof getCropStageSplit>>
+  plans: Record<UseType, FertilizerPlan | null>
+}> {
+  const plan = (use_type: UseType) => getFertilizerPlan({ ...input, use_type }).catch(() => null)
+  const [types, split, straight, compound, organic70] = await Promise.all([
+    getCropPlanUseTypes(input.crop_id).catch(() => [] as UseType[]),
+    getCropStageSplit(input.crop_id).catch(() => []),
+    plan("straight"),
+    plan("compound"),
+    plan("organic70"),
+  ])
+  return { types, split, plans: { straight, compound, organic70 } }
+}
