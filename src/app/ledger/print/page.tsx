@@ -126,7 +126,7 @@ export default async function LedgerPrintPage({
   const net = income - expense
   const yieldKg = season.yield_kg == null ? null : Number(season.yield_kg)
 
-  const ownerName = owner?.full_name?.trim() || owner?.nickname?.trim() || owner?.email || "ไม่ระบุ"
+  const ownerName = owner?.full_name?.trim() || owner?.nickname?.trim() || owner?.email || "-"
   const period = `${formatDay(season.started_on)} – ${season.ended_on ? formatDay(season.ended_on) : "ยังไม่สิ้นสุด"}`
 
   // แบ่งรายการเป็นหน้า
@@ -164,9 +164,9 @@ export default async function LedgerPrintPage({
         <section className="meta">
           <div><span>ชื่อ</span><strong>{ownerName}</strong></div>
           <div><span>รอบเพาะปลูก</span><strong>{season.name}</strong></div>
-          <div><span>พืชที่ปลูก</span><strong>{crop?.name ?? "ไม่ระบุ"}</strong></div>
+          <div><span>พืชที่ปลูก</span><strong>{crop?.name ?? "-"}</strong></div>
           <div><span>ช่วงเวลา</span><strong>{period}</strong></div>
-          <div><span>ผลผลิต</span><strong>{yieldKg != null ? `${formatBaht(yieldKg)} กก.` : "ไม่ได้ระบุ"}</strong></div>
+          <div><span>ผลผลิต</span><strong>{yieldKg != null ? `${formatBaht(yieldKg)} กก.` : "-"}</strong></div>
           <div><span>จำนวนรายการ</span><strong>{entries.length} รายการ</strong></div>
         </section>
 

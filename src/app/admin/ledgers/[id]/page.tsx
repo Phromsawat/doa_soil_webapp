@@ -23,7 +23,7 @@ export default async function AdminLedgerDetailPage({ params }: { params: Promis
           </Link>
           <h1 className="mt-1 text-xl font-bold text-gray-800">{s.name}</h1>
           <p className="mt-0.5 text-sm text-gray-500">
-            {s.owner_name ?? "ไม่ระบุชื่อ"} · {s.owner_email} · {s.crop_name ?? "ไม่ระบุพืช"} ·{" "}
+            {s.owner_name ?? "-"} · {s.owner_email} · {s.crop_name ?? "-"} ·{" "}
             {formatDay(s.started_on)} – {s.ended_on ? formatDay(s.ended_on) : "ยังไม่สิ้นสุด"}
           </p>
         </div>
@@ -60,7 +60,7 @@ export default async function AdminLedgerDetailPage({ params }: { params: Promis
         <div className="rounded-2xl border border-gray-100 bg-white p-4 shadow-sm">
           <p className="text-xs text-gray-500">ผลผลิต</p>
           <p className="mt-1 text-lg font-bold text-gray-800">
-            {s.yield_kg != null ? `${formatBaht(s.yield_kg)} กก.` : "ไม่ได้ระบุ"}
+            {s.yield_kg != null ? `${formatBaht(s.yield_kg)} กก.` : "-"}
           </p>
         </div>
       </div>

@@ -128,6 +128,8 @@ input[type=number] {
 }
 /* กรอบนอก — ย่อแผ่นบนจอแคบ (A4Sheet ตั้งความสูงให้) */
 .report-root .sheet-frame { width: 100%; max-width: 210mm; margin: 0 auto; overflow: hidden; }
+/* รายงานรวมหลายแผ่น — เว้นระยะระหว่างแผ่นบนจอ */
+.report-root .sheet-frame + .sheet-frame { margin-top: 16px; }
 .report-root .sheet-scaler { width: 210mm; }
 .report-root .sheet {
   width: 210mm;
@@ -301,6 +303,8 @@ input[type=number] {
   html, body { background: #fff !important; }
   .report-root { background: #fff; padding: 0; }
   .report-root .sheet-frame { height: auto !important; max-width: none; }
+  /* รายงานรวม: แผ่นละหน้ากระดาษ */
+  .report-root .sheet-frame + .sheet-frame { margin-top: 0; break-before: page; }
   .report-root .sheet-scaler { transform: none !important; }
   .report-root .sheet { box-shadow: none; }
 

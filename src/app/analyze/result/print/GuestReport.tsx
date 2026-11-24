@@ -56,7 +56,7 @@ export default function GuestReport({ use }: { use: PlanTab | null }) {
   return (
     <SoilReportSheet
       data={data}
-      ownerName="ไม่ระบุ"
+      ownerName="-"
       notice="ผลนี้ไม่ได้บันทึกในระบบ — ดาวน์โหลด PDF เก็บไว้ก่อนปิดหน้านี้"
     />
   )

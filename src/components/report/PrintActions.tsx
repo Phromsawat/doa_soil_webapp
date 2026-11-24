@@ -10,43 +10,61 @@ import { FileDown, ArrowLeft, Loader2 } from "lucide-react"
  * ปุ่มดาวน์โหลดถ่ายแผ่น A4 ทุกแผ่นบนหน้า (A4Sheet) เป็นไฟล์ PDF หน้าละแผ่น แล้วเซฟลงเครื่องเลย
  * (ไลบรารีถูก import แบบ dynamic ตอนกด จึงไม่ถ่วง bundle ของหน้าอื่น)
  */
-export default function PrintActions({ filename }: { filename: string }) {
+export default function PrintActions({ filename, count = 1 }: { filename: string; count?: number }) {
   const router = useRouter()
   const [busy, setBusy] = useState(false)
+  const [progress, setProgress] = useState<number | null>(null)
   const [error, setError] = useState<string | null>(null)
 
   async function handleDownload() {
     const sheets = Array.from(document.querySelectorAll<HTMLElement>(".report-root .sheet"))
     if (sheets.length === 0) return
     setBusy(true)
+    setProgress(null)
     setError(null)
     try {
       const { downloadSheetsPdf } = await import("@/lib/pdf/reportPdf")
-      await downloadSheetsPdf(sheets, filename)
+      await downloadSheetsPdf(sheets, filename, (done) => setProgress(done))
     } catch (e) {
       setError(e instanceof Error ? e.message : "สร้างไฟล์ PDF ไม่สำเร็จ")
     } finally {
       setBusy(false)
+      setProgress(null)
     }
+  }
+
+  // รายงานรวมเปิดในแท็บใหม่ (ไม่มีหน้าก่อนหน้าให้ย้อน) -> ไปหน้าประวัติแทน
+  function handleBack() {
+    if (window.history.length > 1) router.back()
+    else router.push("/history")
   }
 
   return (
     <div className="no-print mx-auto mb-4 max-w-[210mm] px-4">
       <div className="flex items-center justify-between gap-3">
         <button
-          onClick={() => router.back()}
+          onClick={handleBack}
           className="flex items-center gap-1 text-sm text-gray-500 hover:text-gray-800"
         >
           <ArrowLeft className="h-4 w-4" /> กลับ
         </button>
-        <button
-          onClick={handleDownload}
-          disabled={busy}
-          className="flex items-center gap-2 rounded-full bg-[#1A4D2E] px-5 py-2.5 text-sm font-medium text-white shadow-sm hover:bg-[#143a22] disabled:opacity-60"
-        >
-          {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <FileDown className="h-4 w-4" />}
-          {busy ? "กำลังสร้างไฟล์…" : "ดาวน์โหลด PDF"}
-        </button>
+        <div className="flex items-center gap-3">
+          {count > 1 && <span className="text-sm text-gray-500">{count} รายการ · {count} หน้า</span>}
+          <button
+            onClick={handleDownload}
+            disabled={busy}
+            className="flex items-center gap-2 rounded-full bg-[#1A4D2E] px-5 py-2.5 text-sm font-medium text-white shadow-sm hover:bg-[#143a22] disabled:opacity-60"
+          >
+            {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <FileDown className="h-4 w-4" />}
+            {busy
+              ? count > 1 && progress !== null
+                ? `กำลังสร้างไฟล์ ${progress}/${count}…`
+                : "กำลังสร้างไฟล์…"
+              : count > 1
+                ? "ดาวน์โหลด PDF รวม"
+                : "ดาวน์โหลด PDF"}
+          </button>
+        </div>
       </div>
       {error && <p className="mt-2 text-right text-xs text-red-600">{error}</p>}
     </div>

@@ -151,7 +151,7 @@ export async function buildSoilReport(raw: ReportInput, selectedTab: PlanTab | n
 
   return {
     record,
-    cropName: crops.find((c) => c.id === cropId)?.name ?? "ไม่ระบุ",
+    cropName: crops.find((c) => c.id === cropId)?.name ?? "-",
     calculation,
     note,
     plans,

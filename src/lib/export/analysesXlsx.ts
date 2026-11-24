@@ -70,7 +70,7 @@ export function buildAnalysesSheet(
     data.push([
       cell({ value: i + 1, type: Number, align: "center" }),
       when ? cell({ value: when, type: Date, format: "dd/mm/yyyy hh:mm" }) : text(""),
-      text(r.owner_name ?? "ไม่ระบุ"),
+      text(r.owner_name ?? "-"),
       text(r.owner_email),
       text(MODE_TH[r.input_mode] ?? r.input_mode),
       text(STATUS_TH[r.status] ?? r.status),

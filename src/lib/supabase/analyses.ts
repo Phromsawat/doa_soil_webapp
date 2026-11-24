@@ -265,6 +265,26 @@ export async function getAnalysis(analysisId: string) {
 }
 
 /**
+ * ผลของผู้ใช้เองหลายรายการในครั้งเดียว (รายงานรวม) — กรอง user_id เหมือน getAnalysis
+ * คืนตามลำดับของ ids ที่ส่งมา รายการที่ไม่พบ/ไม่ใช่ของตัวเองถูกข้ามไป
+ */
+export async function getAnalysesByIds(ids: string[]) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) throw new Error("Not authenticated")
+  if (ids.length === 0) return []
+
+  const { data, error } = await supabase
+    .from("analyses")
+    .select("*")
+    .in("id", ids)
+    .eq("user_id", user.id)
+  if (error) throw new Error(`getAnalysesByIds: ${error.message}`)
+  const byId = new Map((data ?? []).map((r) => [r.id as string, r]))
+  return ids.map((id) => byId.get(id)).filter((r): r is NonNullable<typeof r> => !!r)
+}
+
+/**
  * List the current user's recent analyses.
  * กรอง user_id เสมอ (ดูเหตุผลใน getAnalysis) — หน้าประวัติต้องเห็นเฉพาะของตัวเอง
  * แม้บัญชีนั้นจะเป็น admin ก็ตาม

@@ -12,7 +12,12 @@
 
 const A4_MM = { w: 210, h: 297 }
 
-export async function downloadSheetsPdf(sheets: HTMLElement[], filename: string) {
+export async function downloadSheetsPdf(
+  sheets: HTMLElement[],
+  filename: string,
+  /** แจ้งจำนวนแผ่นที่ทำเสร็จแล้ว (รายงานรวมหลายหน้าใช้แสดงความคืบหน้า) */
+  onProgress?: (done: number) => void
+) {
   const [{ toJpeg }, { jsPDF }] = await Promise.all([import("html-to-image"), import("jspdf")])
 
   const options = {
@@ -30,6 +35,7 @@ export async function downloadSheetsPdf(sheets: HTMLElement[], filename: string)
     const image = await toJpeg(sheets[i], options)
     if (i > 0) doc.addPage("a4", "portrait")
     doc.addImage(image, "JPEG", 0, 0, A4_MM.w, A4_MM.h, undefined, "FAST")
+    onProgress?.(i + 1)
   }
   doc.save(filename)
 }

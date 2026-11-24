@@ -213,12 +213,12 @@ export default function AdminLedgersPage() {
               rows.map((r) => (
                 <tr key={r.season_id} className="hover:bg-gray-50/60">
                   <td className="px-4 py-3">
-                    <p className="font-medium text-gray-800">{r.owner_name ?? "ไม่ระบุชื่อ"}</p>
+                    <p className="font-medium text-gray-800">{r.owner_name ?? "-"}</p>
                     <p className="text-xs text-gray-400">{r.owner_email}</p>
                   </td>
                   <td className="px-4 py-3">
                     <p className="text-gray-800">{r.name}</p>
-                    <p className="text-xs text-gray-400">{r.crop_name ?? "ไม่ระบุพืช"}</p>
+                    <p className="text-xs text-gray-400">{r.crop_name ?? "-"}</p>
                   </td>
                   <td className="whitespace-nowrap px-4 py-3 text-xs text-gray-500">
                     {formatDay(r.started_on)} – {r.ended_on ? formatDay(r.ended_on) : "ยังไม่สิ้นสุด"}

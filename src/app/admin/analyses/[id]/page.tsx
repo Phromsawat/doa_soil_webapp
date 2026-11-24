@@ -26,9 +26,9 @@ export default async function AdminAnalysisDetailPage({ params }: PageProps) {
     dateStyle: "full",
     timeStyle: "short",
   })
-  const cropName = (record.crops as { name?: string } | null)?.name ?? "ไม่ระบุพืช"
+  const cropName = (record.crops as { name?: string } | null)?.name ?? "-"
   const result = record.analysis_results?.[0]
-  const location = [record.district, record.amphur, record.province].filter(Boolean).join(" / ") || "ไม่ระบุ"
+  const location = [record.district, record.amphur, record.province].filter(Boolean).join(" / ") || "-"
 
   return (
     <div className="max-w-5xl mx-auto space-y-5">
@@ -58,7 +58,7 @@ export default async function AdminAnalysisDetailPage({ params }: PageProps) {
             <User className="w-3.5 h-3.5" /> ผู้ใช้
           </div>
           <div>
-            <p className="font-bold text-gray-900">{record.user?.full_name || record.user?.nickname || "ไม่ระบุชื่อ"}</p>
+            <p className="font-bold text-gray-900">{record.user?.full_name || record.user?.nickname || "-"}</p>
             <p className="text-xs text-gray-500">{record.user?.email ?? "—"}</p>
             {record.user?.phone && (
               <p className="text-xs text-gray-500">{record.user.phone}</p>

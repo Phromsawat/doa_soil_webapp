@@ -48,16 +48,43 @@ function pivotPlan(plan: FertilizerPlan) {
   return { grades, sameUnit, unit: grades[0]?.unit ?? plan.unit }
 }
 
+/**
+ * หน้ารายงาน — ผลเดียว หรือหลายผล (รายงานรวม) ต่อกันผลละแผ่น A4
+ * ปุ่มดาวน์โหลดถ่ายทุกแผ่นบนหน้าลงไฟล์ PDF เดียว
+ */
 export default function SoilReportSheet({
   data,
   ownerName,
   notice,
 }: {
-  data: SoilReportData
+  data: SoilReportData | SoilReportData[]
   ownerName: string
   /** ข้อความแจ้งเหนือแผ่น (แสดงบนจอเท่านั้น ไม่ติดไปใน PDF) */
   notice?: React.ReactNode
 }) {
+  const reports = Array.isArray(data) ? data : [data]
+  const first = reports[0]
+  const pdfFilename =
+    reports.length === 1
+      ? `ผลวิเคราะห์ดิน-${first.cropName}-${first.record.created_at.slice(0, 10)}.pdf`
+      : // วันที่ออกรายงานตามเวลาไทย (หน้านี้ render บนเซิร์ฟเวอร์ซึ่งเป็น UTC)
+        `ผลวิเคราะห์ดิน-รวม-${reports.length}-รายการ-${new Date().toLocaleDateString("sv-SE", { timeZone: "Asia/Bangkok" })}.pdf`
+
+  return (
+    <div className="report-root font-thai">
+      <PrintActions filename={pdfFilename} count={reports.length} />
+
+      {notice && <p className="no-print mx-auto mb-3 max-w-[210mm] px-4 text-xs text-gray-500">{notice}</p>}
+
+      {reports.map((r, i) => (
+        <ReportPage key={i} data={r} ownerName={ownerName} />
+      ))}
+    </div>
+  )
+}
+
+/** แผ่นรายงานของผลหนึ่งรายการ (A4 หนึ่งแผ่น) */
+function ReportPage({ data, ownerName }: { data: SoilReportData; ownerName: string }) {
   const { record, cropName, calculation, note, plans, blend, mass, basis } = data
 
   const area = [record.district, record.amphur, record.province].filter(Boolean).join(", ")
@@ -72,15 +99,8 @@ export default function SoilReportSheet({
     { key: "k" as const, label: "โพแทสเซียมที่แลกเปลี่ยนได้ (K)", value: record.k_value, unit: "มก./กก." },
   ]
 
-  const pdfFilename = `ผลวิเคราะห์ดิน-${cropName}-${record.created_at.slice(0, 10)}.pdf`
-
   return (
-    <div className="report-root font-thai">
-      <PrintActions filename={pdfFilename} />
-
-      {notice && <p className="no-print mx-auto mb-3 max-w-[210mm] px-4 text-xs text-gray-500">{notice}</p>}
-
-      {/* แผ่นรายงานขนาด A4 พอดี — ไฟล์ PDF ถ่ายจากแผ่นนี้ตรง ๆ จึงหน้าตาเหมือนที่เห็นบนจอ */}
+      // แผ่นรายงานขนาด A4 พอดี — ไฟล์ PDF ถ่ายจากแผ่นนี้ตรง ๆ จึงหน้าตาเหมือนที่เห็นบนจอ
       <A4Sheet>
         {/* ---------- หัวรายงาน ---------- */}
         <header className="head">
@@ -97,10 +117,10 @@ export default function SoilReportSheet({
           <div><span>ชื่อ</span><strong>{ownerName}</strong></div>
           <div><span>วันที่วิเคราะห์</span><strong>{thaiDate(record.created_at)}</strong></div>
           <div><span>พืชที่ปลูก</span><strong>{cropName}</strong></div>
-          <div><span>พื้นที่เก็บตัวอย่าง</span><strong>{area || "ไม่ระบุ"}</strong></div>
+          <div><span>พื้นที่เก็บตัวอย่าง</span><strong>{area || "-"}</strong></div>
           {coords && <div><span>พิกัด</span><strong>{coords}</strong></div>}
           {/* แสดงเสมอ — ไม่ได้กรอก pH ก็บอกไว้ ไม่ให้ดูเหมือนข้อมูลหาย */}
-          <div><span>ความเป็นกรด-ด่าง (pH)</span><strong>{record.ph_value ?? "ไม่ได้ระบุ"}</strong></div>
+          <div><span>ความเป็นกรด-ด่าง (pH)</span><strong>{record.ph_value ?? "-"}</strong></div>
         </section>
 
         {/* ---------- ระดับธาตุอาหาร | ธาตุอาหารที่พืชต้องการ (วางคู่กันประหยัดพื้นที่) ---------- */}
@@ -244,6 +264,5 @@ export default function SoilReportSheet({
           <span>DOA-Soil Test Kit</span>
         </footer>
       </A4Sheet>
-    </div>
   )
 }

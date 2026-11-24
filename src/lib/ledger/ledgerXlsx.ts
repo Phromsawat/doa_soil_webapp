@@ -49,10 +49,10 @@ export function buildLedgerSheet(
     }
     data.push([
       cell({ value: i + 1, type: Number, align: "center" }),
-      cell({ value: r.owner_name ?? "ไม่ระบุ" }),
+      cell({ value: r.owner_name ?? "-" }),
       cell({ value: r.owner_email ?? "" }),
       cell({ value: r.name }),
-      cell({ value: r.crop_name ?? "ไม่ระบุ" }),
+      cell({ value: r.crop_name ?? "-" }),
       date(r.started_on),
       date(r.ended_on),
       r.yield_kg != null ? cell({ value: r.yield_kg, type: Number, format: KG }) : cell({ value: "–", align: "right" }),

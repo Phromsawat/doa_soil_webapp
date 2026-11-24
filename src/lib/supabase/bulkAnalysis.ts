@@ -33,6 +33,8 @@ export interface BulkRowResult {
   rowNumber: number
   ok: boolean
   errors: string[]
+  /** ข้อมูลไม่ครบแต่ยังบันทึกได้ (เช่น ไม่มีค่า K) */
+  warnings: string[]
   cropName: string | null
   om: number | null
   p: number | null
@@ -44,6 +46,8 @@ export interface BulkRowResult {
   unit: string | null
   /** ปริมาณปุ๋ยที่ต้องใช้ต่อสูตร (คำนวณจาก target) */
   blend: { grade: string; amount: number }[]
+  /** id ของผลที่บันทึกแล้ว (มีหลัง saveBulkAnalyses) — ใช้ลิงก์ไปหน้าผล/รายงานรวม */
+  analysisId?: string
 }
 
 export interface BulkPreview {
@@ -145,10 +149,15 @@ async function resolveRows(
     if (!row.crop) errors.push("ไม่ได้ระบุพืช")
     else if (!crop) errors.push(`ไม่รู้จักพืช "${row.crop}"`)
 
+    // ข้อมูลไม่ครบก็คำนวณ/บันทึกได้ — กติกาเดียวกับหน้าคำนวณทีละรายการ (มีค่าดินอย่างน้อย 1 ตัวก็คำนวณได้
+    // ปุ๋ยไม่เลือกก็ได้) ธาตุที่ไม่มีค่าดินจะไม่มีคำแนะนำ — แจ้งเป็นคำเตือน ไม่ใช่ข้อผิดพลาด
+    const warnings: string[] = []
     const om = num(row.om), p = num(row.p), k = num(row.k), ph = num(row.ph)
-    if (om === null) errors.push("ไม่มีค่า OM")
-    if (p === null) errors.push("ไม่มีค่า P")
-    if (k === null) errors.push("ไม่มีค่า K")
+    if (om === null && p === null && k === null) errors.push("ไม่มีค่าดิน (OM, P, K)")
+    else {
+      const missing = [om === null && "OM", p === null && "P", k === null && "K"].filter(Boolean)
+      if (missing.length > 0) warnings.push(`ไม่มีค่า ${missing.join(", ")}`)
+    }
 
     const picked: FormulaRow[] = []
     for (const raw of [row.fert1, row.fert2, row.fert3]) {
@@ -157,7 +166,7 @@ async function resolveRows(
       if (!f) errors.push(`ไม่รู้จักปุ๋ย "${raw}"`)
       else if (!picked.some((x) => x.id === f.id)) picked.push(f)
     }
-    if (picked.length === 0) errors.push("ไม่ได้เลือกปุ๋ย")
+    if (picked.length === 0) warnings.push("ไม่ได้เลือกปุ๋ย")
 
     // คำนวณธาตุอาหารเป้าหมาย — กติกาเดียวกับ calculateFertilizer (bandIndex: ขอบตามเอกสาร)
     let target: BulkRowResult["target"] = null
@@ -190,7 +199,7 @@ async function resolveRows(
       }
     }
 
-    if (errors.length === 0 && target) {
+    if (errors.length === 0 && target && picked.length > 0) {
       const selected: Formula[] = picked.map((f) => ({
         id: f.id, name: f.name, grade: f.grade,
         n: f.n_percent, p2o5: f.p2o5_percent, k2o: f.k2o_percent,
@@ -209,6 +218,7 @@ async function resolveRows(
       rowNumber: row.rowNumber,
       ok: errors.length === 0,
       errors,
+      warnings,
       cropName: crop?.name ?? row.crop ?? null,
       om, p, k, ph,
       formulas: picked.map((f) => f.grade ?? f.name),
@@ -278,6 +288,10 @@ export async function saveBulkAnalyses(
   if (error) throw new Error(`saveBulkAnalyses: ${error.message}`)
 
   // ลำดับที่ Postgres คืนกลับตรงกับลำดับที่ส่งเข้าไป จึงจับคู่กับ ready ได้ตรง ๆ
+  // ready[i].row เป็นออบเจ็กต์เดียวกับใน results — ใส่ id ตรงนี้แล้วผลที่คืนไปมี id ด้วย
+  for (const [i, a] of (inserted ?? []).entries()) {
+    ready[i].row.analysisId = (a as { id: string }).id
+  }
   const resultRows = (inserted ?? []).map((a, i) => ({
     analysis_id: (a as { id: string }).id,
     recommendation_id: null,

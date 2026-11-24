@@ -111,7 +111,7 @@ function ResultContent() {
   const ph = record.ph_value
   // แสดงพื้นที่เต็ม "ตำบล อำเภอ จังหวัด" เท่าที่มี (เหมือนหน้าประวัติ)
   const areaLabel =
-    [record.district, record.amphur, record.province].filter(Boolean).join(" ") || "ไม่ระบุ"
+    [record.district, record.amphur, record.province].filter(Boolean).join(" ") || "-"
 
   // ระดับตามช่วงของพืชที่บันทึก (ผลคำนวณ) — ไม่มีพืช/ไม่มีตารางคำแนะนำ ใช้เกณฑ์ทั่วไปเหมือนหน้ากรอกค่า
   const LEVEL_STYLE: Record<SoilLevel, { label: string; barColor: string; pct: number }> = {
@@ -175,7 +175,7 @@ function ResultContent() {
           )}
 
           <div className="mt-5 pt-4 border-t border-gray-100 flex justify-center gap-4 text-xs text-text-secondary font-medium">
-            <span>pH: {ph ?? "ไม่ได้ระบุ"}</span>
+            <span>pH: {ph ?? "-"}</span>
             {record.notes && <><span>|</span><span className="text-gray-500 font-normal">{record.notes}</span></>}
           </div>
         </div>
@@ -201,7 +201,7 @@ function ResultContent() {
         )}
 
         {/* Location */}
-        {(areaLabel !== "ไม่ระบุ" || record.latitude) && (
+        {(areaLabel !== "-" || record.latitude) && (
           <div className="relative rounded-2xl overflow-hidden h-28 shadow-sm bg-gradient-to-r from-green-700 to-green-900">
             <div className="absolute inset-0 flex items-center p-5">
               <div className="text-white">

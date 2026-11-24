@@ -1,7 +1,11 @@
 "use client"
 
 import { useRef, useState } from "react"
-import { Download, FileSpreadsheet, Loader2, Upload, X, Check, AlertTriangle } from "lucide-react"
+import Link from "next/link"
+import {
+  Download, FileSpreadsheet, Loader2, Upload, X, Check, AlertTriangle, FileDown, History,
+} from "lucide-react"
+import { reportBundleLinks } from "@/lib/report/reportLinks"
 import { readSheetFile } from "@/lib/importer/readSheet"
 import {
   buildTemplateCsv,
@@ -125,6 +129,9 @@ export default function ImportPanel({
   }
 
   const okCount = preview?.filter((r) => r.ok).length ?? 0
+  // ผลที่บันทึกแล้ว ตามลำดับแถวในไฟล์ -> ลิงก์รายงานรวม (ฉบับละไม่เกิน REPORT_BUNDLE_MAX)
+  const savedIds = preview?.flatMap((r) => (r.analysisId ? [r.analysisId] : [])) ?? []
+  const bundles = reportBundleLinks(savedIds)
 
   return (
     <div className="rounded-xl border border-gray-200 bg-white px-3 py-2.5">
@@ -218,10 +225,23 @@ export default function ImportPanel({
                         : "—"}
                     </td>
                     <td className="px-3 py-2">
-                      {r.ok ? (
+                      {r.analysisId ? (
+                        // เปิดแท็บใหม่ — ตารางนี้อยู่ในหน้าเท่านั้น ออกจากหน้าแล้วหาย
+                        <Link
+                          href={`/analyze/result?id=${r.analysisId}`}
+                          target="_blank"
+                          className="whitespace-nowrap font-medium text-emerald-700 underline underline-offset-2 hover:text-emerald-900"
+                        >
+                          ดูผล
+                        </Link>
+                      ) : r.ok ? (
                         <span className="whitespace-nowrap font-medium text-emerald-600">พร้อมบันทึก</span>
                       ) : (
                         <span className="text-amber-700">{r.errors.join(" · ")}</span>
+                      )}
+                      {/* ข้อมูลไม่ครบแต่บันทึกได้ — บอกว่าธาตุไหนจะไม่มีคำแนะนำ */}
+                      {r.ok && r.warnings.length > 0 && (
+                        <span className="mt-0.5 block text-[11px] text-amber-600">{r.warnings.join(" · ")}</span>
                       )}
                     </td>
                   </tr>
@@ -241,10 +261,35 @@ export default function ImportPanel({
               คำนวณและบันทึกทั้งหมด ({okCount} แถว)
             </button>
           ) : (
-            <p className="mt-3 rounded-xl bg-emerald-50 px-4 py-3 text-center text-sm font-medium text-emerald-700">
-              บันทึกลงประวัติแล้ว {savedCount.toLocaleString("th-TH")} รายการ
-              {preview.length - savedCount > 0 && ` · ข้าม ${preview.length - savedCount} แถวที่มีปัญหา`}
-            </p>
+            <div className="mt-3 flex flex-col items-center gap-3 rounded-xl bg-emerald-50 p-4">
+              <p className="flex items-center gap-2 text-center text-sm font-medium text-emerald-700">
+                <Check className="h-4 w-4 shrink-0" />
+                บันทึกลงประวัติแล้ว {savedCount.toLocaleString("th-TH")} รายการ
+                {preview.length - savedCount > 0 && ` · ข้าม ${preview.length - savedCount} แถวที่มีปัญหา`}
+              </p>
+              <div className="flex flex-wrap justify-center gap-2">
+                <Link
+                  href="/history"
+                  className="flex items-center gap-1 rounded-full border border-emerald-200 bg-white px-4 py-2 text-sm font-medium text-emerald-700 hover:bg-emerald-50"
+                >
+                  <History className="h-4 w-4" /> ดูประวัติ
+                </Link>
+                {/* รายงานรวม: ทุกผลต่อกันผลละหน้า ดาวน์โหลดเป็น PDF ไฟล์เดียวได้ (แท็บใหม่ ตารางนี้ไม่หาย) */}
+                {bundles.map((b) => (
+                  <Link
+                    key={b.from}
+                    href={b.href}
+                    target="_blank"
+                    className="flex items-center gap-1.5 rounded-full bg-[#1A4D2E] px-4 py-2 text-sm font-medium text-white hover:opacity-90"
+                  >
+                    <FileDown className="h-4 w-4" />
+                    {bundles.length === 1
+                      ? `รายงาน PDF รวม ${savedIds.length.toLocaleString("th-TH")} รายการ`
+                      : `รายงาน PDF รายการที่ ${b.from}–${b.to}`}
+                  </Link>
+                ))}
+              </div>
+            </div>
           )}
         </div>
       )}
