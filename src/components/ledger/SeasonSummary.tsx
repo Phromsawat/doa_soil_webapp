@@ -125,11 +125,11 @@ export default function SeasonSummary({
 
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         <div className="rounded-xl border border-gray-200 p-3">
-          <p className="mb-2 text-xs font-semibold text-emerald-700">รายรับตามหมวด</p>
+          <p className="mb-2 text-xs font-semibold text-emerald-700">รายรับ</p>
           <Bars rows={s.incomeRows} color="#4CAF7D" empty="ยังไม่มีรายรับในรอบนี้" />
         </div>
         <div className="rounded-xl border border-gray-200 p-3">
-          <p className="mb-2 text-xs font-semibold text-red-600">รายจ่ายตามหมวด</p>
+          <p className="mb-2 text-xs font-semibold text-red-600">รายจ่าย</p>
           <Bars rows={s.expenseRows} color="#EF6B6B" empty="ยังไม่มีรายจ่ายในรอบนี้" />
         </div>
       </div>

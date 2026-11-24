@@ -5,7 +5,7 @@ import type { SoilReportData } from "@/lib/report/soilReport"
 import type { PlanTab } from "@/lib/fertilizer/chemicalPlan"
 import { unitTh } from "@/lib/fertilizer/unit"
 import { compareGrade } from "@/lib/fertilizer/blend"
-import { classify, LEVEL_LABEL_TH } from "@/lib/soil/grid"
+import { classify, scoreFromLevels, LEVEL_LABEL_TH } from "@/lib/soil/grid"
 
 // แผ่นรายงานผลวิเคราะห์ดิน — ใช้ทั้งผลที่บันทึกแล้ว (หน้า server) และผลของผู้ที่ไม่ได้ล็อกอิน (GuestReport)
 // ไม่มี state ของตัวเอง ข้อมูลมาจาก buildSoilReport (lib/report/soilReport.ts)
@@ -28,6 +28,12 @@ const LEVEL_TEXT: Record<string, string> = {
   high: "#15803d",
 }
 const LEVEL_PCT: Record<string, number> = { low: 30, medium: 60, high: 90 }
+// พื้น/ขอบของแถบความอุดมสมบูรณ์ — โทนอ่อนของสีระดับ
+const FERT_TONE: Record<string, React.CSSProperties> = {
+  low: { background: "#fef2f2", borderColor: "#fecaca" },
+  medium: { background: "#fffbeb", borderColor: "#fde68a" },
+  high: { background: "#ecfdf3", borderColor: "#bbf7d0" },
+}
 
 function thaiDate(iso: string) {
   return new Date(iso).toLocaleDateString("th-TH", {
@@ -85,7 +91,7 @@ export default function SoilReportSheet({
 
 /** แผ่นรายงานของผลหนึ่งรายการ (A4 หนึ่งแผ่น) */
 function ReportPage({ data, ownerName }: { data: SoilReportData; ownerName: string }) {
-  const { record, cropName, calculation, note, plans, blend, mass, basis } = data
+  const { record, cropName, calculation, note, plans } = data
 
   const area = [record.district, record.amphur, record.province].filter(Boolean).join(", ")
   const coords =
@@ -97,172 +103,167 @@ function ReportPage({ data, ownerName }: { data: SoilReportData; ownerName: stri
     { key: "om" as const, label: "อินทรียวัตถุ (OM)", value: record.om_value, unit: "%" },
     { key: "p" as const, label: "ฟอสฟอรัสที่เป็นประโยชน์ (P)", value: record.p_value, unit: "มก./กก." },
     { key: "k" as const, label: "โพแทสเซียมที่แลกเปลี่ยนได้ (K)", value: record.k_value, unit: "มก./กก." },
-  ]
+  ].map((n) => ({
+    ...n,
+    // ระดับตามช่วงของพืช (เหมือนหน้ากรอกค่า/หน้าผล) — ไม่มีก็ใช้เกณฑ์ทั่วไป
+    level: n.value == null ? null : calculation?.levels?.[n.key] ?? classify(n.key, n.value),
+  }))
+
+  // ความอุดมสมบูรณ์ — คะแนนจากระดับที่แสดงด้านบน วิธีเดียวกับแผนที่ "ความอุดมสมบูรณ์รวม"
+  // (ต่ำ 1 / ปานกลาง 2 / สูง 3 รวม 3–4 ต่ำ, 5–6 ปานกลาง, 7–9 สูง) — รายงานแสดงแค่ระดับ ค่าไม่ครบ = "-"
+  const [om, p, k] = nutrients.map((n) => n.level)
+  const fertScore = scoreFromLevels(om, p, k)
+  const fertLevel = fertScore == null ? null : classify("sum", fertScore)
 
   return (
       // แผ่นรายงานขนาด A4 พอดี — ไฟล์ PDF ถ่ายจากแผ่นนี้ตรง ๆ จึงหน้าตาเหมือนที่เห็นบนจอ
       <A4Sheet>
-        {/* ---------- หัวรายงาน ---------- */}
-        <header className="head">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/api/site-logo" alt="" className="logo" />
-          <div>
-            <h1>ผลวิเคราะห์ดินและคำแนะนำการใช้ปุ๋ย</h1>
-            <p className="sub">กรมวิชาการเกษตร</p>
-          </div>
-        </header>
+        {/* soil-page: ท้ายกระดาษชิดล่างของหน้าเสมอ เนื้อหาสั้นก็ไม่ลอยกลางหน้า */}
+        <div className="soil-page">
+          {/* ---------- หัวรายงาน ---------- */}
+          <header className="head">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/api/site-logo" alt="" className="logo" />
+            <div>
+              <h1>ผลวิเคราะห์ดินและคำแนะนำการใช้ปุ๋ย</h1>
+              <p className="sub">กรมวิชาการเกษตร</p>
+            </div>
+          </header>
 
-        {/* ---------- ข้อมูลผู้ขอและตัวอย่าง ---------- */}
-        <section className="meta">
-          <div><span>ชื่อ</span><strong>{ownerName}</strong></div>
-          <div><span>วันที่วิเคราะห์</span><strong>{thaiDate(record.created_at)}</strong></div>
-          <div><span>พืชที่ปลูก</span><strong>{cropName}</strong></div>
-          <div><span>พื้นที่เก็บตัวอย่าง</span><strong>{area || "-"}</strong></div>
-          {coords && <div><span>พิกัด</span><strong>{coords}</strong></div>}
-          {/* แสดงเสมอ — ไม่ได้กรอก pH ก็บอกไว้ ไม่ให้ดูเหมือนข้อมูลหาย */}
-          <div><span>ความเป็นกรด-ด่าง (pH)</span><strong>{record.ph_value ?? "-"}</strong></div>
-        </section>
+          {/* ---------- ข้อมูลผู้ขอและตัวอย่าง ---------- */}
+          <section className="meta">
+            <div><span>ชื่อ</span><strong>{ownerName}</strong></div>
+            <div><span>วันที่วิเคราะห์</span><strong>{thaiDate(record.created_at)}</strong></div>
+            <div><span>พืชที่ปลูก</span><strong>{cropName}</strong></div>
+            <div><span>พื้นที่เก็บตัวอย่าง</span><strong>{area || "-"}</strong></div>
+            {coords && <div><span>พิกัด</span><strong>{coords}</strong></div>}
+            {/* แสดงเสมอ — ไม่ได้กรอก pH ก็บอกไว้ ไม่ให้ดูเหมือนข้อมูลหาย */}
+            <div><span>ความเป็นกรด-ด่าง (pH)</span><strong>{record.ph_value ?? "-"}</strong></div>
+          </section>
 
-        {/* ---------- ระดับธาตุอาหาร | ธาตุอาหารที่พืชต้องการ (วางคู่กันประหยัดพื้นที่) ---------- */}
-        <div className={calculation ? "duo" : undefined}>
-          <section>
-            <h2 className="h2">ระดับธาตุอาหารในดิน</h2>
-            <div className="levels">
-              {nutrients.map((n) => {
-                // ระดับตามช่วงของพืช (เหมือนหน้ากรอกค่า/หน้าผล) — ไม่มีก็ใช้เกณฑ์ทั่วไป
-                const lv = n.value == null ? null : calculation?.levels?.[n.key] ?? classify(n.key, n.value)
-                return (
-                  <div className="level" key={n.key}>
-                    <div className="level-top">
-                      <span className="level-label">{n.label}</span>
-                      <span className="level-val">
-                        {n.value ?? "–"} <em>{n.unit}</em>
-                        {lv && <b style={{ color: LEVEL_TEXT[lv] }}>({LEVEL_LABEL_TH[lv]})</b>}
+          {/* ---------- ระดับธาตุอาหาร | ธาตุอาหารที่พืชต้องการ (วางคู่กันประหยัดพื้นที่) ---------- */}
+          <div className={calculation ? "duo" : undefined}>
+            <section>
+              <h2 className="h2">ระดับธาตุอาหารในดิน</h2>
+              <div className="levels">
+                {nutrients.map((n) => {
+                  const lv = n.level
+                  return (
+                    <div className="level" key={n.key}>
+                      <div className="level-top">
+                        <span className="level-label">{n.label}</span>
+                        <span className="level-val">
+                          {n.value ?? "–"} <em>{n.unit}</em>
+                          {lv && <b style={{ color: LEVEL_TEXT[lv] }}>({LEVEL_LABEL_TH[lv]})</b>}
+                        </span>
+                      </div>
+                      <div className="bar">
+                        {lv && <i style={{ width: `${LEVEL_PCT[lv]}%`, background: LEVEL_COLOR[lv] }} />}
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            </section>
+
+            {calculation && (
+              <section>
+                <h2 className="h2">
+                  ปริมาณธาตุอาหารที่พืชต้องการ
+                  <span className="h2-unit">{unitTh(calculation.unit)}</span>
+                </h2>
+                <div className="npk">
+                  {[
+                    ["N", "ไนโตรเจน", calculation.target_n],
+                    ["P₂O₅", "ฟอสฟอรัส", calculation.target_p2o5],
+                    ["K₂O", "โพแทสเซียม", calculation.target_k2o],
+                  ].map(([sym, name, v]) => (
+                    <div key={sym as string}>
+                      <span>
+                        <b>{sym as string}</b> {name as string}
                       </span>
+                      <strong>{(v as number | null) ?? "–"}</strong>
                     </div>
-                    <div className="bar">
-                      {lv && <i style={{ width: `${LEVEL_PCT[lv]}%`, background: LEVEL_COLOR[lv] }} />}
-                    </div>
+                  ))}
+                </div>
+              </section>
+            )}
+          </div>
+
+          {/* ---------- ความอุดมสมบูรณ์ของดิน (เต็มความกว้าง ใต้ระดับธาตุอาหาร) — แสดงแค่ระดับ ไม่แสดงคะแนน ---------- */}
+          <section className="fert" style={fertLevel ? FERT_TONE[fertLevel] : undefined}>
+            <span>ความอุดมสมบูรณ์ของดิน</span>
+            <strong style={{ color: fertLevel ? LEVEL_TEXT[fertLevel] : undefined }}>
+              {fertLevel ? LEVEL_LABEL_TH[fertLevel] : "-"}
+            </strong>
+          </section>
+
+          {/* ---------- แผนการใส่ปุ๋ยตามระยะ ---------- */}
+          {plans.length > 0 && (
+            <>
+              <h2 className="h2">แผนการใส่ปุ๋ยตามระยะการเจริญเติบโต</h2>
+              {plans.map((plan) => {
+                const pv = pivotPlan(plan)
+                return (
+                  <div className="plan" key={plan.tab}>
+                    <h3 className="h3">
+                      {PLAN_TITLE[plan.tab]}
+                      {pv.sameUnit && <span className="h3-unit">หน่วย: {pv.unit}</span>}
+                    </h3>
+                    {plan.note && <p className="plan-note">{plan.note}</p>}
+                    <table className="tbl">
+                      <thead>
+                        <tr>
+                          <th>ระยะ</th>
+                          {pv.grades.map((g) => (
+                            <th key={g.grade} className="num">
+                              {g.grade}
+                              {!pv.sameUnit && <small> ({g.unit})</small>}
+                            </th>
+                          ))}
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {plan.stages.map((s) => (
+                          <tr key={s.stage}>
+                            <td className="stage">{s.stage}</td>
+                            {pv.grades.map((g) => {
+                              const it = s.items.find((x) => x.grade === g.grade)
+                              return (
+                                <td key={g.grade} className="num">
+                                  {it ? <strong>{it.amount.toLocaleString()}</strong> : <span className="dash">–</span>}
+                                </td>
+                              )
+                            })}
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
                   </div>
                 )
               })}
-            </div>
-          </section>
-
-          {calculation && (
-            <section>
-              <h2 className="h2">
-                ปริมาณธาตุอาหารที่พืชต้องการ
-                <span className="h2-unit">{unitTh(calculation.unit)}</span>
-              </h2>
-              <div className="npk">
-                {[
-                  ["N", "ไนโตรเจน", calculation.target_n],
-                  ["P₂O₅", "ฟอสฟอรัส", calculation.target_p2o5],
-                  ["K₂O", "โพแทสเซียม", calculation.target_k2o],
-                ].map(([sym, name, v]) => (
-                  <div key={sym as string}>
-                    <span>
-                      <b>{sym as string}</b> {name as string}
-                    </span>
-                    <strong>{(v as number | null) ?? "–"}</strong>
-                  </div>
-                ))}
-              </div>
-            </section>
+            </>
           )}
-        </div>
 
-        {/* ---------- แผนการใส่ปุ๋ยตามระยะ ---------- */}
-        {plans.length > 0 && (
-          <>
-            <h2 className="h2">แผนการใส่ปุ๋ยตามระยะการเจริญเติบโต</h2>
-            {plans.map((plan) => {
-              const pv = pivotPlan(plan)
-              return (
-                <div className="plan" key={plan.tab}>
-                  <h3 className="h3">
-                    {PLAN_TITLE[plan.tab]}
-                    {pv.sameUnit && <span className="h3-unit">หน่วย: {pv.unit}</span>}
-                  </h3>
-                  {plan.note && <p className="plan-note">{plan.note}</p>}
-                  <table className="tbl">
-                    <thead>
-                      <tr>
-                        <th>ระยะ</th>
-                        {pv.grades.map((g) => (
-                          <th key={g.grade} className="num">
-                            {g.grade}
-                            {!pv.sameUnit && <small> ({g.unit})</small>}
-                          </th>
-                        ))}
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {plan.stages.map((s) => (
-                        <tr key={s.stage}>
-                          <td className="stage">{s.stage}</td>
-                          {pv.grades.map((g) => {
-                            const it = s.items.find((x) => x.grade === g.grade)
-                            return (
-                              <td key={g.grade} className="num">
-                                {it ? <strong>{it.amount.toLocaleString()}</strong> : <span className="dash">–</span>}
-                              </td>
-                            )
-                          })}
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              )
-            })}
-          </>
-        )}
+          {/* ไม่พิมพ์ "ปริมาณปุ๋ยที่ต้องใช้" (ยอดรวมทั้งปีของปุ๋ยที่เลือก) — ตารางแผนตามระยะบอกปริมาณอยู่แล้ว
+              ยังดูได้บนหน้าผล */}
 
-        {/* ---------- ปริมาณปุ๋ยที่ต้องใช้ (วางหลังตารางแผน) ---------- */}
-        {blend && (
-          <>
-            <h2 className="h2">ปริมาณปุ๋ยที่ต้องใช้</h2>
-            {/* การ์ดเรียงแนวนอน (1–3 สูตร) — เตี้ยกว่าตาราง */}
-            <div className="blend" style={{ gridTemplateColumns: `repeat(${blend.items.length}, minmax(0, 1fr))` }}>
-              {[...blend.items]
-                .sort((a, b) =>
-                  compareGrade(a.formula.grade ?? a.formula.name, b.formula.grade ?? b.formula.name)
-                )
-                .map((it) => (
-                  <div key={it.formula.id}>
-                    <span>
-                      {it.formula.name}
-                      {/* สูตรห้ามตัดกลางบรรทัด (ขีดใน 18-46-0 เป็นจุดตัดคำของเบราว์เซอร์) */}
-                      {it.formula.grade && !it.formula.name.includes(it.formula.grade) && (
-                        <span className="grade"> ({it.formula.grade})</span>
-                      )}
-                    </span>
-                    <strong>
-                      {Math.ceil(it.kg).toLocaleString()} <em>{mass}{basis ? ` ${basis}` : ""}</em>
-                    </strong>
-                  </div>
-                ))}
+          {/* ---------- หมายเหตุ ---------- */}
+          {note && (
+            <div className="note">
+              <h3>หมายเหตุ</h3>
+              {note.note.split("\n").filter(Boolean).map((line, i) => (
+                <p key={i}>{line}</p>
+              ))}
+              {note.source && <p className="src">ที่มา: {note.source}</p>}
             </div>
-          </>
-        )}
+          )}
 
-        {/* ---------- หมายเหตุ ---------- */}
-        {note && (
-          <div className="note">
-            <h3>หมายเหตุ</h3>
-            {note.note.split("\n").filter(Boolean).map((line, i) => (
-              <p key={i}>{line}</p>
-            ))}
-            {note.source && <p className="src">ที่มา: {note.source}</p>}
-          </div>
-        )}
-
-        <footer className="foot">
-          <span>ออกรายงานเมื่อ {thaiDate(new Date().toISOString())}</span>
-          <span>DOA-Soil Test Kit</span>
-        </footer>
+          <footer className="foot">
+            <span>ออกรายงานเมื่อ {thaiDate(new Date().toISOString())}</span>
+            <span>DOA-Soil Test Kit</span>
+          </footer>
+        </div>
       </A4Sheet>
   )
 }

@@ -34,11 +34,9 @@ export interface ReportInput {
   created_at: string
 }
 
-/** แปลงหน่วยของ target ("g/tree/year", "kg/rai") เป็นคำไทย — เกณฑ์เดียวกับ BlendResultCard */
-function unitParts(unit: string) {
-  const mass = unit.toLowerCase().startsWith("kg") ? "กก." : "กรัม"
-  const basis = /rai|ไร่/i.test(unit) ? "ต่อไร่" : /tree|ต้น/i.test(unit) ? "ต่อต้น" : ""
-  return { mass, basis }
+/** หน่วยน้ำหนักของ target ("g/tree/year", "kg/rai") เป็นคำไทย — เกณฑ์เดียวกับ BlendResultCard */
+function massUnit(unit: string) {
+  return unit.toLowerCase().startsWith("kg") ? "กก." : "กรัม"
 }
 
 // คอลัมน์ numeric บางคอลัมน์อาจมาเป็นข้อความ — รับทั้งตัวเลขและข้อความที่เป็นตัวเลข
@@ -104,7 +102,7 @@ export async function buildSoilReport(raw: ReportInput, selectedTab: PlanTab | n
       ? blendFertilizer(target, picked)
       : null
 
-  const { mass, basis } = unitParts(calculation?.unit ?? "")
+  const mass = massUnit(calculation?.unit ?? "")
 
   // ตารางตายตัวตามค่าดินทั้ง 3 ชนิด แล้วเลือกแบบเดียวกับหน้าจอ (chooseChemicalPlan)
   const getPlan = (use_type: UseType) =>
@@ -155,9 +153,6 @@ export async function buildSoilReport(raw: ReportInput, selectedTab: PlanTab | n
     calculation,
     note,
     plans,
-    blend,
-    mass,
-    basis,
   }
 }
 

@@ -121,11 +121,21 @@ export function soilScore(
   p: number | null | undefined,
   k: number | null | undefined
 ): number | null {
-  const lo = classify("om", om)
-  const lp = classify("p", p)
-  const lk = classify("k", k)
-  if (!lo || !lp || !lk) return null
-  return LEVEL_SCORE[lo] + LEVEL_SCORE[lp] + LEVEL_SCORE[lk]
+  return scoreFromLevels(classify("om", om), classify("p", p), classify("k", k))
+}
+
+/**
+ * คะแนนความอุดมสมบูรณ์จากระดับที่จัดไว้แล้ว (ต่ำ 1 / ปานกลาง 2 / สูง 3 รวม 3-9)
+ * ใช้กับรายงานผลดิน ซึ่งจัดระดับตามช่วงของพืช — ระดับไหนว่าง คืน null
+ * ระดับรวม: classify("sum", score)
+ */
+export function scoreFromLevels(
+  om: SoilLevel | null,
+  p: SoilLevel | null,
+  k: SoilLevel | null
+): number | null {
+  if (!om || !p || !k) return null
+  return LEVEL_SCORE[om] + LEVEL_SCORE[p] + LEVEL_SCORE[k]
 }
 
 // แปลง lat/lng -> ดัชนีเซลล์ (row, col). คืน null ถ้าอยู่นอก grid

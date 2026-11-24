@@ -22,25 +22,37 @@ export default function A4Sheet({ id, children }: { id?: string; children: React
     const sheet = sheetRef.current
     const content = contentRef.current
     if (!sheet || !content) return
-    const cs = getComputedStyle(sheet)
-    const avail = sheet.clientHeight - parseFloat(cs.paddingTop) - parseFloat(cs.paddingBottom)
-    const fits = (f: number) => {
-      content.style.width = `${100 / f}%`
-      return content.scrollHeight * f <= avail + 0.5
-    }
-    let f = 1
-    if (!fits(1)) {
-      let lo = 0.3 // เล็กสุดที่ยอม — เนื้อหายาวกว่านี้คงล้น แต่ไม่เกิดกับรายงานหน้าเดียว
-      let hi = 1
-      for (let i = 0; i < 10; i++) {
-        const mid = (lo + hi) / 2
-        if (fits(mid)) lo = mid
-        else hi = mid
+    const measure = () => {
+      const cs = getComputedStyle(sheet)
+      const avail = sheet.clientHeight - parseFloat(cs.paddingTop) - parseFloat(cs.paddingBottom)
+      const fits = (f: number) => {
+        content.style.width = `${100 / f}%`
+        return content.scrollHeight * f <= avail + 0.5
       }
-      f = lo
+      let f = 1
+      if (!fits(1)) {
+        let lo = 0.3 // เล็กสุดที่ยอม — เนื้อหายาวกว่านี้คงล้น แต่ไม่เกิดกับรายงานหน้าเดียว
+        let hi = 1
+        for (let i = 0; i < 10; i++) {
+          const mid = (lo + hi) / 2
+          if (fits(mid)) lo = mid
+          else hi = mid
+        }
+        f = lo
+      }
+      content.style.width = `${100 / f}%`
+      setFit(f)
     }
-    content.style.width = `${100 / f}%`
-    setFit(f)
+    measure()
+    // ฟอนต์ไทยโหลดเสร็จทีหลัง -> ความสูงของบรรทัดเปลี่ยน วัดใหม่อีกรอบ
+    // (เดิมวัดตอนยังเป็นฟอนต์สำรอง แผ่นถูกย่อทั้งที่จริงพอดีหน้า)
+    let alive = true
+    document.fonts?.ready.then(() => {
+      if (alive) measure()
+    })
+    return () => {
+      alive = false
+    }
   }, [children])
 
   // ย่อการแสดงผลบนจอแคบ (กรอบนอกเท่านั้น)

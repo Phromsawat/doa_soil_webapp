@@ -42,7 +42,7 @@ function CategoryTable({ title, rows, tone }: { title: string; rows: ReturnType<
       ) : (
         <table className="tbl">
           <thead>
-            <tr><th>หมวด</th><th className="num">บาท</th><th className="num">%</th></tr>
+            <tr><th>รายการ</th><th className="num">บาท</th><th className="num">%</th></tr>
           </thead>
           <tbody>
             {rows.map((r) => (
@@ -64,7 +64,7 @@ function EntryTable({ rows, startNo }: { rows: Row[]; startNo: number }) {
     <table className="tbl">
       <thead>
         <tr>
-          <th className="num">#</th><th>วันที่</th><th>ประเภท</th><th>หมวด</th><th>รายการ</th>
+          <th className="num">#</th><th>วันที่</th><th>ประเภท</th><th>รายการ</th>
           <th className="num">จำนวนเงิน (บาท)</th>
         </tr>
       </thead>
@@ -74,8 +74,11 @@ function EntryTable({ rows, startNo }: { rows: Row[]; startNo: number }) {
             <td className="num muted">{startNo + i}</td>
             <td className="nowrap">{formatDay(r.happened_on)}</td>
             <td className={r.kind === "income" ? "amt-in" : "amt-out"}>{KIND_LABEL[r.kind]}</td>
-            <td>{r.category}</td>
-            <td>{r.title || <span className="dash">–</span>}</td>
+            {/* หมวด + รายละเอียด (ช่องไม่บังคับ ส่วนใหญ่ว่าง) ไว้ช่องเดียว — มีรายละเอียดจึงขึ้นบรรทัดเล็กด้านล่าง */}
+            <td>
+              {r.category}
+              {r.title && <span className="sub">{r.title}</span>}
+            </td>
             <td className={`num ${r.kind === "income" ? "amt-in" : "amt-out"}`}><strong>{formatBaht(r.amount)}</strong></td>
           </tr>
         ))}
@@ -187,8 +190,8 @@ export default async function LedgerPrintPage({
         )}
 
         <div className="duo even">
-          <CategoryTable title="รายรับตามหมวด" rows={byCategory(entries, "income")} tone="in" />
-          <CategoryTable title="รายจ่ายตามหมวด" rows={byCategory(entries, "expense")} tone="out" />
+          <CategoryTable title="รายรับ" rows={byCategory(entries, "income")} tone="in" />
+          <CategoryTable title="รายจ่าย" rows={byCategory(entries, "expense")} tone="out" />
         </div>
 
         {season.note && (

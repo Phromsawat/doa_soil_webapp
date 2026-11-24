@@ -2,9 +2,10 @@
 
 import { useState, useEffect, useMemo } from "react"
 import Link from "next/link"
-import { Search, Filter, ChevronRight as ChevronRightIcon, Loader2, FileText } from "lucide-react"
+import { Search, Filter, ChevronRight as ChevronRightIcon, Loader2, FileText, ListChecks, FileDown, Check } from "lucide-react"
 import { listMyAnalyses } from "@/lib/supabase/analyses"
 import { useUser } from "@/lib/supabase/useUser"
+import { REPORT_BUNDLE_MAX, reportBundleLinks } from "@/lib/report/reportLinks"
 
 type AnalysisRow = Awaited<ReturnType<typeof listMyAnalyses>>[number]
 
@@ -54,6 +55,10 @@ export default function HistoryPage() {
   const [error, setError] = useState<string | null>(null)
   const [activeTab, setActiveTab] = useState<Tab>("ทั้งหมด")
   const [search, setSearch] = useState("")
+  // โหมดเลือกหลายรายการ -> เปิดรายงาน PDF รวม (ผลละหน้าในไฟล์เดียว)
+  const [selectMode, setSelectMode] = useState(false)
+  const [selected, setSelected] = useState<Set<string>>(() => new Set())
+  const [limitHit, setLimitHit] = useState(false)
 
   useEffect(() => {
     if (userLoading) return
@@ -84,6 +89,50 @@ export default function HistoryPage() {
     }
     return list
   }, [analyses, activeTab, search])
+
+  // ผลที่ยังไม่เสร็จ (รอดำเนินการ/ล้มเหลว) ไม่มีค่าให้ออกรายงาน จึงเลือกไม่ได้
+  const selectable = (a: AnalysisRow) => a.status === "completed"
+  const visibleSelectable = filtered.filter(selectable)
+  const allVisibleSelected = visibleSelectable.length > 0 && visibleSelectable.every((a) => selected.has(a.id))
+
+  // เรียงตามลำดับในรายการ (ใหม่ -> เก่า) ไม่ใช่ลำดับที่กดเลือก
+  const selectedIds = analyses.filter((a) => selected.has(a.id)).map((a) => a.id)
+  const reportHref = selectedIds.length > 0 ? reportBundleLinks(selectedIds)[0].href : null
+
+  function toggleOne(id: string) {
+    const next = new Set(selected)
+    if (next.has(id)) {
+      next.delete(id)
+      setLimitHit(false)
+    } else if (next.size >= REPORT_BUNDLE_MAX) {
+      setLimitHit(true)
+      return
+    } else {
+      next.add(id)
+    }
+    setSelected(next)
+  }
+
+  function toggleAllVisible() {
+    const next = new Set(selected)
+    if (allVisibleSelected) {
+      for (const a of visibleSelectable) next.delete(a.id)
+      setLimitHit(false)
+    } else {
+      for (const a of visibleSelectable) {
+        if (next.size >= REPORT_BUNDLE_MAX) break
+        next.add(a.id)
+      }
+      setLimitHit(visibleSelectable.some((a) => !next.has(a.id)))
+    }
+    setSelected(next)
+  }
+
+  function exitSelectMode() {
+    setSelectMode(false)
+    setSelected(new Set())
+    setLimitHit(false)
+  }
 
   // ============ States ============
 
@@ -122,7 +171,7 @@ export default function HistoryPage() {
   }
 
   return (
-    <div className="font-thai pb-24 space-y-5 px-4 max-w-3xl mx-auto pt-4">
+    <div className={`font-thai space-y-5 px-4 max-w-3xl mx-auto pt-4 ${selectMode ? "pb-48 lg:pb-32" : "pb-24"}`}>
       {/* Badge */}
       <div className="flex justify-center mb-2">
         <div className="bg-green-100 text-gray-700 text-xs font-bold px-3 py-1 rounded-full">
@@ -165,6 +214,40 @@ export default function HistoryPage() {
         ))}
       </div>
 
+      {/* เลือกหลายรายการ -> รายงาน PDF รวม */}
+      {analyses.some(selectable) && (
+        <div className="flex items-center justify-between gap-3 text-sm">
+          {selectMode ? (
+            <>
+              <button
+                type="button"
+                onClick={toggleAllVisible}
+                disabled={visibleSelectable.length === 0}
+                className="flex items-center gap-2 font-medium text-text-primary disabled:opacity-40"
+              >
+                <CheckBox checked={allVisibleSelected} />
+                เลือกทั้งหมดที่แสดง ({visibleSelectable.length})
+              </button>
+              <button
+                type="button"
+                onClick={exitSelectMode}
+                className="text-gray-500 hover:text-gray-800"
+              >
+                ยกเลิก
+              </button>
+            </>
+          ) : (
+            <button
+              type="button"
+              onClick={() => setSelectMode(true)}
+              className="ml-auto flex items-center gap-1.5 rounded-full border border-gray-200 bg-white px-4 py-2 font-medium text-[#1A4D2E] hover:bg-gray-50"
+            >
+              <ListChecks className="h-4 w-4" /> เลือกหลายรายการเพื่อออก PDF รวม
+            </button>
+          )}
+        </div>
+      )}
+
       {/* List */}
       {filtered.length === 0 ? (
         <div className="bg-white rounded-2xl p-12 text-center border border-gray-100 shadow-sm">
@@ -189,10 +272,36 @@ export default function HistoryPage() {
               (item.latitude && item.longitude
                 ? `${Number(item.latitude).toFixed(4)}, ${Number(item.longitude).toFixed(4)}`
                 : "-")
+            const canSelect = selectMode && selectable(item)
+            const isSelected = selected.has(item.id)
             return (
-              <div key={item.id} className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100 flex gap-4">
-                {/* Thumbnail */}
-                <div className="w-20 h-20 rounded-xl overflow-hidden shrink-0 relative bg-gray-100 flex items-center justify-center">
+              <div
+                key={item.id}
+                onClick={(e) => {
+                  // โหมดเลือก: กดตรงไหนของการ์ดก็เลือกได้ ยกเว้นลิงก์ "ดูรายละเอียด"
+                  if (!canSelect || (e.target as HTMLElement).closest("a, button")) return
+                  toggleOne(item.id)
+                }}
+                className={`bg-white rounded-2xl p-4 shadow-sm border flex gap-4 transition-colors ${
+                  isSelected ? "border-[#1A4D2E] ring-1 ring-[#1A4D2E]" : "border-gray-100"
+                } ${canSelect ? "cursor-pointer" : ""} ${selectMode && !canSelect ? "opacity-50" : ""}`}
+              >
+                {selectMode && (
+                  <button
+                    type="button"
+                    role="checkbox"
+                    aria-checked={isSelected}
+                    aria-label="เลือกรายการนี้"
+                    disabled={!canSelect}
+                    onClick={() => toggleOne(item.id)}
+                    className="self-center shrink-0 disabled:cursor-not-allowed"
+                  >
+                    <CheckBox checked={isSelected} />
+                  </button>
+                )}
+
+                {/* Thumbnail — โหมดเลือกบนจอแคบซ่อนไว้ ให้ช่องติ๊กใช้ที่แทน */}
+                <div className={`w-20 h-20 rounded-xl overflow-hidden shrink-0 relative bg-gray-100 items-center justify-center ${selectMode ? "hidden sm:flex" : "flex"}`}>
                   {firstImage ? (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img src={firstImage} alt="soil sample" className="w-full h-full object-cover" />
@@ -254,6 +363,48 @@ export default function HistoryPage() {
           })}
         </div>
       )}
+
+      {/* แถบสั่งออกรายงาน — ลอยเหนือแถบเมนูล่าง (มือถือ) */}
+      {selectMode && (
+        <div className="fixed inset-x-0 bottom-[calc(4.5rem+env(safe-area-inset-bottom))] z-[1090] px-4 lg:bottom-6">
+          <div className="mx-auto flex max-w-3xl items-center justify-between gap-3 rounded-2xl border border-gray-200 bg-white p-3 pl-5 shadow-lg">
+            <div className="min-w-0 text-sm">
+              <p className="font-semibold text-text-primary">เลือกแล้ว {selectedIds.length} รายการ</p>
+              <p className={`text-xs ${limitHit ? "text-amber-600" : "text-gray-500"}`}>
+                {limitHit
+                  ? `สูงสุด ${REPORT_BUNDLE_MAX} รายการต่อฉบับ`
+                  : "รวมเป็น PDF ไฟล์เดียว"}
+              </p>
+            </div>
+            {reportHref ? (
+              <a
+                href={reportHref}
+                target="_blank"
+                rel="noopener"
+                className="flex shrink-0 items-center gap-2 rounded-full bg-[#1A4D2E] px-5 py-2.5 text-sm font-medium text-white hover:bg-[#143a22]"
+              >
+                <FileDown className="h-4 w-4" /> รายงาน PDF รวม
+              </a>
+            ) : (
+              <span className="flex shrink-0 cursor-not-allowed items-center gap-2 rounded-full bg-gray-200 px-5 py-2.5 text-sm font-medium text-gray-500">
+                <FileDown className="h-4 w-4" /> รายงาน PDF รวม
+              </span>
+            )}
+          </div>
+        </div>
+      )}
     </div>
+  )
+}
+
+function CheckBox({ checked }: { checked: boolean }) {
+  return (
+    <span
+      className={`flex h-5 w-5 items-center justify-center rounded-md border-2 transition-colors ${
+        checked ? "border-[#1A4D2E] bg-[#1A4D2E] text-white" : "border-gray-300 bg-white"
+      }`}
+    >
+      {checked && <Check className="h-3.5 w-3.5" strokeWidth={3} />}
+    </span>
   )
 }
